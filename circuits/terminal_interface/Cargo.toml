@@ -1,0 +1,8 @@
+[package]
+name = "terminal_interface"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+termion = "1.5.6"
+game_logic = { path = "../game_logic" }
