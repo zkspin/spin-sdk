@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "game_logic",
+    "terminal_interface",
+]
