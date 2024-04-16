@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 use zkwasm_rust_sdk::wasm_input;
 use zkwasm_rust_sdk::wasm_output;
 
-use crate::game::{get_fib_number_0, get_fib_number_1, init, step};
+use crate::game::{get_fib_number_0, get_fib_number_1, init_game, step};
 
 // Private input:   #commands, command 0, command n, ..., last command
 // Public input:    seed, address
@@ -15,7 +15,7 @@ pub fn zkmain() -> i64 {
     let address = unsafe { [wasm_input(1), wasm_input(1), wasm_input(1)] };
     zkwasm_rust_sdk::dbg!("l1 player address is {:?}\n", address);
 
-    init();
+    init_game();
 
     // run the game
     let commands_len = unsafe { wasm_input(0) };

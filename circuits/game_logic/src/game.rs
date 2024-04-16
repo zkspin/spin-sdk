@@ -33,7 +33,7 @@ impl fmt::Display for GameState {
 pub static GAME_STATE: Lazy<Mutex<GameState>> = Lazy::new(|| Mutex::new(GameState::new()));
 
 #[wasm_bindgen]
-pub fn init() {
+pub fn init_game() {
     let mut game = GAME_STATE.lock().unwrap();
     game.fib_number_1 = 0;
     game.fib_number_0 = 0;
