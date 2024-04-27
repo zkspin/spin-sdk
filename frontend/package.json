@@ -12,6 +12,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.29.2",
     "@web3modal/wagmi": "^4.1.9",
+    "dotenv": "^16.4.5",
     "game_logic": "file:../circuits/game_logic/pkg",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

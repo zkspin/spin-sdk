@@ -1,13 +1,25 @@
-# Sample Hardhat Project
+# On-Chain Contract Using Hardhat
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
+This is the on-chain part, including the smart-contracts.
 
-Try running some of the following tasks:
+## Setups
+
+Setup `.env` following example from `template.env`
+
+```
+npm i
+```
+
+## Test Contracts
+
+Test are under test/
+
+```
+make test-contracts
+```
+
+## Deploy Contracts
 
 ```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/DummyContract.ts
+make deploy-contracts
 ```
