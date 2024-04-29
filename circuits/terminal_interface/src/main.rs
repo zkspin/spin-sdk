@@ -3,7 +3,7 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-use zk::game::{get_fib_number_0, get_fib_number_1, init, step, GameState};
+use zk::game::{get_fib_number_0, get_fib_number_1, init_game, step, GameState};
 
 fn print_number(stdout: &mut std::io::Stdout) {
     let nubmer0 = get_fib_number_0();
@@ -15,8 +15,12 @@ fn main() {
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
 
-    init();
-
+    init_game();
+    writeln!(
+        stdout,
+        "Use <- (left arrow) and -> (right arrow) to control the game, q to quit.\r"
+    )
+    .unwrap();
     print_number(&mut stdout);
 
     for c in stdin.keys() {
