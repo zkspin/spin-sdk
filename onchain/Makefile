@@ -4,3 +4,6 @@ test-contracts:
 
 deploy-contracts:
 	@npx hardhat ignition deploy ignition/modules/DummyContract.ts --network sepolia --verify
+
+deploy-contracts-reset:
+	@npx hardhat ignition deploy ignition/modules/DummyContract.ts --network sepolia --reset --verify
