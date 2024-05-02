@@ -7,15 +7,15 @@ use wasm_bindgen::JsValue;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct GameState {
-    pub fib_number_0: u64,
-    pub fib_number_1: u64,
+    pub total_steps: u64,
+    pub current_position: u64,
 }
 
 impl GameState {
     pub fn new() -> GameState {
         GameState {
-            fib_number_0: 0,
-            fib_number_1: 0,
+            total_steps: 0,
+            current_position: 0,
         }
     }
 }
@@ -24,19 +24,21 @@ impl fmt::Display for GameState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "fib_number_0: {}, fib_number_1: {}",
-            self.fib_number_0, self.fib_number_1
+            "GameState {{ total_steps: {}, current_position: {} }}",
+            self.total_steps, self.current_position
         )
     }
 }
 
 pub static GAME_STATE: Lazy<Mutex<GameState>> = Lazy::new(|| Mutex::new(GameState::new()));
 
+pub const MAX_POSITION: u64 = 10;
+
 #[wasm_bindgen]
-pub fn init_game() {
+pub fn init_game(total_steps: u64, current_position: u64) {
     let mut game = GAME_STATE.lock().unwrap();
-    game.fib_number_1 = 0;
-    game.fib_number_0 = 0;
+    game.total_steps = total_steps;
+    game.current_position = current_position;
 }
 
 /// Step function receives a encoded command and changes the global state accordingly
@@ -45,22 +47,18 @@ pub fn step(command: u64) {
     let mut game = GAME_STATE.lock().unwrap();
     match command {
         0 => {
-            if (game.fib_number_0 == 0) {
-                game.fib_number_1 = 0;
-                return;
+            if game.current_position != 0 {
+                game.current_position -= 1;
+
+                game.total_steps += 1;
             }
-            let temp = game.fib_number_1;
-            game.fib_number_1 = game.fib_number_0;
-            game.fib_number_0 = temp - game.fib_number_0;
         }
         1 => {
-            if (game.fib_number_1 == 0) {
-                game.fib_number_1 = 1;
-                return;
+            if game.current_position != MAX_POSITION {
+                game.current_position += 1;
+
+                game.total_steps += 1;
             }
-            let temp = game.fib_number_0;
-            game.fib_number_0 = game.fib_number_1;
-            game.fib_number_1 = temp + game.fib_number_1;
         }
         _ => {
             panic!("Invalid command");
@@ -69,13 +67,13 @@ pub fn step(command: u64) {
 }
 
 #[wasm_bindgen]
-pub fn get_fib_number_0() -> u64 {
-    let game = GAME_STATE.lock().unwrap().clone();
-    return game.fib_number_0;
+pub fn get_game_state() -> String {
+    let game = _get_game_state();
+    serde_json::to_string(&game).unwrap()
 }
 
-#[wasm_bindgen]
-pub fn get_fib_number_1() -> u64 {
+pub fn _get_game_state() -> GameState {
     let game = GAME_STATE.lock().unwrap().clone();
-    return game.fib_number_1;
+
+    return game;
 }
