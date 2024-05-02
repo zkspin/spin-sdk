@@ -6,7 +6,6 @@ import {
 } from "./Proof";
 interface SpinConstructor {
     onReady: () => void;
-    initParameters: GameInitParameters;
     cloudCredentials: ProveCredentials;
 }
 
@@ -14,32 +13,27 @@ interface SpinConstructor {
 export class Spin {
     gamePlay: GamePlay;
     cloudCredentials: ProveCredentials;
-    _onReady: () => void;
     inputs: number[] = []; // public inputs
     witness: number[] = []; // private inputs
-    /* Get the current game state */
-
-    getGameState() {
-        return this.gamePlay.getGameState();
-    }
 
     /* Constructor */
-    constructor({
-        initParameters,
-        onReady,
-        cloudCredentials,
-    }: SpinConstructor) {
+    constructor({ onReady, cloudCredentials }: SpinConstructor) {
         this.gamePlay = new GamePlay({
             callback: onReady,
-            init_parameters: initParameters,
         });
         this.cloudCredentials = cloudCredentials;
-        this._onReady = onReady;
-
-        // Add initial game parameters to the inputs
-        this.inputs.push(initParameters.total_steps);
-        this.inputs.push(initParameters.current_position);
     }
+
+    add_public_input(input: number) {
+        this.inputs.push(input);
+    }
+
+    add_private_input(input: number) {
+        this.witness.push(input);
+    }
+
+    // ================================================================================================
+    // BELOW FUNCTIONS CAN BE AUTO-GENERATED
 
     /* Step the game
      * part of the private inputs
@@ -47,8 +41,19 @@ export class Spin {
 
     step(command: number) {
         this.gamePlay.step(command);
-        this.witness.push(command);
     }
+
+    /* Get the current game state */
+
+    getGameState() {
+        return this.gamePlay.getGameState();
+    }
+
+    init_game({ total_steps, current_position }: GameInitParameters) {
+        this.gamePlay.init_game({ total_steps, current_position });
+    }
+
+    // ================================================================================================
 
     async submitProof() {
         console.log("generating proof");
@@ -79,13 +84,12 @@ export class Spin {
      * Keeping the same onReady callback and cloud credentials
      */
 
-    reset(initParameters: GameInitParameters) {
+    reset(onReady: () => void) {
         this.inputs = [];
         this.witness = [];
 
         this.gamePlay = new GamePlay({
-            callback: this._onReady,
-            init_parameters: initParameters,
+            callback: onReady,
         });
     }
 }
