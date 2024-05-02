@@ -1,4 +1,4 @@
-/* THIS FILE WILL BE AUTO-GENERATED IN THE FUTURE*/
+/* SDK FILEm*/
 
 import { ethers } from "ethers";
 import {
@@ -8,34 +8,44 @@ import {
     ZkWasmUtil,
 } from "zkwasm-service-helper";
 
-/**
- * Temp Secrets
- */
-const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_USER_ADDRESS;
-const ZK_USER_PRIVATE_KEY = import.meta.env.VITE_ZK_USER_PRIVATE_KEY;
-export const ZK_IMAGE_ID = import.meta.env.VITE_ZK_CLOUD_IMAGE_ID;
-export const ZK_CLOUD_RPC_URL = "https://rpc.zkwasmhub.com:8090";
+export interface ProveCredentials {
+    USER_ADDRESS: string;
+    USER_PRIVATE_KEY: string;
+    IMAGE_HASH: string;
+    CLOUD_RPC_URL: string;
+}
 
-export async function signMessage(message: string) {
+export async function signMessage(
+    message: string,
+    cloudCredential: ProveCredentials
+) {
     /**
      * Sign a message with the zk's private key
      * @param message The message to sign
      * @returns The signature
      */
 
-    const signer = new ethers.Wallet(ZK_USER_PRIVATE_KEY!);
+    const signer = new ethers.Wallet(cloudCredential.USER_PRIVATE_KEY);
 
     const signature = await signer.signMessage(message);
 
     return signature;
 }
 
-export async function add_proving_taks(inputs: string[], witness: string[]) {
-    const helper = new ZkWasmServiceHelper(ZK_CLOUD_RPC_URL, "", "");
+export async function add_proving_taks(
+    inputs: string[],
+    witness: string[],
+    cloudCredential: ProveCredentials
+) {
+    const helper = new ZkWasmServiceHelper(
+        cloudCredential.CLOUD_RPC_URL,
+        "",
+        ""
+    );
 
     const info: ProvingParams = {
-        user_address: ZK_USER_ADDRESS!,
-        md5: ZK_IMAGE_ID,
+        user_address: cloudCredential.USER_ADDRESS,
+        md5: cloudCredential.IMAGE_HASH,
         public_inputs: inputs,
         private_inputs: witness,
     };
@@ -45,7 +55,7 @@ export async function add_proving_taks(inputs: string[], witness: string[]) {
     let signature: string;
     try {
         // change to use whitelisted pkey to sign message
-        signature = await signMessage(msgString);
+        signature = await signMessage(msgString, cloudCredential);
         console.log("signature = ", signature);
     } catch (e: unknown) {
         console.log("error signing message", e);
@@ -66,10 +76,11 @@ export async function add_proving_taks(inputs: string[], witness: string[]) {
 
 export async function load_proving_taks_util_result(
     task_id: string,
+    cloudCredential: ProveCredentials,
     retry_interval: number = 10000 // 10 seconds
 ) {
     while (true) {
-        const result = await load_proving_taks(task_id);
+        const result = await load_proving_taks(task_id, cloudCredential);
         if (result.status !== "Pending" && result.status !== "Processing") {
             return result;
         }
@@ -80,13 +91,20 @@ export async function load_proving_taks_util_result(
     }
 }
 
-export async function load_proving_taks(task_id: string) {
-    const helper = new ZkWasmServiceHelper(ZK_CLOUD_RPC_URL, "", "");
+export async function load_proving_taks(
+    task_id: string,
+    cloudCredential: ProveCredentials
+) {
+    const helper = new ZkWasmServiceHelper(
+        cloudCredential.CLOUD_RPC_URL,
+        "",
+        ""
+    );
 
     const query = {
-        md5: ZK_IMAGE_ID,
+        md5: cloudCredential.IMAGE_HASH,
         id: task_id,
-        user_address: ZK_USER_ADDRESS!,
+        user_address: cloudCredential.USER_ADDRESS,
         tasktype: "Prove",
         taskstatus: "",
     };
