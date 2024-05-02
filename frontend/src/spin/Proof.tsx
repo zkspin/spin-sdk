@@ -1,3 +1,5 @@
+/* THIS FILE WILL BE AUTO-GENERATED IN THE FUTURE*/
+
 import { ethers } from "ethers";
 import {
     ProvingParams,
