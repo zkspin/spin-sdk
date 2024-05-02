@@ -44,7 +44,7 @@ let spin: Spin;
 
 function App() {
     useEffect(() => {
-        getOnchainGameStates().then((result) => {
+        getOnchainGameStates().then((result): any => {
             const total_steps = result[0];
             const current_position = result[1];
 
@@ -56,11 +56,7 @@ function App() {
             });
 
             spin = new Spin({
-                initParameters: {
-                    total_steps: total_steps,
-                    current_position: current_position,
-                },
-                onReady: updateDisplay,
+                onReady: onGameInitReady(total_steps, current_position),
                 cloudCredentials: {
                     CLOUD_RPC_URL: ZK_CLOUD_RPC_URL,
                     USER_ADDRESS: ZK_USER_ADDRESS,
@@ -85,6 +81,7 @@ function App() {
 
     const onClick = (command: number) => () => {
         spin.step(command);
+        spin.add_private_input(command);
         updateDisplay();
     };
 
@@ -93,6 +90,18 @@ function App() {
         setGameState(newGameState);
         setMoves(spin.witness);
     };
+
+    const onGameInitReady =
+        (total_steps: number, current_position: number) => () => {
+            spin.init_game({
+                total_steps: total_steps,
+                current_position: current_position,
+            });
+            spin.add_public_input(total_steps);
+            spin.add_public_input(current_position);
+
+            updateDisplay();
+        };
 
     // Submit the proof to the cloud
     const submitProof = async () => {
@@ -114,10 +123,7 @@ function App() {
             current_position: gameStates[1],
         });
 
-        spin.reset({
-            total_steps: gameStates[0],
-            current_position: gameStates[1],
-        });
+        spin.reset(onGameInitReady(gameStates[0], gameStates[1]));
     };
 
     return (

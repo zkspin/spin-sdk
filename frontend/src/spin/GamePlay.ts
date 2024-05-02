@@ -16,22 +16,17 @@ export interface GameState {
 
 export interface GamePlayContructor {
     callback: () => void;
-    init_parameters: GameInitParameters;
-}
-
-// Helper function to convert any config object to an array
-function interfaceToArray<T>(config: T): bigint[] {
-    // Return an array of object values with type preservation
-    return Object.values(config).map((v) => BigInt(v)) as bigint[];
 }
 
 export class GamePlay {
-    constructor({ callback, init_parameters }: GamePlayContructor) {
-        init()
-            .then(() => {
-                init_game.apply(null, interfaceToArray(init_parameters));
-            })
-            .finally(callback);
+    constructor({ callback }: GamePlayContructor) {
+        init().then().finally(callback);
+    }
+
+    // BELOW FUNCTIONS CAN BE AUTO-GENERATED
+
+    init_game({ total_steps, current_position }: GameInitParameters) {
+        init_game(BigInt(total_steps), BigInt(current_position));
     }
 
     step(command: number) {
