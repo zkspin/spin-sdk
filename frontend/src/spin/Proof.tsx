@@ -1,4 +1,4 @@
-/* SDK FILEm*/
+/* SDK FILE*/
 
 import { ethers } from "ethers";
 import {
