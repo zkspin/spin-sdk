@@ -1,4 +1,4 @@
-import { GamePlay, GameInitParameters } from "./GamePlay";
+import { GamePlay, GameState } from "./GamePlay";
 import {
     add_proving_taks,
     load_proving_taks_util_result,
@@ -24,16 +24,21 @@ export class Spin {
         this.cloudCredentials = cloudCredentials;
     }
 
-    add_public_input(input: number) {
+    private add_public_input(input: number) {
         this.inputs.push(input);
     }
 
-    add_private_input(input: number) {
+    private add_private_input(input: number) {
         this.witness.push(input);
     }
 
-    // ================================================================================================
-    // BELOW FUNCTIONS CAN BE AUTO-GENERATED
+    // STATEFULL METHODS
+
+    init_game(initParameter: GameState) {
+        // TODO add all public inputss
+        // this.add_public_input(initParameter.total_steps);
+        this.gamePlay.init_game(initParameter);
+    }
 
     /* Step the game
      * part of the private inputs
@@ -41,16 +46,14 @@ export class Spin {
 
     step(command: number) {
         this.gamePlay.step(command);
+        this.add_private_input(command);
     }
 
+    // PURE FUNCTIONS
     /* Get the current game state */
 
     getGameState() {
         return this.gamePlay.getGameState();
-    }
-
-    init_game({ total_steps, current_position }: GameInitParameters) {
-        this.gamePlay.init_game({ total_steps, current_position });
     }
 
     // ================================================================================================

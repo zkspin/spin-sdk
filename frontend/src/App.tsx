@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
-
-import { GameState } from "./spin/GamePlay";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
 import { abi } from "./ABI.json";
 
 import { config } from "./web3";
 import { Spin } from "./spin/Spin";
 import { readContract } from "wagmi/actions";
+import { GameState } from "./spin/GamePlay";
 
 const GAME_CONTRACT_ADDRESS = "0xe054298AA62aC6D0Ab982A8a610f6D3406874D9D";
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_USER_ADDRESS;
@@ -81,7 +80,6 @@ function App() {
 
     const onClick = (command: number) => () => {
         spin.step(command);
-        spin.add_private_input(command);
         updateDisplay();
     };
 
@@ -97,8 +95,6 @@ function App() {
                 total_steps: total_steps,
                 current_position: current_position,
             });
-            spin.add_public_input(total_steps);
-            spin.add_public_input(current_position);
 
             updateDisplay();
         };

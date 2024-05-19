@@ -9,7 +9,7 @@ export default defineConfig({
             allow: [
                 ".",
                 // your custom rules
-                "../gameplay/provable_game_logic/pkg",
+                "../gameplay/spin/pkg",
             ],
         },
     },

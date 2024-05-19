@@ -1,8 +1,9 @@
 [package]
-name = "terminal_interface"
+name = "cli"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 termion = "1.5.6"
-game_logic = { path = "../game_logic" }
+spin = { path = "../spin" }
+gameplay = { path = "../gameplay" }
