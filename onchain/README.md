@@ -1,13 +1,11 @@
-# On-Chain Contract Using Hardhat
-
-This is the on-chain part, including the smart-contracts.
+# Spin On-chain Template
 
 ## Setups
 
-Setup `.env` following example from `template.env`
+Setup `.env` following the example from `template.env`
 
 ```
-npm i
+yarn
 ```
 
 ## Test Contracts
@@ -15,7 +13,7 @@ npm i
 Test are under test/
 
 ```
-make test-contracts
+yarn test
 ```
 
 ## Deploy Contracts
@@ -23,11 +21,11 @@ make test-contracts
 To test deploying contracts, however, since we already deployed the contracts and hardhat keeps track of them, this should not do anything.
 
 ```shell
-make deploy-contracts
+yarn deploy
 ```
 
 To deploy your own contracts, run hardhat with reset so that it clears our deployment history
 
 ```shell
-make deploy-contracts-reset
+yarn deploy-reset
 ```
