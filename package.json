@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "demo": "echo `demo`"
+    "demo": "echo `demo`",
+    "start": "node index.js"
+  },
+  "bin": {
+    "spinsdk": "./index.js"
   },
   "keywords": [],
   "author": "",
