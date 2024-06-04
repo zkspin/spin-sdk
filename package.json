@@ -1,5 +1,5 @@
 {
-  "name": "zk-sdk",
+  "name": "spinsdk",
   "version": "1.0.0",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "index.js",
