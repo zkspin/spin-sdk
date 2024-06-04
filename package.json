@@ -13,5 +13,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "spinsdk": "github:m4-team/zk-sdk#experimental-npm-package"
+  }
 }
