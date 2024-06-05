@@ -1,3 +1,5 @@
 /target
+/pkg
+/params
 
 .env
