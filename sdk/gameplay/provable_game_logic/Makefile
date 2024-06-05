@@ -16,3 +16,6 @@ publish: build
 
 clean:
 	rm -rf pkg
+
+
+## TODO: move this to npx spinsdk

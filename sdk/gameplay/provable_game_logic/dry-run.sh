@@ -11,3 +11,5 @@ RUST_BACKTRACE=full ../../../g2/zkwasm/target/debug/delphinus-cli --host standar
 1:i64 \
 1:i64 \
 1:i64
+
+## TODO: move this using npx spinsdk
