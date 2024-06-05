@@ -1,9 +1,6 @@
-RUST_BACKTRACE=full ../../../../g2/zkwasm/target/debug/delphinus-cli \
---host standard -k 21 \
---function zkmain  \
---param ./params \
---output ./output \
---wasm pkg/gameplay_bg.wasm dry-run \
+
+## TODO: move this using npx spinsdk
+RUST_BACKTRACE=full ../../../../g2/zkwasm/target/debug/zkwasm-cli --params "./params" wasm_output dry-run --wasm pkg/gameplay_bg.wasm --output ./output \
 --public \
 1:i64 \
 1:i64 \
@@ -17,4 +14,3 @@ RUST_BACKTRACE=full ../../../../g2/zkwasm/target/debug/delphinus-cli \
 1:i64 \
 1:i64 \
 1:i64
-## TODO: move this using npx spinsdk
