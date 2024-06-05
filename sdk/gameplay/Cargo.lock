@@ -157,14 +157,8 @@ dependencies = [
 name = "provable_game_logic"
 version = "0.1.0"
 dependencies = [
- "once_cell",
- "primitive-types",
  "serde",
- "serde_json",
- "sha2",
  "wasm-bindgen",
- "web-sys",
- "zkwasm-rust-sdk",
 ]
 
 [[package]]
@@ -193,9 +187,9 @@ checksum = "20145670ba436b55d91fc92d25e71160fbfbdd57831631c8d7d36377a476f1cb"
 
 [[package]]
 name = "ryu"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e86697c916019a8588c99b5fac3cead74ec0b4b819707a682fd4d23fa0ce1ba1"
+checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 
 [[package]]
 name = "serde"
@@ -219,9 +213,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.115"
+version = "1.0.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12dc5c46daa8e9fdf4f5e71b6cf9a53f2487da0e86e55808e2d35539666497dd"
+checksum = "455182ea6142b14f93f4bc5320a2b31c1f266b66a4a5c858b013302a5d8cbfc3"
 dependencies = [
  "itoa",
  "ryu",
@@ -237,6 +231,21 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "spin"
+version = "0.1.0"
+dependencies = [
+ "once_cell",
+ "primitive-types",
+ "provable_game_logic",
+ "serde",
+ "serde_json",
+ "sha2",
+ "wasm-bindgen",
+ "web-sys",
+ "zkwasm-rust-sdk",
 ]
 
 [[package]]
@@ -273,6 +282,7 @@ name = "testing_cli"
 version = "0.1.0"
 dependencies = [
  "provable_game_logic",
+ "spin",
  "termion",
 ]
 
@@ -373,7 +383,7 @@ dependencies = [
 [[package]]
 name = "zkwasm-rust-sdk"
 version = "0.1.0"
-source = "git+https://github.com/DelphinusLab/zkWasm-rust.git?branch=main#2356d47b0ee970877a7bca6443636ed671295913"
+source = "git+https://github.com/DelphinusLab/zkWasm-rust.git?branch=main#3dc33e15c9e2b6ee502d538a5e715f8ac88083f7"
 dependencies = [
  "primitive-types",
  "wasm-bindgen",

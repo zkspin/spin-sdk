@@ -1,2 +1,2 @@
-pub mod game;
-mod zkmain;
+pub mod definition;
+pub mod gameplay;
