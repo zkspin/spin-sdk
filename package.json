@@ -1,0 +1,22 @@
+{
+  "name": "spinsdk",
+  "version": "0.0.2",
+  "description": "SDK for developing on-chain ZK proved application.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && node add-shebang.js",
+    "start": "ts-node src/index.ts",
+    "demo": "echo demo"
+  },
+  "bin": {
+    "spinsdk": "./dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
