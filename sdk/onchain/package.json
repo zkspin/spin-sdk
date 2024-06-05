@@ -4,6 +4,11 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },
+  "scripts": {
+    "test": "npx hardhat test --verbose",
+    "deploy": "npx hardhat ignition deploy ignition/modules/GameContract.ts --network sepolia --verify",
+    "deploy-reset": "npx hardhat ignition deploy ignition/modules/GameContract.ts --network sepolia --reset --verify"
+  },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "dotenv": "^16.4.5"
