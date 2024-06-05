@@ -1,5 +1,5 @@
 [package]
-name = "game_logic"
+name = "provable_game_logic"
 version = "0.1.0"
 edition = "2021"
 

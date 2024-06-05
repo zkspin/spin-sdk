@@ -80,20 +80,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "game_logic"
-version = "0.1.0"
-dependencies = [
- "once_cell",
- "primitive-types",
- "serde",
- "serde_json",
- "sha2",
- "wasm-bindgen",
- "web-sys",
- "zkwasm-rust-sdk",
-]
-
-[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -165,6 +151,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e835ff2298f5721608eb1a980ecaee1aef2c132bf95ecc026a11b7bf3c01c02e"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "provable_game_logic"
+version = "0.1.0"
+dependencies = [
+ "once_cell",
+ "primitive-types",
+ "serde",
+ "serde_json",
+ "sha2",
+ "wasm-bindgen",
+ "web-sys",
+ "zkwasm-rust-sdk",
 ]
 
 [[package]]
@@ -257,14 +257,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "terminal_interface"
-version = "0.1.0"
-dependencies = [
- "game_logic",
- "termion",
-]
-
-[[package]]
 name = "termion"
 version = "1.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -274,6 +266,14 @@ dependencies = [
  "numtoa",
  "redox_syscall",
  "redox_termios",
+]
+
+[[package]]
+name = "testing_cli"
+version = "0.1.0"
+dependencies = [
+ "provable_game_logic",
+ "termion",
 ]
 
 [[package]]

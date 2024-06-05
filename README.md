@@ -4,6 +4,9 @@ SDK for developing on-chain ZK proved application.
 
 ## Installation
 
+Install Rust
+https://www.rust-lang.org/tools/install
+
 `npm install -g github:m4-team/zk-sdk#hackathon`
 
 ## Start a new project
