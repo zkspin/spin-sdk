@@ -157,8 +157,14 @@ dependencies = [
 name = "provable_game_logic"
 version = "0.1.0"
 dependencies = [
+ "once_cell",
+ "primitive-types",
  "serde",
+ "serde_json",
+ "sha2",
  "wasm-bindgen",
+ "web-sys",
+ "zkwasm-rust-sdk",
 ]
 
 [[package]]
@@ -234,21 +240,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "spin"
-version = "0.1.0"
-dependencies = [
- "once_cell",
- "primitive-types",
- "provable_game_logic",
- "serde",
- "serde_json",
- "sha2",
- "wasm-bindgen",
- "web-sys",
- "zkwasm-rust-sdk",
-]
-
-[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -282,7 +273,6 @@ name = "testing_cli"
 version = "0.1.0"
 dependencies = [
  "provable_game_logic",
- "spin",
  "termion",
 ]
 

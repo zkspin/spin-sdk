@@ -1,2 +1,2 @@
 [workspace]
-members = ["provable_game_logic", "testing_cli", "spin"]
+members = ["provable_game_logic", "testing_cli"]

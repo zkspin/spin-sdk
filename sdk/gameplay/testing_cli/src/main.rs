@@ -3,8 +3,8 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-use provable_game_logic::definition::{RustGameState, RustInitializationParameters};
-use spin::game::{_get_game_state, initialize_game, step};
+use provable_game_logic::definition::RustGameState;
+use provable_game_logic::gameplay::{_get_game_state, initialize_game, step};
 
 fn print_number(stdout: &mut std::io::Stdout) {
     let final_game_state: RustGameState = _get_game_state();
@@ -18,12 +18,10 @@ fn main() {
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
 
-    let init_param = RustInitializationParameters {
-        total_steps: 0,
-        current_position: 0,
-    };
+    const total_steps: u64 = 0;
+    const current_position: u64 = 0;
 
-    initialize_game(&init_param);
+    initialize_game(total_steps, current_position);
 
     writeln!(stdout, "{}", GAME_INSTRUCTIONS).unwrap();
     print_number(&mut stdout);
