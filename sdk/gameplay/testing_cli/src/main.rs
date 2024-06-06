@@ -6,9 +6,9 @@ use termion::raw::IntoRawMode;
 use provable_game_logic::definition::RustGameState;
 use provable_game_logic::gameplay::{_get_game_state, initialize_game, step};
 
-fn print_number(stdout: &mut std::io::Stdout) {
+fn print_game_state(stdout: &mut std::io::Stdout) {
     let final_game_state: RustGameState = _get_game_state();
-    writeln!(stdout, "final_game_state: {}\r", final_game_state).unwrap();
+    writeln!(stdout, "{}\r", final_game_state).unwrap();
 }
 
 const GAME_INSTRUCTIONS: &str =
@@ -24,7 +24,7 @@ fn main() {
     initialize_game(INITIAL_TOTAL_STEPS, INIITAL_CURRENT_POSITION);
 
     writeln!(stdout, "{}", GAME_INSTRUCTIONS).unwrap();
-    print_number(&mut stdout);
+    print_game_state(&mut stdout);
 
     for c in stdin.keys() {
         match c.unwrap() {
@@ -33,6 +33,6 @@ fn main() {
             Key::Char('q') => break, // Quit the game
             _ => continue,
         }
-        print_number(&mut stdout);
+        print_game_state(&mut stdout);
     }
 }
