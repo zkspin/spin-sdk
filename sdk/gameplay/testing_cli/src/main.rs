@@ -18,10 +18,10 @@ fn main() {
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
 
-    const total_steps: u64 = 0;
-    const current_position: u64 = 0;
+    const INITIAL_TOTAL_STEPS: u64 = 0;
+    const INIITAL_CURRENT_POSITION: u64 = 0;
 
-    initialize_game(total_steps, current_position);
+    initialize_game(INITIAL_TOTAL_STEPS, INIITAL_CURRENT_POSITION);
 
     writeln!(stdout, "{}", GAME_INSTRUCTIONS).unwrap();
     print_number(&mut stdout);

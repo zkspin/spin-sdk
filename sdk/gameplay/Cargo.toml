@@ -1,2 +1,3 @@
 [workspace]
 members = ["provable_game_logic", "testing_cli"]
+resolver = "2"
