@@ -4,7 +4,7 @@
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && node add-shebang.js",
+    "build": "tsc && node script/add-shebang.js",
     "start": "ts-node src/index.ts",
     "demo": "echo demo"
   },
