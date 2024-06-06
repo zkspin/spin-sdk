@@ -1,5 +1,5 @@
 /* THIS FILE WILL BE AUTO-GENERATED IN THE FUTURE*/
-import init, { init_game, step, get_game_state } from "game_logic";
+import init, { initialize_game, step, get_game_state } from "game_logic";
 
 // ================================================================================================
 // DEFINE YOUR INTERFACES HERE
@@ -26,7 +26,7 @@ export class GamePlay {
     // BELOW FUNCTIONS CAN BE AUTO-GENERATED
 
     init_game({ total_steps, current_position }: GameInitParameters) {
-        init_game(BigInt(total_steps), BigInt(current_position));
+        initialize_game(BigInt(total_steps), BigInt(current_position));
     }
 
     step(command: number) {

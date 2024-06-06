@@ -2,6 +2,7 @@
 
 import { ethers } from "ethers";
 import {
+    ProofSubmitMode,
     ProvingParams,
     WithSignature,
     ZkWasmServiceHelper,
@@ -48,6 +49,7 @@ export async function add_proving_taks(
         md5: cloudCredential.IMAGE_HASH,
         public_inputs: inputs,
         private_inputs: witness,
+        proof_submit_mode: ProofSubmitMode.Manual,
     };
 
     const msgString = ZkWasmUtil.createProvingSignMessage(info);
@@ -81,7 +83,7 @@ export async function load_proving_taks_util_result(
 ) {
     while (true) {
         const result = await load_proving_taks(task_id, cloudCredential);
-        if (result.status !== "Pending" && result.status !== "Processing") {
+        if (result!.status !== "Pending" && result!.status !== "Processing") {
             return result;
         }
         console.log(

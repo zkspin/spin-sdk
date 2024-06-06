@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
-
-import { GameState } from "./spin/GamePlay";
+import { greet } from "my-ts-library";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
 import { abi } from "./ABI.json";
 
 import { config } from "./web3";
-import { Spin } from "./spin/Spin";
+// import { Spin } from "./spin/Spin";
 import { readContract } from "wagmi/actions";
 
 const GAME_CONTRACT_ADDRESS = "0xe054298AA62aC6D0Ab982A8a610f6D3406874D9D";
@@ -40,7 +39,7 @@ async function getOnchainGameStates() {
     return result.map((r) => Number(r));
 }
 
-let spin: Spin;
+// let spin: Spin;
 
 function App() {
     useEffect(() => {

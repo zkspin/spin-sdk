@@ -1,7 +1,9 @@
 {
-  "name": "frontend",
+  "name": "spinlib",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "main": "dist/GamePlay.js",
+  "types": "dist/types/GamePlay.d.ts",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,15 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.29.2",
-    "@vitejs/plugin-react": "^4.2.1",
-    "@web3modal/wagmi": "^4.1.9",
     "game_logic": "file:../../gameplay/provable_game_logic/pkg",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "viem": "^2.9.19",
     "vite": "^5.2.11",
-    "wagmi": "^2.5.20",
     "zkwasm-service-helper": "git+https://github.com/DelphinusLab/zkWasm-service-helper.git"
   },
   "devDependencies": {
