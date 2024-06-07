@@ -9,7 +9,6 @@ export interface GamePlayContructor {
 
 export class GamePlay {
     constructor({ callback }: GamePlayContructor) {
-        // @ts-ignore
         init().then().finally(callback);
     }
 

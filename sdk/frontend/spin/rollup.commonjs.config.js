@@ -1,5 +1,5 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
-// import nodePolyfills from 'rollup-plugin-node-polyfills';
+
 
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
@@ -10,14 +10,14 @@ export default {
   input: 'src/index.ts', // Adjust the path to your entry file
   output: [{
     file: 'dist/bundle.cjs.js',
+    sourcemap: true,
     format: 'esm', // Use 'esm' for ES module
   }],
   plugins: [
-    nodeResolve({ preferBuiltins: true }),
+    nodeResolve({ preferBuiltins: false }),
     commonjs(),
     typescript(),
     wasm(),
     json(),
-  ],
-  exclude: 'node_modules/**',
+  ]
 };
