@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 import "./IVerifier.sol";
 
-contract GameContract {
-
+abstract SpinContract {
+    
     /* Trustless Application Settlement Template */
 
     IZKVerifier public verifier;
@@ -25,6 +25,16 @@ contract GameContract {
         settle(instances);
     }
 
+    function settle(uint256[][] calldata instances) virtual internal;
+
+
+        
+}
+
+contract GameContract is SpinContract{
+
+    /* Trustless Application Settlement Template */
+    constructor(address verifier_address) SpinContract(verifier_address) {}
 
     /* Application On-chain Business Logic */
 
@@ -47,31 +57,45 @@ contract GameContract {
     }
 
     struct ZKInput {
-        uint64 total_steps;
-        uint64 position;
+        uint64 start_total_steps;
+        uint64 start_position;
     }
 
     struct ZKOutput {
-        uint64 total_steps;
-        uint64 position;
+        uint64 end_total_steps;
+        uint64 end_position;
     }
 
     // Settle a verified proof
     function settle(uint256[][] calldata instances) {
 
-        uint64 start_total_steps = uint64(instances[0][0]);
-        uint64 start_position = uint64(instances[0][1]);
-        uint64 end_total_steps = uint64(instances[0][2]);
-        uint64 end_position = uint64(instances[0][3]);
+        ZKInput memory zk_input = ZKInput(
+            uint64(instances[0][0]),
+            uint64(instances[0][1])
+        );
 
-        total_steps = end_total_steps;
-        current_position = end_position;
+        ZKOutput memory zk_output = ZKOutput(
+            uint64(instances[0][2]),
+            uint64(instances[0][3])
+        );
+
+
+        require(
+            zk_input.start_total_steps == total_steps &&
+            zk_input.start_position == current_position,
+            "Invalid start state"
+        );
+
+
+
+        total_steps = zk_output.end_total_steps;
+        current_position = zk_output.end_position;
 
         emit UpdateState(
-            start_total_steps
-            start_position,
-            end_total_steps,
-            end_position
+            zk_input.start_total_steps
+            zk_input.start_position,
+            zk_output.end_total_steps,
+            zk_output.end_position
         );
     }
 }
