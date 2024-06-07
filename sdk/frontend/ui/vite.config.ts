@@ -10,7 +10,7 @@ export default defineConfig({
                 ".",
                 // your custom rules
                 "../../gameplay/provable_game_logic/pkg",
-                "../vite_test/*",
+                "../spin/*",
             ],
         },
     },

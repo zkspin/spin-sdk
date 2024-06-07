@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
-import { greet } from "my-ts-library";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
 import { abi } from "./ABI.json";
-
+import { GameState, Spin } from "spin";
 import { config } from "./web3";
 // import { Spin } from "./spin/Spin";
 import { readContract } from "wagmi/actions";
@@ -39,7 +38,7 @@ async function getOnchainGameStates() {
     return result.map((r) => Number(r));
 }
 
-// let spin: Spin;
+let spin: Spin;
 
 function App() {
     useEffect(() => {

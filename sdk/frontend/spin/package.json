@@ -1,0 +1,19 @@
+{
+  "name": "spinlib",
+  "private": true,
+  "version": "0.0.1",
+  "main": "dist/lib-esm/index.js",
+  "types": "dist/lib-esm/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "game_logic": "file:../../gameplay/provable_game_logic/pkg",
+    "zkwasm-service-helper": "git+https://github.com/DelphinusLab/zkWasm-service-helper.git"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5"
+  }
+}
