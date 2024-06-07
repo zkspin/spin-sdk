@@ -58,19 +58,15 @@ export async function add_proving_taks(
     try {
         // change to use whitelisted pkey to sign message
         signature = await signMessage(msgString, cloudCredential);
-        console.log("signature = ", signature);
     } catch (e: unknown) {
         console.log("error signing message", e);
-        throw Error("Unsigned Transaction");
+        throw Error("Signing transaction failed");
     }
 
     const task: WithSignature<ProvingParams> = {
         ...info,
         signature: signature,
     };
-
-    console.log("task = ", task);
-
     const tasksInfo = await helper.addProvingTask(task);
 
     return tasksInfo;
@@ -111,21 +107,39 @@ export async function load_proving_taks(
         taskstatus: "",
     };
 
-    const tasksInfo = await helper.loadTasks(query);
+    let retryCount = 0;
 
-    if (tasksInfo.data.length == 0) {
+    let tasksInfo;
+
+    while (retryCount < 3) {
+        try {
+            tasksInfo = (await helper.loadTasks(query)).data;
+            console.log("proof data = ", tasksInfo);
+            break;
+        } catch (error: any) {
+            console.error(`Caught error: ${error.message}`);
+            if (error.response && error.response.status === 429) {
+                console.log(`Caught 429 error. Retrying in 5 seconds...`);
+                await new Promise((resolve) => setTimeout(resolve, 5000));
+                retryCount++;
+            } else {
+                throw error;
+            }
+        }
+    }
+
+    if (!tasksInfo || tasksInfo.length == 0) {
         return null;
     }
 
     // multiple tasks can be returned, but we only care about the first one
-    const task = tasksInfo.data[0];
+    const task = tasksInfo[0];
     const proof = ZkWasmUtil.bytesToBigIntArray(task.proof);
-    const verify_instance = ZkWasmUtil.bytesToBigIntArray(task.batch_instances);
+    const verify_instance = ZkWasmUtil.bytesToBigIntArray(
+        task.shadow_instances
+    );
     const aux = ZkWasmUtil.bytesToBigIntArray(task.aux);
     const instances = ZkWasmUtil.bytesToBigIntArray(task.instances);
-
-    console.log("proof data = ", tasksInfo.data);
-    console.log("verification succeeded.");
 
     return {
         proof,

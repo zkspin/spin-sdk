@@ -1,5 +1,9 @@
 // /* THIS FILE WILL BE AUTO-GENERATED IN THE FUTURE*/
-import init, { initialize_game, step, get_game_state } from "game_logic";
+import init, {
+    initialize_game,
+    step,
+    get_game_state,
+} from "game_logic/gameplay.js";
 // import init from "game_logic/gameplay.js";
 // // ================================================================================================
 

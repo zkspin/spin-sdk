@@ -10,7 +10,7 @@ import { TaskStatus } from "zkwasm-service-helper";
 const GAME_CONTRACT_ADDRESS = "0xe054298AA62aC6D0Ab982A8a610f6D3406874D9D";
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_USER_ADDRESS;
 const ZK_USER_PRIVATE_KEY = import.meta.env.VITE_ZK_USER_PRIVATE_KEY;
-const ZK_IMAGE_ID = import.meta.env.VITE_ZK_CLOUD_IMAGE_ID;
+const ZK_IMAGE_MD5 = import.meta.env.VITE_ZK_CLOUD_IMAGE_MD5;
 const ZK_CLOUD_RPC_URL = "https://rpc.zkwasmhub.com:8090";
 
 interface GameState {
@@ -75,7 +75,7 @@ function App() {
                     CLOUD_RPC_URL: ZK_CLOUD_RPC_URL,
                     USER_ADDRESS: ZK_USER_ADDRESS,
                     USER_PRIVATE_KEY: ZK_USER_PRIVATE_KEY,
-                    IMAGE_HASH: ZK_IMAGE_ID,
+                    IMAGE_HASH: ZK_IMAGE_MD5,
                 },
             });
         });
