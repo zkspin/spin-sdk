@@ -1,4 +1,4 @@
 // src/index.ts
-export * from "./GamePlay";
-export * from "./Proof";
-export * from "./Spin";
+export * from "./GamePlay.js";
+export * from "./Proof.js";
+export * from "./Spin.js";

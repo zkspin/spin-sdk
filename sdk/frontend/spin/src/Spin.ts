@@ -1,9 +1,9 @@
-import { GamePlay, GameInitParameters } from "./GamePlay";
+import { GamePlay } from "./GamePlay.js";
 import {
     add_proving_taks,
     load_proving_taks_util_result,
     ProveCredentials,
-} from "./Proof";
+} from "./Proof.js";
 interface SpinConstructor {
     onReady: () => void;
     cloudCredentials: ProveCredentials;
@@ -24,11 +24,11 @@ export class Spin {
         this.cloudCredentials = cloudCredentials;
     }
 
-    add_public_input(input: number) {
+    private add_public_input(input: number) {
         this.inputs.push(input);
     }
 
-    add_private_input(input: number) {
+    private add_private_input(input: number) {
         this.witness.push(input);
     }
 
@@ -40,7 +40,8 @@ export class Spin {
      */
 
     step(command: number) {
-        this.gamePlay.step(command);
+        this.gamePlay.step(BigInt(command));
+        this.add_private_input(command);
     }
 
     /* Get the current game state */
@@ -49,14 +50,17 @@ export class Spin {
         return this.gamePlay.getGameState();
     }
 
-    init_game({ total_steps, current_position }: GameInitParameters) {
-        this.gamePlay.init_game({ total_steps, current_position });
+    init_game(...args: number[]) {
+        this.gamePlay.init_game.apply(
+            null,
+            args.map((a) => BigInt(a))
+        );
+        args.map((a) => this.add_public_input(a));
     }
 
     // ================================================================================================
 
-    async submitProof() {
-        console.log("generating proof");
+    async generateProof() {
         const tasksInfo = await add_proving_taks(
             this.inputs.map((i) => `${i}:i64`),
             [
@@ -66,7 +70,7 @@ export class Spin {
             this.cloudCredentials
         );
 
-        console.log("tasks =", tasksInfo);
+        console.debug("tasksInfo = ", tasksInfo);
 
         const task_id = tasksInfo.id;
 
@@ -75,7 +79,7 @@ export class Spin {
             this.cloudCredentials
         );
 
-        console.log("proof = ", proof);
+        console.debug("proof = ", proof);
 
         return proof;
     }

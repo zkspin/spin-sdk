@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
 import { abi } from "./ABI.json";
-import { GameState, Spin } from "spin";
+import { Spin } from "spin";
 import { config } from "./web3";
-// import { Spin } from "./spin/Spin";
 import { readContract } from "wagmi/actions";
+import { TaskStatus } from "zkwasm-service-helper";
 
 const GAME_CONTRACT_ADDRESS = "0xe054298AA62aC6D0Ab982A8a610f6D3406874D9D";
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_USER_ADDRESS;
@@ -13,8 +13,24 @@ const ZK_USER_PRIVATE_KEY = import.meta.env.VITE_ZK_USER_PRIVATE_KEY;
 const ZK_IMAGE_ID = import.meta.env.VITE_ZK_CLOUD_IMAGE_ID;
 const ZK_CLOUD_RPC_URL = "https://rpc.zkwasmhub.com:8090";
 
+interface GameState {
+    total_steps: number;
+    current_position: number;
+}
+
 /* This function is used to verify the proof on-chain */
-async function verify_onchain({ proof, verify_instance, aux, instances }) {
+async function verify_onchain({
+    proof,
+    verify_instance,
+    aux,
+    instances,
+}: {
+    proof: BigInt[];
+    verify_instance: BigInt[];
+    aux: BigInt[];
+    instances: BigInt[];
+    status: TaskStatus;
+}) {
     const result = await writeContract(config, {
         abi,
         address: GAME_CONTRACT_ADDRESS,
@@ -79,7 +95,6 @@ function App() {
 
     const onClick = (command: number) => () => {
         spin.step(command);
-        spin.add_private_input(command);
         updateDisplay();
     };
 
@@ -91,20 +106,19 @@ function App() {
 
     const onGameInitReady =
         (total_steps: number, current_position: number) => () => {
-            spin.init_game({
-                total_steps: total_steps,
-                current_position: current_position,
-            });
-            spin.add_public_input(total_steps);
-            spin.add_public_input(current_position);
+            spin.init_game(total_steps, current_position);
 
             updateDisplay();
         };
 
     // Submit the proof to the cloud
     const submitProof = async () => {
-        const proof = await spin.submitProof();
+        const proof = await spin.generateProof();
 
+        if (!proof) {
+            console.error("Proof generation failed");
+            return;
+        }
         // onchain verification operations
         console.log("submitting proof");
         const verificationResult = await verify_onchain(proof);

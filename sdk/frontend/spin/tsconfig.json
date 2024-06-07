@@ -1,18 +1,19 @@
 {
   "compilerOptions": {
-    // "declarationDir": "./dist/types",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
+    "module": "ES6",
     "moduleResolution": "Node",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
-    "module": "es6",
     "target": "es5",
     "lib": [ "es2015", "dom" ],
-    "outDir": "dist/lib-esm",
+    "outDir": "dist/types",
     // "outFile": "spin.js",
     "sourceMap": true,
     "declaration": true,
   },
-  "include": ["src"]
+  "include": ["src/**/*", "test/"],
+  "exclude": ["node_modules", "dist"]
 }

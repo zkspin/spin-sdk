@@ -1,18 +1,7 @@
-/* THIS FILE WILL BE AUTO-GENERATED IN THE FUTURE*/
+// /* THIS FILE WILL BE AUTO-GENERATED IN THE FUTURE*/
 import init, { initialize_game, step, get_game_state } from "game_logic";
-
-// ================================================================================================
-// DEFINE YOUR INTERFACES HERE
-export interface GameInitParameters {
-    total_steps: number;
-    current_position: number;
-}
-
-export interface GameState {
-    total_steps: number;
-    current_position: number;
-}
-// ================================================================================================
+// import init from "game_logic/gameplay.js";
+// // ================================================================================================
 
 export interface GamePlayContructor {
     callback: () => void;
@@ -20,21 +9,21 @@ export interface GamePlayContructor {
 
 export class GamePlay {
     constructor({ callback }: GamePlayContructor) {
+        // @ts-ignore
         init().then().finally(callback);
     }
 
     // BELOW FUNCTIONS CAN BE AUTO-GENERATED
 
-    init_game({ total_steps, current_position }: GameInitParameters) {
-        initialize_game(BigInt(total_steps), BigInt(current_position));
+    init_game(...args: bigint[]) {
+        initialize_game.apply(null, args as any);
     }
 
-    step(command: number) {
-        console.log("command = ", command);
-        step(BigInt(command));
+    step(command: bigint) {
+        step(command);
     }
 
-    getGameState(): GameState {
+    getGameState() {
         return JSON.parse(get_game_state());
     }
 }
