@@ -69,7 +69,30 @@ export async function add_proving_taks(
     };
     const tasksInfo = await helper.addProvingTask(task);
 
+    console.log("tasksInfo = ", tasksInfo);
     return tasksInfo;
+}
+
+export async function getImageCommitmentBigInts(
+    cloudCredential: ProveCredentials
+): Promise<BigInt[]> {
+    const helper = new ZkWasmServiceHelper(
+        cloudCredential.CLOUD_RPC_URL,
+        "",
+        ""
+    );
+    const imageInfo = await helper.queryImage(cloudCredential.IMAGE_HASH);
+
+    if (!imageInfo || !imageInfo.checksum) {
+        throw Error("Image not found");
+    }
+
+    const commitment = commitmentUint8ArrayToVerifyInstanceBigInts(
+        imageInfo.checksum.x,
+        imageInfo.checksum.y
+    );
+
+    return commitment;
 }
 
 export async function load_proving_taks_util_result(
@@ -138,6 +161,7 @@ export async function load_proving_taks(
     const verify_instance = ZkWasmUtil.bytesToBigIntArray(
         task.shadow_instances
     );
+    console.log("verify_instance = ", task.shadow_instances);
     const aux = ZkWasmUtil.bytesToBigIntArray(task.aux);
     const instances = ZkWasmUtil.bytesToBigIntArray(task.instances);
 
@@ -148,4 +172,50 @@ export async function load_proving_taks(
         instances,
         status: task.status,
     };
+}
+
+function hexStringToZkWasmCommitmentHex(hexString: string[]) {
+    const x =
+        "0x" +
+        hexString[2].slice(hexString[2].length - 10, hexString[2].length) +
+        hexString[1].slice(2);
+
+    const y = "0x" + hexString[3].slice(2) + hexString[2].slice(2, 29);
+
+    return { x, y };
+}
+
+/* This function is used to convert the commitment hex to hex string
+ * in the format of verifying instance
+ * @param x: x hex string
+ * @param y: y hex string
+ */
+function commitmentHexToHexString(x: string, y: string) {
+    const hexString1 = "0x" + x.slice(12);
+    const hexString2 =
+        "0x" + y.slice(39) + "00000000000000000" + x.slice(2, 12);
+    const hexString3 = "0x" + y.slice(2, 39);
+
+    return [hexString1, hexString2, hexString3];
+}
+
+function commitmentUint8ArrayToVerifyInstanceBigInts(
+    xUint8Array: Uint8Array,
+    yUint8Array: Uint8Array
+) {
+    const xHexString = ZkWasmUtil.bytesToHexStrings(xUint8Array);
+    const yHexString = ZkWasmUtil.bytesToHexStrings(yUint8Array);
+    console.log("xHexString = ", xHexString);
+    console.log("yHexString = ", yHexString);
+    const verifyInstances = commitmentHexToHexString(
+        xHexString[0],
+        yHexString[0]
+    );
+    console.log("verifyInstances = ", verifyInstances);
+
+    const verifyingBytes = ZkWasmUtil.hexStringsToBytes(verifyInstances, 32);
+    console.log("verifyingBytes = ", verifyingBytes);
+    const verifyingBigInts = ZkWasmUtil.bytesToBigIntArray(verifyingBytes);
+    console.log("verifyingBigInts = ", verifyingBigInts);
+    return verifyingBigInts;
 }
