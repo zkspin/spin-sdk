@@ -7,7 +7,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const args = process.argv.slice(2);
-const FOLDER_IGNORE_LIST = ["node_modules", ".git"];
+const FOLDER_IGNORE_LIST = [
+    "node_modules",
+    ".git",
+    "target",
+    "dist",
+    "params",
+    "artifacts",
+    "cache",
+    "typechain-types",
+];
 const FILE_IGNORE_LIST = [".env"];
 /**
  * Copy the contents of one folder to another.
@@ -75,18 +84,18 @@ function init() {
     copyFolderSync(sourceDirGameplay, destinationDirGameplay);
     console.log("Initialized project with gameplay folder.");
 }
+const VERSION = "0.0.1";
+const INTERNAL_VERSION = "0.1";
 function entry() {
+    console.log("Running Spin version", VERSION, INTERNAL_VERSION);
     if (args[0] === "init") {
         init();
     }
-    else if (args[0] === "help") {
+    else {
         console.log("Usage: npx spin [command]");
         console.log("Commands:");
         console.log("  init [folderName]  Initialize project with gameplay folder");
         console.log("  help               Show help information");
-    }
-    else {
-        console.log("Hello from the example npm package! v1.0.2");
     }
 }
 entry();

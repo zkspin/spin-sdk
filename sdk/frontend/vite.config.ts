@@ -13,8 +13,7 @@ export default defineConfig({
                 ".",
                 // your custom rules
                 "../../gameplay/provable_game_logic/pkg",
-                "../spin/*",
-                "../spin/dist",
+                "../gameplay/provable_game_logic/js/spin",
             ],
         },
     },

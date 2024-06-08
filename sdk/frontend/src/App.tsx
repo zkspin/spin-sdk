@@ -2,16 +2,16 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
 import { abi } from "./ABI.json";
-import { Spin, getImageCommitmentBigInts } from "spin";
+import { Spin } from "spin";
 import { config } from "./web3";
 import { readContract } from "wagmi/actions";
 import { TaskStatus } from "zkwasm-service-helper";
 
-const GAME_CONTRACT_ADDRESS = "0x20C436F82dB95771f7a465cbF396aa1cEc11F411";
-const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_USER_ADDRESS;
-const ZK_USER_PRIVATE_KEY = import.meta.env.VITE_ZK_USER_PRIVATE_KEY;
+const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_GAME_CONTRACT_ADDRESS;
+const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_CLOUD_USER_ADDRESS;
+const ZK_USER_PRIVATE_KEY = import.meta.env.VITE_ZK_CLOUD_USER_PRIVATE_KEY;
 const ZK_IMAGE_MD5 = import.meta.env.VITE_ZK_CLOUD_IMAGE_MD5;
-const ZK_CLOUD_RPC_URL = "https://rpc.zkwasmhub.com:8090";
+const ZK_CLOUD_RPC_URL = import.meta.env.VITE_ZK_CLOUD_URL;
 
 interface GameState {
     total_steps: number;
@@ -57,35 +57,6 @@ async function getOnchainGameStates() {
 
 let spin: Spin;
 
-import { ZkWasmUtil } from "zkwasm-service-helper";
-
-async function test() {
-    const obj = [
-        25, 73, 5, 86, 85, 214, 153, 98, 69, 137, 67, 135, 71, 152, 0, 177, 254,
-        61, 63, 235, 99, 255, 12, 164, 111, 172, 183, 95, 250, 88, 37, 31, 118,
-        19, 147, 89, 248, 185, 39, 5, 194, 86, 167, 233, 1, 101, 148, 111, 16,
-        73, 150, 203, 223, 159, 225, 111, 0, 17, 181, 0, 0, 0, 0, 0, 74, 126,
-        133, 241, 44, 0, 0, 0, 0, 0, 0, 0, 0, 176, 88, 192, 29, 184, 254, 36,
-        109, 251, 207, 63, 51, 154, 17, 0, 0, 0, 0, 0, 202, 197, 241, 110, 60,
-        144, 119, 186, 49, 153, 250, 254, 217, 178, 123, 139, 26, 190, 1, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    ];
-
-    const uint8Array = new Uint8Array(obj);
-
-    const bigInts = ZkWasmUtil.bytesToBigIntArray(uint8Array);
-
-    console.log("proof = ", bigInts.slice(1));
-
-    const imageCommitment = await getImageCommitmentBigInts({
-        CLOUD_RPC_URL: ZK_CLOUD_RPC_URL,
-        USER_ADDRESS: ZK_USER_ADDRESS,
-        USER_PRIVATE_KEY: ZK_USER_PRIVATE_KEY,
-        IMAGE_HASH: ZK_IMAGE_MD5,
-    });
-    console.log("imageCommitment = ", imageCommitment);
-}
-
 function App() {
     useEffect(() => {
         getOnchainGameStates().then((result): any => {
@@ -108,8 +79,6 @@ function App() {
                     IMAGE_HASH: ZK_IMAGE_MD5,
                 },
             });
-
-            test();
         });
     }, []);
 

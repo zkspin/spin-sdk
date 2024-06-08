@@ -93,21 +93,22 @@ function init() {
     const destinationDirGameplay = path.join(destinationPath, "gameplay");
     copyFolderSync(sourceDirGameplay, destinationDirGameplay);
 
-    console.log("Initialized project with gameplay folder.");
+    console.log(`Successfully initialized under folder: ${destinationPath}`);
 }
 
+const VERSION = "0.0.1";
+const INTERNAL_VERSION = "0.1";
 function entry() {
+    console.log("Running Spin version", VERSION, INTERNAL_VERSION);
     if (args[0] === "init") {
         init();
-    } else if (args[0] === "help") {
+    } else {
         console.log("Usage: npx spin [command]");
         console.log("Commands:");
         console.log(
             "  init [folderName]  Initialize project with gameplay folder"
         );
         console.log("  help               Show help information");
-    } else {
-        console.log("Hello from the example npm package! v1.0.2");
     }
 }
 

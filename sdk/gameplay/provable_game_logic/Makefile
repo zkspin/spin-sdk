@@ -12,10 +12,10 @@ dry-run: build
 
 
 publish: build
-	node ../../../../zkWasm-service-cli/dist/index.js addimage -r "https://rpc.zkwasmhub.com:8090" -p "./pkg/gameplay_bg.wasm" -u "${ZK_WASM_CLOUD_USER_ADDR}" -x "${ZK_WASM_CLOUD_PRIVATE_KEY}" -d "Lg4" -c 22
+	node ../../../../zkWasm-service-cli/dist/index.js addimage -r ${ZK_CLOUD_URL} -p "./pkg/gameplay_bg.wasm" -u "${ZK_CLOUD_USER_ADDRESS}" -x "${ZK_CLOUD_USER_PRIVATE_KEY}" -d "Lg4" -c 22
 
 clean:
 	rm -rf pkg
 
 
-## TODO: move this to npx spinsdk
+## TODO: move this to npx spin
