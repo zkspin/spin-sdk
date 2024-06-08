@@ -7,7 +7,7 @@ import { config } from "./web3";
 import { readContract } from "wagmi/actions";
 import { TaskStatus } from "zkwasm-service-helper";
 
-const GAME_CONTRACT_ADDRESS = "0xe054298AA62aC6D0Ab982A8a610f6D3406874D9D";
+const GAME_CONTRACT_ADDRESS = "0x20C436F82dB95771f7a465cbF396aa1cEc11F411";
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_USER_ADDRESS;
 const ZK_USER_PRIVATE_KEY = import.meta.env.VITE_ZK_USER_PRIVATE_KEY;
 const ZK_IMAGE_MD5 = import.meta.env.VITE_ZK_CLOUD_IMAGE_MD5;
@@ -31,10 +31,11 @@ async function verify_onchain({
     instances: BigInt[];
     status: TaskStatus;
 }) {
+    console.log("proof", proof, verify_instance, aux, instances);
     const result = await writeContract(config, {
         abi,
         address: GAME_CONTRACT_ADDRESS,
-        functionName: "submitScore",
+        functionName: "settleProof",
         args: [proof, verify_instance, aux, [instances]],
     });
     const transactionReceipt = waitForTransactionReceipt(config, {

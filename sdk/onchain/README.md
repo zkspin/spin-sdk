@@ -18,7 +18,7 @@ yarn test
 
 ## Deploy Contracts
 
-To test deploying contracts, however, since we already deployed the contracts and hardhat keeps track of them, this should not do anything.
+To test deploying contracts, after you have deployed the contracts, hardhat keeps track of them under /ignition/deployments
 
 ```shell
 yarn deploy

@@ -52,4 +52,9 @@ contract GameContract is SpinContract {
             zk_input.start_total_steps, zk_input.start_position, zk_output.end_total_steps, zk_output.end_position
         );
     }
+
+    function DEV_ONLY_setStates(uint64 _total_steps, uint64 _current_position) external onlyOwner {
+        total_steps = _total_steps;
+        current_position = _current_position;
+    }
 }
