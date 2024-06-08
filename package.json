@@ -1,5 +1,5 @@
 {
-  "name": "spinsdk",
+  "name": "spin",
   "version": "0.0.2",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
     "demo": "echo demo"
   },
   "bin": {
-    "spinsdk": "./dist/index.js"
+    "spin": "dist/index.js"
   },
   "keywords": [],
   "author": "",

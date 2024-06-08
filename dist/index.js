@@ -46,7 +46,12 @@ if (args[0] === "init") {
     copyFolderSync(sourceDir, destinationDir);
     console.log("Initialized project with gameplay folder.");
 }
-else {
-    console.log("Hello from the example npm package!");
+else if (args[0] === "help") {
+    console.log("Usage: node index.js [command]");
+    console.log("Commands:");
+    console.log("  init [folderName]  Initialize project with gameplay folder");
+    console.log("  help               Show help information");
 }
-//# sourceMappingURL=index.js.map
+else {
+    console.log("Hello from the example npm package! v1.0.1");
+}
