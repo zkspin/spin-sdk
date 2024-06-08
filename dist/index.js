@@ -82,7 +82,7 @@ function init() {
     const sourceDirGameplay = path_1.default.join(sourcePath, "gameplay");
     const destinationDirGameplay = path_1.default.join(destinationPath, "gameplay");
     copyFolderSync(sourceDirGameplay, destinationDirGameplay);
-    console.log("Initialized project with gameplay folder.");
+    console.log(`Successfully initialized under folder: ${destinationPath}`);
 }
 const VERSION = "0.0.1";
 const INTERNAL_VERSION = "0.1";
