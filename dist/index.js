@@ -7,9 +7,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const args = process.argv.slice(2);
-console.log("arguments:", args);
+const FOLDER_IGNORE_LIST = ["node_modules", ".git"];
+const FILE_IGNORE_LIST = [".env"];
 /**
  * Copy the contents of one folder to another.
+ * Ignore file in the .gitignore file.
  * @param src The source folder path.
  * @param dest The destination folder path.
  */
@@ -29,29 +31,62 @@ function copyFolderSync(src, dest) {
     for (const entry of entries) {
         const srcPath = path_1.default.join(src, entry.name);
         const destPath = path_1.default.join(dest, entry.name);
-        if (entry.isDirectory()) {
+        if (entry.isDirectory() && !FOLDER_IGNORE_LIST.includes(entry.name)) {
             // Recursively copy directories
             copyFolderSync(srcPath, destPath);
         }
-        else {
+        else if (entry.isFile() && !FILE_IGNORE_LIST.includes(entry.name)) {
             // Copy files
             fs_1.default.copyFileSync(srcPath, destPath);
         }
     }
 }
-if (args[0] === "init") {
-    const folderName = args[1] || "gameplay";
-    const sourceDir = path_1.default.join(__dirname, "..", "gameplay");
-    const destinationDir = path_1.default.join(process.cwd(), folderName);
-    copyFolderSync(sourceDir, destinationDir);
+function init() {
+    // Argument Parsing and Validation
+    if (args.length < 2) {
+        console.error("Please provide a folder name.");
+        console.error(" Usage: npx spin init [folderName] --[optionalArgs]");
+        process.exit(1);
+    }
+    const optionalArgs = args.filter((arg) => arg.startsWith("--"));
+    const folderName = args[1];
+    if (optionalArgs.includes(folderName)) {
+        console.error("Please provide a valid folder name. Provided: ", folderName);
+        console.error(" Usage: npx spin init [folderName] --[optionalArgs]");
+    }
+    if (optionalArgs.includes("--plain")) {
+        console.log("Initialized project with minimal setup.");
+        console.log("TODO: Implement minimal setup.");
+        return;
+    }
+    const sourcePath = path_1.default.join(__dirname, "..", "sdk");
+    const destinationPath = path_1.default.join(process.cwd(), folderName);
+    // Copy Frontend Example
+    const sourceDirFrontend = path_1.default.join(sourcePath, "frontend");
+    const destinationDirFrontend = path_1.default.join(destinationPath, "frontend");
+    copyFolderSync(sourceDirFrontend, destinationDirFrontend);
+    // Copy OnChain Contract Example
+    const sourceDirOnChain = path_1.default.join(sourcePath, "onchain");
+    const destinationDirOnChain = path_1.default.join(destinationPath, "onchain");
+    copyFolderSync(sourceDirOnChain, destinationDirOnChain);
+    // Copy Rust Gameplay Contract Example
+    const sourceDirGameplay = path_1.default.join(sourcePath, "gameplay");
+    const destinationDirGameplay = path_1.default.join(destinationPath, "gameplay");
+    copyFolderSync(sourceDirGameplay, destinationDirGameplay);
     console.log("Initialized project with gameplay folder.");
 }
-else if (args[0] === "help") {
-    console.log("Usage: node index.js [command]");
-    console.log("Commands:");
-    console.log("  init [folderName]  Initialize project with gameplay folder");
-    console.log("  help               Show help information");
+function entry() {
+    if (args[0] === "init") {
+        init();
+    }
+    else if (args[0] === "help") {
+        console.log("Usage: npx spin [command]");
+        console.log("Commands:");
+        console.log("  init [folderName]  Initialize project with gameplay folder");
+        console.log("  help               Show help information");
+    }
+    else {
+        console.log("Hello from the example npm package! v1.0.2");
+    }
 }
-else {
-    console.log("Hello from the example npm package! v1.0.1");
-}
+entry();

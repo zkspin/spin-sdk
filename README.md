@@ -13,17 +13,15 @@ https://www.rust-lang.org/tools/install
 
 This will create a scaffold for you to work on.
 
-`npx spin init <optional:project_name>`
+`npx spin init <required:project_name>`
 
-## Overview
+It includes 3 components:
 
-There are two components to this app worflow:
+-   A frontend example, a simple grid walking game.
+-   Solidity contract example, works together with the grid walking game.
+-   ZK Provable logic written in Rust
 
-1. zk-circuits powered by zkWasm
-2. frontend using React for UI display
-3. on-chain contracts for storing final game states
-
-# Features
+# Developing the SDK
 
 ## Setup
 
