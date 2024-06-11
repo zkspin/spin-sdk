@@ -1,0 +1,8 @@
+[package]
+name = "testing_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+termion = "4.0.0"
+provable_game_logic = { path = "../provable_game_logic" }
