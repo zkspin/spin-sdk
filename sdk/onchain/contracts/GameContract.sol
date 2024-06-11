@@ -34,8 +34,19 @@ contract GameContract is SpinContract {
         uint64 end_position;
     }
 
+    function submitGame(
+        uint256[] calldata proof,
+        uint256[] calldata verify_instance,
+        uint256[] calldata aux,
+        uint256[][] calldata instances
+    ) public {
+        settleProof(proof, verify_instance, aux, instances);
+
+        settle(instances);
+    }
+
     // Settle a verified proof
-    function settle(uint256[][] calldata instances) internal override {
+    function settle(uint256[][] calldata instances) internal {
         ZKInput memory zk_input = ZKInput(uint64(instances[0][0]), uint64(instances[0][1]));
 
         ZKOutput memory zk_output = ZKOutput(uint64(instances[0][2]), uint64(instances[0][3]));
