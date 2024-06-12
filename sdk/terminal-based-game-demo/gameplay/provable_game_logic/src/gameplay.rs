@@ -8,32 +8,28 @@ pub static GAME_STATE: Lazy<Mutex<RustGameState>> = Lazy::new(|| Mutex::new(Rust
 
 /* STATEFUL FUNCTIONS This defines the initialization of the game*/
 #[wasm_bindgen]
-pub fn initialize_game(total_steps: u64, current_position: u64) {
+pub fn initialize_game(seed: u64) {
+    // IMPLEMENT THIS FUNCTION
     let mut game_state = GAME_STATE.lock().unwrap();
 
-    game_state.total_steps = total_steps;
-    game_state.current_position = current_position;
+    game_state.seed = seed;
+    game_state.score = 0;
 }
 
 /* STATEFUL FUNCTIONS This is defines the logic when player moves one step/entering one command*/
 #[wasm_bindgen]
 pub fn step(input: u64) {
+    // IMPLEMENT THIS FUNCTION
     let mut game_state = GAME_STATE.lock().unwrap();
 
     match input {
         0 => {
-            if game_state.current_position != 0 {
-                game_state.current_position -= 1;
-
-                game_state.total_steps += 1;
+            if game_state.score > 0 {
+                game_state.score -= 1;
             }
         }
         1 => {
-            if game_state.current_position != MAX_POSITION {
-                game_state.current_position += 1;
-
-                game_state.total_steps += 1;
-            }
+            game_state.score += 1;
         }
         _ => {
             panic!("Invalid command");
@@ -50,6 +46,7 @@ pub fn get_game_state() -> String {
 
 /* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
 pub fn _get_game_state() -> RustGameState {
+    // IMPLEMENT THIS FUNCTION
     let game = GAME_STATE.lock().unwrap().clone();
     return game;
 }

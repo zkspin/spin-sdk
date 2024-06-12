@@ -9,10 +9,10 @@ use crate::gameplay::{_get_game_state, initialize_game, step};
 
 pub fn spin() {
     // specify the public inputs
-    let public_input_0_total_steps: u64 = unsafe { wasm_input(1) };
-    let public_input_1_current_position: u64 = unsafe { wasm_input(1) };
 
-    initialize_game(public_input_0_total_steps, public_input_1_current_position);
+    let public_input_seed: u64 = unsafe { wasm_input(1) };
+
+    initialize_game(public_input_seed);
 
     // specify the private inputs
     let private_inputs_length = unsafe { wasm_input(0) };
@@ -37,8 +37,7 @@ pub fn zkmain() -> i64 {
         zkwasm_rust_sdk::dbg!("final_game_state: {}\n", final_game_state);
 
         // specify the output
-        wasm_output(final_game_state.total_steps as u64);
-        wasm_output(final_game_state.current_position as u64);
+        wasm_output(final_game_state.score as u64);
     }
 
     0

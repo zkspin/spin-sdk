@@ -28,11 +28,11 @@ Start a new project:
 
 This will create a scaffold for you to work on.
 
-The scaffold includes 3 components:
+The hackathon scaffold includes 3 components:
 
 -   ZK Provable logic written in Rust
 -   A frontend written for you.
--   Solidity contract example, works together with the grid walking game.
+-   [Not Include] A contract we already deployed for you
 
 ## Writing The Provable Gameplay
 
@@ -110,7 +110,7 @@ pub fn _get_game_state() -> RustGameState {
 }
 ```
 
-Here's an [﻿example](https://github.com/m4-team/zk-sdk/blob/hackathon/sdk/gameplay/provable_game_logic/src/gameplay.rs) of `gameplay.rs` .
+Here's an [example](https://github.com/m4-team/zk-sdk/blob/hackathon/sdk/gameplay/provable_game_logic/src/gameplay.rs) of `gameplay.rs` .
 
 > Note, the code is Rust needs be compatible with the `wasm-bindgen` library.
 
