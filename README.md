@@ -1,4 +1,4 @@
-# zk-sdk
+# spin-sdk
 
 SDK for developing on-chain ZK proved application.
 
@@ -6,6 +6,7 @@ SDK for developing on-chain ZK proved application.
 
 Install Rust
 https://www.rust-lang.org/tools/install
+
 
 `npm install -g github:m4-team/zk-sdk#hackathon`
 
@@ -135,9 +136,14 @@ See README.md inside `sdk/frontend`
 
 # [Below For Developers of the SDK]
 
+1. zk-circuits
+2. frontend using React for UI display
+3. on-chain contracts for storing final game statesd
+
 ## Setup
 
 Each component has its own README.md under each folder. Follow the setups there.
+
 
 ## Build
 
@@ -157,6 +163,9 @@ Each component has its own README.md under each folder. Follow the setups there.
 
 `npm -g uninstall spin`
 
-```
 
-```
+
+**Your feedback is more than welcomed!**   
+
+Please feel free to submit issues or send your feedback to spin-sdk@m4.team
+
