@@ -69,14 +69,35 @@ function init() {
         console.error(" Usage: npx spin init [folderName] --[optionalArgs]");
     }
 
-    if (optionalArgs.includes("--plain")) {
-        console.log("Initialized project with minimal setup.");
-        console.log("TODO: Implement minimal setup.");
-        return;
-    }
-
     const sourcePath = path.join(__dirname, "..", "sdk");
     const destinationPath = path.join(process.cwd(), folderName);
+
+    if (optionalArgs.includes("--hackathon")) {
+        // Copy Rust Gameplay Contract Example
+        const sourceDirGameplay = path.join(
+            sourcePath,
+            "terminal-based-game-demo",
+            "gameplay"
+        );
+        const destinationDirGameplay = path.join(destinationPath, "gameplay");
+        copyFolderSync(sourceDirGameplay, destinationDirGameplay);
+
+        // Copy Frontend Example
+        const sourceDirFrontend = path.join(
+            sourcePath,
+            "terminal-based-game-demo",
+            "frontend"
+        );
+        const destinationDirFrontend = path.join(destinationPath, "frontend");
+        copyFolderSync(sourceDirFrontend, destinationDirFrontend);
+
+        // No need for a onchain contract for the hackathon
+        // Everyone shares the same contract, deployed by the organizers
+        console.log(
+            `Successfully initialized under folder for hackathon: ${destinationPath}`
+        );
+        return;
+    }
 
     // Copy Frontend Example
     const sourceDirFrontend = path.join(sourcePath, "frontend");
