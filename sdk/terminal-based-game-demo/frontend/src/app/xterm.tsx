@@ -1,56 +1,89 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import "@xterm/xterm/css/xterm.css";
 import { Gameplay } from "./GamePlay";
-// Import addons
-// https://github.com/xtermjs/xterm.js
-import { Terminal } from "@xterm/xterm";
-const XTerm = () => {
-    const terminalRef = useRef<HTMLDivElement>(null);
-    const xterm = useRef<Terminal>();
 
+// const game = new Gameplay();
+
+// const randomGameState = game.get_state_in_string();
+
+const TERMINAL_WIDTH = 80;
+const TERMINAL_HEIGHT = 30;
+
+const CELL_PIXEL_SIZE = 20;
+
+export default function Terminal() {
+    const [gameMatrix, setGameMatrix] = React.useState<number[][]>([]);
+
+    // Listen to KeyDown event
     useEffect(() => {
-        if (terminalRef.current) {
-            const terminal = new Terminal();
+        const matrix: number[][] = []; // Assuming you have a matrix of ASCII values
 
-            const game = new Gameplay();
-
-            // const fitAddon = new FitAddon();
-            // terminal.loadAddon(fitAddon);
-            terminal.open(terminalRef.current);
-            // fitAddon.fit();
-            xterm.current = terminal;
-
-            terminal.write("Hello from Spin\r\n");
-
-            terminal.onKey((e) => {
-                console.log("key", e.key);
-            });
-
-            let buffer: string = "";
-            terminal.onData((data) => {
-                if (data === "\r") {
-                    console.log("Enter pressed");
-                    terminal.writeln("\r");
-
-                    const gameReturn = game.step(buffer);
-                    terminal.writeln(gameReturn);
-                    buffer = "";
-                } else {
-                    console.log("data", data);
-                    terminal.write(data);
-                    buffer += data;
-                }
-            });
-
-            return () => {
-                terminal.dispose();
-            };
+        // Generate the matrix of ASCII values
+        for (let i = 0; i < TERMINAL_HEIGHT; i++) {
+            matrix[i] = [];
+            for (let j = 0; j < TERMINAL_WIDTH; j++) {
+                matrix[i][j] = 43;
+            }
         }
+        setGameMatrix(matrix);
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            console.log("Key pressed: ", event.key);
+
+            const _temp: number[][] = [];
+            // When a key is pressed, update the matrix of ASCII values
+            for (let i = 0; i < TERMINAL_HEIGHT; i++) {
+                _temp[i] = [];
+                for (let j = 0; j < TERMINAL_WIDTH; j++) {
+                    _temp[i][j] = getRandomAsciiValue();
+                }
+            }
+            setGameMatrix(_temp);
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
     }, []);
 
-    return <div ref={terminalRef} />;
-};
+    // display the matrix of ASCII values
+    // each value in a square cell of 10x10 pixels
 
-export default XTerm;
+    return (
+        <div
+            style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${TERMINAL_WIDTH}, ${CELL_PIXEL_SIZE}px)`,
+                gridTemplateRows: `repeat(${TERMINAL_HEIGHT}, ${CELL_PIXEL_SIZE}px)`,
+            }}
+        >
+            {gameMatrix.map((row, i) =>
+                row.map((asciiValue, j) => (
+                    <div
+                        key={`${i}-${j}`}
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            width: CELL_PIXEL_SIZE + 1,
+                            height: CELL_PIXEL_SIZE + 1,
+                            backgroundColor: "black",
+                            color: Math.random() < 0.5 ? "green" : "darkgreen",
+                            font: "bold 16px monospace",
+                        }}
+                    >
+                        {String.fromCharCode(asciiValue)}
+                    </div>
+                ))
+            )}
+        </div>
+    );
+}
+
+function getRandomAsciiValue() {
+    // Generate a random ASCII value between 32 and 126
+    return Math.floor(Math.random() * (126 - 32 + 1) + 32);
+}
