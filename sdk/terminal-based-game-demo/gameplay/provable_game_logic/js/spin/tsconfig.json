@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "rootDir": ".",
+    "strict": true,
+    "module": "ES6",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "target": "es5",
+    "lib": [ "es2015", "dom" ],
+    "outDir": "dist/types",
+    // "outFile": "spin.js",
+    "sourceMap": true,
+    "declaration": true,
+  },
+  "include": ["src/**/*", "test/"],
+  "exclude": ["node_modules", "dist"]
+}
