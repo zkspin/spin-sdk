@@ -1,4 +1,4 @@
-# zk-sdk
+# spin-sdk
 
 SDK for developing on-chain ZK proved application.
 
@@ -6,9 +6,9 @@ SDK for developing on-chain ZK proved application.
 
 There are two components to this app worflow:
 
-1. zk-circuits powered by zkWasm
+1. zk-circuits
 2. frontend using React for UI display
-3. on-chain contracts for storing final game states
+3. on-chain contracts for storing final game statesd
 
 ## Setup
 
