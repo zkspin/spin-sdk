@@ -13,3 +13,7 @@ There are two components to this app worflow:
 ## Setup
 
 Each component has its own README.md under each folder. Follow the setups there.
+
+**Your feedback is more than welcomed!**   
+
+Please feel free to submit issues or send your feedback to spin-sdk@m4.team 🤞 
