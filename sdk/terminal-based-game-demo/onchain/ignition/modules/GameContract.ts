@@ -6,7 +6,7 @@ const GameModule = buildModule("GameModule", (m) => {
         process.env.SEPOLIA_VERIFIER_ADDRESS
     );
 
-    const gameContract = m.contract("GameContract", [
+    const gameContract = m.contract("SpinGamePlayground", [
         constructorParameterVerifierAddress,
     ]);
 
