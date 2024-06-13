@@ -12,6 +12,8 @@ yarn
 
 Test are under test/
 
+> Test currently fails because test uses hardcoded old-dated verifier
+
 ```
 yarn test
 ```
@@ -29,3 +31,7 @@ To deploy your own contracts, run hardhat with reset so that it clears our deplo
 ```shell
 yarn deploy-reset
 ```
+
+## Deployment
+
+Deployed To: 0x6DE970d7A631F45466F4DE76dd72C49b4425e4c3 Sepolia

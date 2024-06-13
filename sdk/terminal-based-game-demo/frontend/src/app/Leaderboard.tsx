@@ -1,10 +1,14 @@
+"use client";
 import React from "react";
+import { getGameLeaderboard } from "./Web3API";
 
 interface LeaderboardProps {
+    gameId: number;
     onClickCloseLeaderboard: () => void;
 }
 
 export default function Leaderboard({
+    gameId,
     onClickCloseLeaderboard,
 }: LeaderboardProps) {
     const [leaderboard, setLeaderboard] = React.useState<
@@ -15,8 +19,11 @@ export default function Leaderboard({
     >([]);
 
     React.useEffect(() => {
+        // getGameLeaderboard(gameId).then((data) => {
+        //     console.log(data);
+        // });
         // Fetch leaderboard data
-        const leaderboardData: {
+        const demo_leaderboardData: {
             player: string;
             score: number;
         }[] = [
@@ -27,7 +34,7 @@ export default function Leaderboard({
             { player: "0x9a6034c84cd431409ac1a35278c7da36ffda53e5", score: 90 },
             { player: "0x9a6034c84cd431409ac1a35278c7da36ffda53e5", score: 80 },
         ];
-        setLeaderboard(leaderboardData);
+        setLeaderboard(demo_leaderboardData);
     }, []);
 
     return (
