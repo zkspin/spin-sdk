@@ -18,10 +18,9 @@ fn main() {
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
 
-    const INITIAL_TOTAL_STEPS: u64 = 0;
-    const INIITAL_CURRENT_POSITION: u64 = 0;
+    const SEED: u64 = 0;
 
-    initialize_game(INITIAL_TOTAL_STEPS, INIITAL_CURRENT_POSITION);
+    initialize_game(SEED);
 
     writeln!(stdout, "{}", GAME_INSTRUCTIONS).unwrap();
     print_game_state(&mut stdout);

@@ -2,13 +2,18 @@
 
 SDK for developing on-chain ZK proved application.
 
+## Docs
+
+How to use SDK: [guide/GUIDE.md](./guide/GUIDE.md)
+Hackathon Guide: [guide/HACKATHON_GUIDE.md](./guide/HACKATHON_GUIDE.md)
+
 ## Installation
 
-Install Rust
-https://www.rust-lang.org/tools/install
+[Install Rust](https://www.rust-lang.org/tools/install)
 
+[Install NodeJs V18 or above](https://nodejs.org/en/download/package-manager/current)
 
-`npm install -g github:m4-team/zk-sdk#hackathon`
+`npm install -g github:m4-team/spin-sdk`
 
 ## Setup
 
@@ -128,44 +133,6 @@ cd onchain
 npm run deploy-reset
 ```
 
-# Example Frontend
-
-See README.md inside `sdk/frontend`
-
----
-
-# [Below For Developers of the SDK]
-
-1. zk-circuits
-2. frontend using React for UI display
-3. on-chain contracts for storing final game statesd
-
-## Setup
-
-Each component has its own README.md under each folder. Follow the setups there.
-
-
-## Build
-
-`npm run build`
-
-## Testing NPX Commands Locally
-
-#### Install the packge outside the zk-sdk directory
-
-`npm i -g ../<path to zk-sdk>`
-
-#### Build the package after every change
-
-`npm run build`
-
-#### [troubleshooting]
-
-`npm -g uninstall spin`
-
-
-
-**Your feedback is more than welcomed!**   
+# **Your feedback is more than welcomed!**
 
 Please feel free to submit issues or send your feedback to spin-sdk@m4.team
-
