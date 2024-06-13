@@ -9,11 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.45.0",
+    "@web3modal/wagmi": "^5.0.1",
     "next": "14.2.3",
     "node-pty": "^1.0.0",
     "react": "^18",
     "react-dom": "^18",
-    "spin": "file:../gameplay/provable_game_logic/js/spin"
+    "spin": "file:../gameplay/provable_game_logic/js/spin",
+    "viem": "^2.13.8",
+    "wagmi": "^2.10.2",
+    "zkwasm-service-helper": "github:DelphinusLab/zkWasm-service-helper"
   },
   "devDependencies": {
     "@types/node": "^20",

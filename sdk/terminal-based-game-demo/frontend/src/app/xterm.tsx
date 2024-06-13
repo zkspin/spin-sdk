@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { Gameplay } from "./GamePlay";
 
 // const game = new Gameplay();
 
@@ -12,8 +11,28 @@ const TERMINAL_HEIGHT = 30;
 
 const CELL_PIXEL_SIZE = 20;
 
-export default function Terminal() {
+interface TerminalProps {
+    createGameOpen: boolean;
+}
+
+export default function Terminal({ createGameOpen }: TerminalProps) {
     const [gameMatrix, setGameMatrix] = React.useState<number[][]>([]);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+        if (createGameOpen) {
+            return;
+        }
+
+        const _temp: number[][] = [];
+        // When a key is pressed, update the matrix of ASCII values
+        for (let i = 0; i < TERMINAL_HEIGHT; i++) {
+            _temp[i] = [];
+            for (let j = 0; j < TERMINAL_WIDTH; j++) {
+                _temp[i][j] = getRandomAsciiValue();
+            }
+        }
+        setGameMatrix(_temp);
+    };
 
     // Listen to KeyDown event
     useEffect(() => {
@@ -28,26 +47,12 @@ export default function Terminal() {
         }
         setGameMatrix(matrix);
 
-        const handleKeyDown = (event: KeyboardEvent) => {
-            console.log("Key pressed: ", event.key);
-
-            const _temp: number[][] = [];
-            // When a key is pressed, update the matrix of ASCII values
-            for (let i = 0; i < TERMINAL_HEIGHT; i++) {
-                _temp[i] = [];
-                for (let j = 0; j < TERMINAL_WIDTH; j++) {
-                    _temp[i][j] = getRandomAsciiValue();
-                }
-            }
-            setGameMatrix(_temp);
-        };
-
         window.addEventListener("keydown", handleKeyDown);
 
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [createGameOpen]);
 
     // display the matrix of ASCII values
     // each value in a square cell of 10x10 pixels

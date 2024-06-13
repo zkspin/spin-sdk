@@ -13,11 +13,12 @@ contract SpinGamePlayground {
         uint256 totalGamesPlayed;
     }
 
-    struct GameState {
+    struct GameRecord {
         uint256 score;
         uint256 gameEndTime;
         uint256 gameStartedTime;
         uint256 seed;
+        address player;
     }
 
     uint256 public totalGames;
@@ -46,14 +47,29 @@ contract SpinGamePlayground {
     }
 
     mapping(uint256 => Game) public games;
-    mapping(uint256 => mapping(address => GameState)) public gameStates;
+
+    mapping(uint256 => GameRecord[10]) public gameLeaderboard;
+    mapping(uint256 => mapping(address => GameRecord[])) public gameRecords;
+
     mapping(uint256 => address) public gameAuthors;
 
     event GameCreated(uint256 gameId, string name, address author);
     event GameStateUpdated(uint256 gameId, address player, uint256 score);
     event VerificationSucceeded(address indexed sender);
 
-    function createGame(string memory name, string memory description) external {
+    function getGameLeaderboard(uint256 gameId) external view returns (GameRecord[10] memory) {
+        return gameLeaderboard[gameId];
+    }
+
+    function getGame(uint256 gameId) external view returns (Game memory) {
+        return games[gameId];
+    }
+
+    function getPlayerGameRecords(uint256 gameId, address player) external view returns (GameRecord[] memory) {
+        return gameRecords[gameId][player];
+    }
+
+    function createGame(string memory name, string memory description, uint256[3] calldata commitments) external {
         // increment totalGames
         totalGames = totalGames + 1;
         uint256 gameId = totalGames;
@@ -61,6 +77,8 @@ contract SpinGamePlayground {
         gameAuthors[gameId] = msg.sender;
         games[gameId] = Game(name, msg.sender, description, block.timestamp, 0, 0);
         emit GameCreated(gameId, name, msg.sender);
+
+        setVerifierImageCommitments(gameId, commitments);
     }
 
     function updateGame(uint256 gameId, string memory newName, string memory newDescription)
@@ -72,24 +90,15 @@ contract SpinGamePlayground {
         game.description = newDescription;
     }
 
-    function startGame(uint256 gameId) public {
-        // check if the game exists
-        require(games[gameId].createdTime != 0, "Game does not exist");
-        uint256 seed = generatePseudoRandomNumber();
-        gameStates[gameId][msg.sender] = GameState(0, 0, block.timestamp, seed);
-    }
-
-    function finishGame(
+    function submitGame(
         uint256 gameId,
         uint256[] calldata proof,
         uint256[] calldata verify_instance,
         uint256[] calldata aux,
         uint256[][] calldata instances
-    ) public {
+    ) external {
+        require(games[gameId].createdTime != 0, "Game does not exist");
         address player = msg.sender;
-        GameState storage state = gameStates[gameId][player];
-        require(state.gameStartedTime != 0, "Game has not started yet");
-        require(state.gameEndTime == 0, "Game has already finished");
 
         // image commitments verification
         require(verify_instance[1] == zk_image_commitments[gameId][0], "Invalid image commitment 0");
@@ -101,22 +110,32 @@ contract SpinGamePlayground {
         uint256 _seedFromProof = uint64(instances[0][0]);
         uint256 _scoreFromProof = uint64(instances[0][1]);
 
-        require(_seedFromProof == state.seed, "Seed does not match");
-        state.score = _scoreFromProof;
-        state.gameEndTime = block.timestamp;
+        updateLeaderboard(_scoreFromProof, gameId, _seedFromProof);
+
+        // Update game records
+        gameRecords[gameId][player].push(
+            GameRecord(_scoreFromProof, block.timestamp, block.timestamp, _seedFromProof, player)
+        );
         emit GameStateUpdated(gameId, player, _scoreFromProof);
     }
 
-    function startAndFinishGame(
-        uint256 gameId,
-        uint256[] calldata proof,
-        uint256[] calldata verify_instance,
-        uint256[] calldata aux,
-        uint256[][] calldata instances
-    ) external {
-        require(games[gameId].createdTime != 0, "Game does not exist");
-        gameStates[gameId][msg.sender] = GameState(0, 0, block.timestamp, 0);
-        finishGame(gameId, proof, verify_instance, aux, instances);
+    function updateLeaderboard(uint256 newScore, uint256 gameId, uint256 seed) internal {
+        GameRecord[10] storage leaderboard = gameLeaderboard[gameId];
+        address player = msg.sender;
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < 10; i++) {
+            if (leaderboard[i].score < newScore) {
+                index = i;
+                break;
+            }
+        }
+
+        for (uint256 i = 9; i > index; i--) {
+            leaderboard[i] = leaderboard[i - 1];
+        }
+
+        leaderboard[index] = GameRecord(newScore, block.timestamp, block.timestamp, seed, player);
     }
 
     // UTILITY FUNCTIONS
@@ -167,7 +186,7 @@ contract SpinGamePlayground {
     }
 
     function setVerifierImageCommitments(uint256 gameId, uint256[3] calldata commitments)
-        external
+        public
         onlyGameOwner(gameId)
     {
         zk_image_commitments[gameId][0] = commitments[0];

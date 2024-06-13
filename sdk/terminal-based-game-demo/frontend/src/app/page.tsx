@@ -2,14 +2,17 @@
 import React from "react";
 import Terminal from "./xterm";
 import Leaderboard from "./Leaderboard";
+import CreateGame from "./CreateGame";
 import Settings from "./Settings";
 
 export default function Home() {
     const [leaderboardOpen, setLeaderboardOpen] = React.useState(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
+    const [createGameOpen, setCreateGameOpen] = React.useState(false);
+    const gameId = 1;
 
     function onClickOpenLeaderboard() {
-        if (settingsOpen) {
+        if (settingsOpen || createGameOpen) {
             return;
         }
         // Open the leaderboard
@@ -18,12 +21,21 @@ export default function Home() {
     }
 
     function onClickOpenSettings() {
-        if (leaderboardOpen) {
+        console.log("settingsOpen", settingsOpen);
+        console.log("createGameOpen", createGameOpen);
+        if (leaderboardOpen || createGameOpen) {
             return;
         }
         // Open the settings
         console.log("Open settings");
         setSettingsOpen(true);
+    }
+
+    function onClickOpenCreateGame() {
+        if (leaderboardOpen || settingsOpen) {
+            return;
+        }
+        setCreateGameOpen(true);
     }
 
     function closeLeaderboard() {
@@ -32,6 +44,10 @@ export default function Home() {
 
     function closeSettings() {
         setSettingsOpen(false);
+    }
+
+    function closeCreateGame() {
+        setCreateGameOpen(false);
     }
 
     return (
@@ -61,6 +77,19 @@ export default function Home() {
                             marginBottom: "20px",
                         }}
                     >
+                        <div
+                            style={{
+                                padding: "10px 20px",
+                                marginRight: "10px",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontFamily: "monospace",
+                            }}
+                        >
+                            <w3m-button />
+                        </div>
                         <button
                             style={{
                                 padding: "10px 20px",
@@ -88,8 +117,23 @@ export default function Home() {
                         >
                             Settings
                         </button>
+
+                        <button
+                            style={{
+                                padding: "10px 20px",
+                                marginLeft: "10px",
+                                backgroundColor: "black",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                            }}
+                            onClick={onClickOpenCreateGame}
+                        >
+                            Create Game
+                        </button>
                     </div>
-                    <Terminal />
+                    <Terminal createGameOpen={createGameOpen} />
                 </div>
                 <div
                     style={{
@@ -103,11 +147,13 @@ export default function Home() {
                     {leaderboardOpen && (
                         <Leaderboard
                             onClickCloseLeaderboard={closeLeaderboard}
+                            gameId={gameId}
                         />
                     )}
                     {settingsOpen && (
                         <Settings onClickCloseSettings={closeSettings} />
                     )}
+                    {createGameOpen && <CreateGame onClose={closeCreateGame} />}
                 </div>
             </div>
         </>

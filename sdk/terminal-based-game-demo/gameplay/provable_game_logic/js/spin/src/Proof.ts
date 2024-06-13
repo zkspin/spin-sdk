@@ -108,7 +108,7 @@ export async function load_proving_taks_util_result(
         console.log(
             `waiting for proof generation... sleeping for ${retry_interval}ms`
         );
-        await new Promise((r) => setTimeout(r, retry_interval));
+        await new Promise((_) => setTimeout(_, retry_interval));
     }
 }
 
