@@ -161,23 +161,25 @@ async function publish() {
         console.error(
             "--path flag is required, a path to provable_game_logic folder."
         );
-        console.error("Usage: npx spin build-image --path [path]");
+        console.error("Usage: npx spin publish-image --path [path]");
         process.exit(1);
     }
 
-    const path = args[args.indexOf("--path") + 1];
+    const folderPath = args[args.indexOf("--path") + 1];
 
-    if (!fs.existsSync(path)) {
-        console.error("Path does not exist: ", path);
+    const filePath = path.join(folderPath, "pkg", "gameplay_bg.wasm");
+
+    if (!fs.existsSync(filePath)) {
+        console.error("Path does not exist: ", filePath);
         process.exit(1);
     }
 
-    if (!path.endsWith(".wasm")) {
-        console.error("Path must point to a .wasm file.");
+    if (!filePath.endsWith(".wasm")) {
+        console.error("Path must contain a .wasm file.");
         process.exit(1);
     }
 
-    console.log("Publishing wasm image at path:", path);
+    console.log("Publishing wasm image at path:", filePath);
 
     const imageCommitment = await addImage(
         {
@@ -186,7 +188,7 @@ async function publish() {
             IMAGE_HASH: "",
             CLOUD_RPC_URL: ZK_CLOUD_URL,
         },
-        path
+        filePath
     );
 
     console.log("Image Commitment: ", imageCommitment);

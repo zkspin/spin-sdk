@@ -150,76 +150,6 @@ Here's an [example](https://github.com/m4-team/spin-sdk/blob/sdk/gameplay/provab
 
 ### Testing the Provable Game Logic
 
-When writing code, we always want to test and play with it as a good software engineering practice. So to test the ZK program, we found the following two ways:
-
-### Dry-Run of the ZK Program
-
-We can test the `zkmain.rs` we defined directly with some inputs. With a dry-run! We can run the ZK program and see its outputs. We can also set debugging messages inside our program and observe them as printouts of the dry-run.
-
-#### Prerequisites
-
--   [﻿Install the zkwasm-cli](https://github.com/DelphinusLab/zkWasm](github.com/DelphinusLab/zkWasm)
--   [﻿Build the WASM file](https://github.com/m4-team/zk-sdk/blob/hackathon/README.md#build-wasm-image)
-
-#### _Define the Dry-Run File_
-
-```shell
-// dry-run.sh
-RUST_BACKTRACE=full {PATH_TO_ZKWASM}/zkwasm/target/debug/zkwasm-cli --params "./params" wasm_output setup --wasm pkg/gameplay_bg.wasm
-
-RUST_BACKTRACE=full {PATH_TO_ZKWASM}/zkwasm/target/debug/zkwasm-cli --params "./params" wasm_output dry-run --wasm pkg/gameplay_bg.wasm --output ./output \
---public 1:i64 \
---public 1:i64 \
---private 8:i64 \
---private 1:i64 \
---private 1:i64 \
---private 1:i64 \
---private 1:i64 \
---private 1:i64 \
---private 1:i64 \
---private 1:i64 \
---private 1:i64
-```
-
-Adjust the --public and --private inputs according to what you defined in `zkmain.rs` . Add or remove as needed.
-
-#### _Run the Dry-Run File_
-
-[﻿Run the dry-run](https://github.com/m4-team/zk-sdk/blob/hackathon/README.md#dry-run-wasm-image)
-
-#### _Writing Debug For Dry-Run_
-
-You can add logs in help debug, these logs will be printed out when dry-run.
-
-```
-// zkmain.rs
-use wasm_bindgen::prelude::*;
-
-use zkwasm_rust_sdk::wasm_input;
-use zkwasm_rust_sdk::wasm_output;
-
-#[wasm_bindgen]
-pub fn zkmain() -> i64 {
-    // specify public inputs
-    let a: u64 = unsafe { wasm_input(1) };
-
-    // specify the private inputs
-    let b: u64 = unsafe { wasm_input(0) };
-    let c: u64 = unsafe { wasm_input(0) };
-
-    unsafe {
-        // debug message that will show up during dry-run
-        zkwasm_rust_sdk::dbg!("a+b+c: {}\n", a+b+c);
-        // specify the outputs
-        wasm_output(a + b + c);
-    }
-
-    0
-}
-```
-
-### Testing the Rust Gameplay Directly
-
 The ZK program only serves the definition of the program. We can write more complex Rust code outside `zkmain.rs` and import to use them. Therefore, sometime we may want to test these Rust codes directly.
 
 Since the ZK program is not compatible with many external Rust crates out there (e.g `termion` for working with terminal interface), we would want to separate our dev dependencies with our zkmain dependencies. We recommended using two separate crate like this:
@@ -280,225 +210,62 @@ You can modify this [﻿file](https://github.com/m4-team/zk-sdk/blob/hackathon/s
 
 #### Prerequisites
 
--   Install `wasm-pack` [﻿github.com/rustwasm/wasm-pack](https://github.com/rustwasm/wasm-pack)
--   Install `zkWasm-service-cli` [﻿github.com/DelphinusLab/zkWasm-service-cli](https://github.com/DelphinusLab/zkWasm-service-cli)
+-   Install `wasm-pack` [github.com/rustwasm/wasm-pack](https://github.com/rustwasm/wasm-pack)
 
 There are two places we want to expose our Rust code:
 
 1. Publishing our ZK program image: to tell the prover our ZK program so it can prove it for us.
 2. Exporting to frontend: to export the Rust game logic to the frontend, so that the user can interact with the program.
 
-#### Publishing our ZK program image
+#### Building the ZK program image
+
+```
+npx spin build-image --path [path]
+
+[path]: the path to your `gameplay/provable_game_logic` folder
+```
+
+#### Publishing your ZK program image/Game to the Cloud Prover
 
 Since we are using a cloud prover, this is easily done by running. We can refer to this image later so ask it to prove an execution of the program.
 
-[﻿Publish Image](https://github.com/m4-team/zk-sdk/blob/hackathon/README.md#publish-wasm-image)
-
-#### Exporting to Frontend
-
-> Why?
-> To understand why we want to do this step, let’s think about how the player interacts with the game.
-> Typically a game involves a player doing some action and receiving feedback. This may be clicking on an attack button and then it fights with a monster, the player then loses some health for example. Remember we defined this gameplay logic in Rust. We can’t directly call Rust code in Javascript, but we can use the WASM package generated. WASM packages can be directly imported into Javascript.
-
-Fortunately, Spin already done some of the work. Back when you have [﻿Build the WASM file](https://github.com/m4-team/zk-sdk/blob/hackathon/README.md#build-wasm-image) . We have generated a Javascript NPM package for you to use.
-
-The package is located in `gameplay/provable_game_logic/js/spin`
-
-## Writing On-Chain Contract
-
-> Permanent vs. Ephemeral
-> Remember the gameplay logic are separate into two parts: the fast ephemeral off-chain ZK
-> provable part, and the slow but permanent on-chain part.
-> Depends on the game itself, you can decide what should be on-chain what stays off-chain.
-> As a rule-of-thumb:
-> On-Chain: Permanent data, needs to referred back later, Important data, more expensive and slower to write to.
-> Off-Chain: Ephemeral data, data not visible unless using a DA(Data Availability) solution, cheaper and faster.
-
-[![on chain vs off chain data](https://app.eraser.io/workspace/VhcsNlA4uYelufEWe1gi/preview?elements=CtTSv0adtV60FBSXiIsfsQ&type=embed)](https://app.eraser.io/workspace/VhcsNlA4uYelufEWe1gi?elements=CtTSv0adtV60FBSXiIsfsQ)
-
-Spin has provided an abstract contract that you can implement, which can handle verification flow and updating verification configs.
-
-Check out the [﻿SpinContract here](https://github.com/m4-team/zk-sdk/blob/hackathon/sdk/onchain/contracts/SpinContract.sol).
-
-#### _Implement the Spin Contract_
-
 ```
-//SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+npx spin publish-image --path [path]
 
-import "./SpinContract.sol";
-
-contract GameContract is SpinContract {
-    // PASS IN THE CONSTRUCTOR ARGUMENTS
-    constructor(address verifier_address) SpinContract(verifier_address) {}
-
-    ...
-
-    // Settle a verified proof
-    function settle(uint256[][] calldata instances) internal override {
-        // parse the input and output of the zkprogram
-        ZKInput memory zk_input = ZKInput(uint64(instances[0][0]), uint64(instances[0][1]));
-
-        ZKOutput memory zk_output = ZKOutput(uint64(instances[0][2]), uint64(instances[0][3]));
-
-        require(
-            zk_input.start_total_steps == total_steps && zk_input.start_position == current_position,
-            "Invalid start state"
-        );
-
-        total_steps = zk_output.end_total_steps;
-        current_position = zk_output.end_position;
-
-        emit UpdateState(
-            zk_input.start_total_steps, zk_input.start_position, zk_output.end_total_steps, zk_output.end_position
-        );
-    }
-}
+[path]: the path to your `gameplay/provable_game_logic` folder
 ```
 
-Here's an example in practice using our Grid Walking game:
+If correct, you'll recieve an Image Commitment, save that somewhere to be used next.
 
-```
-//SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
-
-import "./SpinContract.sol";
-
-contract GameContract is SpinContract {
-    /* Trustless Application Settlement Template */
-    constructor(address verifier_address) SpinContract(verifier_address) {}
-
-    /* Application On-chain Business Logic */
-
-    // Here we use a simple example where the player can move a cursor in a 1-D space and
-    // keep track of the total steps.
-
-    uint64 public total_steps;
-    uint64 public current_position;
-
-    event UpdateState(
-        uint64 previous_total_steps, uint64 previous_position, uint64 total_steps, uint64 current_position
-    );
-
-    // Get the current state of the game contract
-    function getStates() external view returns (uint64, uint64) {
-        return (total_steps, current_position);
-    }
-
-    struct ZKInput {
-        uint64 start_total_steps;
-        uint64 start_position;
-    }
-
-    struct ZKOutput {
-        uint64 end_total_steps;
-        uint64 end_position;
-    }
-
-    // Settle a verified proof
-    function settle(uint256[][] calldata instances) internal override {
-        ZKInput memory zk_input = ZKInput(uint64(instances[0][0]), uint64(instances[0][1]));
-
-        ZKOutput memory zk_output = ZKOutput(uint64(instances[0][2]), uint64(instances[0][3]));
-
-        require(
-            zk_input.start_total_steps == total_steps && zk_input.start_position == current_position,
-            "Invalid start state"
-        );
-
-        total_steps = zk_output.end_total_steps;
-        current_position = zk_output.end_position;
-
-        emit UpdateState(
-            zk_input.start_total_steps, zk_input.start_position, zk_output.end_total_steps, zk_output.end_position
-        );
-    }
-
-    function DEV_ONLY_setStates(uint64 _total_steps, uint64 _current_position) external onlyOwner {
-        total_steps = _total_steps;
-        current_position = _current_position;
-    }
-}
-```
-
-Spin Contract will handle the verifying and give a callback with the zkprogram's input and outputs through the `settle()` function.
-
-Your core business logic contract can update the states accordingly.
-
-For example, if the ZK program takes in starting score, and outputs an ending score, your on-chain contract may need to check if the player currently indeed has the starting score on-chain and update that with the ending score.
-
-#### Decoding the Public Inputs and Outputs
-
-You can find the public inputs and outputs inside the parameter instance together.
-The instance is an array of un-signed integers. The public inputs are ordered first in the array then all the outputs. The inputs and outputs should follows the same order as in your `ZKmain.rs`.
-
-#### Verify the Correct ZK Image On-Chain
+#### Create the Game & Upload the ZK Commitment On-Chain
 
 > So far, we can submit a proof on-chain and verify if this proof is correct. However, no where we have specified which ZK program this proof is for.
 > A malicious user can always write their own ZK program, generate a correct proof for that program and submit it to our contract.
 
 To prevent this, we need to verify which image the proofs are for.
 
-This is done by [﻿setting a verifier image commitment](https://github.com/m4-team/zk-sdk/blob/f5f777611628b8e2d026409901ea8c2d1b1a40fc/sdk/onchain/contracts/SpinContract.sol#L58). We obtain the image commitment when publishing the image. [ TODO: return image commitment when publishing]
-
 > For each proof we submit on-chain, they contain an image commitment, Spin Contract will handle verifying it. By default when no image commitment is set, this verification is skipped.
+
+To create a game, open your frontend and click on `Create Game` button.
+
+```
+Name: your game's name
+Description: a short description of the game
+Commitment0-3: copy from when you published the game from previous steps
+```
+
+After entering, this should prompt a metamask popup asking you to sign. This will be the transaction that creates the game on-chain.
 
 ## Frontend
 
-Now we have our gameplay ready, on-chain and off-chain.
+Spin Team has already built a simple frontend for you. There's no need to modify the frontend.
 
-Let’s build the UI and integrate all these things together.
+You just need to run it.
 
-We have provided a local package in Javascript called Spin, this class serves as a template and can help import the WASM packages and generate the proof through the cloud prover.
+### Run the frontend
 
-The package is generated upon building the WASM image and is located in `gameplay/provable_game_logic/js/spin`
+Go to `frontend/`
 
-> You can install this package locally using `file:...` format in NPM. For example using [﻿npm](https://github.com/m4-team/zk-sdk/blob/hackathon/sdk/frontend/package.json#L12-L22).
-
-Check out the complete [﻿demo code here](https://github.com/m4-team/zk-sdk/tree/hackathon/sdk/frontend).
-
-Here’s an example of using Spin:
-
-#### _Using Spin_
-
-```javascript
-import { Spin } from "spin";
-
-const spin = new Spin({
-    onReady: onGameInitReady(total_steps, current_position),
-    cloudCredentials: {
-        CLOUD_RPC_URL: ZK_CLOUD_RPC_URL,
-        USER_ADDRESS: ZK_USER_ADDRESS,
-        USER_PRIVATE_KEY: ZK_USER_PRIVATE_KEY,
-        IMAGE_HASH: ZK_IMAGE_ID,
-    },
-});
-
-// initialize the game
-spin.init_game(total_steps, current_position);
-
-// player making a move
-spin.step(command);
-
-// generate the proof
-const proof = await spin.generateProof();
-
-// reset to start again
-await spin.reset();
 ```
-
-Remember that calling Spin needs to reach parity with how we are defined in ZKmain.
-
-This is because we don’t want the player see a version of the gameplay, while proving a different one.
-
-To make sure reaching parity, record down the appropriate inputs same as in ZKmain.
-
-You can then [﻿submit the proof on-chain](https://github.com/m4-team/zk-sdk/blob/f5f777611628b8e2d026409901ea8c2d1b1a40fc/sdk/frontend/src/App.tsx#L22) however you like.
-
-## Put Everything Together
-
-[TODO: make the 2048 game using the SDK framework]
-
-For a full-fledged demo game, see our game Cats vs. Dogs
-
-[TODO: make CVD using the SDK framework]
+npm install && npm run dev
+```

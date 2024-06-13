@@ -135,27 +135,49 @@ function publish() {
             console.error("Usage: npx spin build-image --path [path]");
             process.exit(1);
         }
-        const path = args[args.indexOf("--path") + 1];
-        if (!fs_1.default.existsSync(path)) {
-            console.error("Path does not exist: ", path);
+        const folderPath = args[args.indexOf("--path") + 1];
+        const filePath = path_1.default.join(folderPath, "pkg", "gameplay_bg.wasm");
+        if (!fs_1.default.existsSync(filePath)) {
+            console.error("Path does not exist: ", filePath);
             process.exit(1);
         }
-        if (!path.endsWith(".wasm")) {
+        if (!filePath.endsWith(".wasm")) {
             console.error("Path must point to a .wasm file.");
             process.exit(1);
         }
-        console.log("Publishing wasm image at path:", path);
-        const response = yield (0, zkwasm_1.addImage)({
+        console.log("Publishing wasm image at path:", filePath);
+        const imageCommitment = yield (0, zkwasm_1.addImage)({
             USER_ADDRESS: ZK_CLOUD_USER_ADDRESS,
             USER_PRIVATE_KEY: ZK_CLOUD_USER_PRIVATE_KEY,
             IMAGE_HASH: "",
             CLOUD_RPC_URL: ZK_CLOUD_URL,
-        }, path);
-        console.log("Image Commitment: ", response);
+        }, filePath);
+        console.log("Image Commitment: ", imageCommitment);
+        return imageCommitment;
     });
 }
 function hackathon() {
     console.log("Initializing project for hackathon...");
+    if (args[1] === "build") {
+        const optionalArgs = args.filter((arg) => arg.startsWith("--"));
+        if (!optionalArgs.includes("--name") ||
+            !optionalArgs.includes("--desc") ||
+            !optionalArgs.includes("--path")) {
+            console.error("--name flag is required, a name for the game.");
+            console.error("--desc flag is required, a description for the game.");
+            console.error("--path flag is required, a path to provable_game_logic folder.");
+            console.error("Usage: npx spin hackathon build --name [name] --desc [desc] --path [path]");
+            process.exit(1);
+        }
+        const name = args[args.indexOf("--name") + 1];
+        const desc = args[args.indexOf("--desc") + 1];
+        // this builds image, publish image, and deploy contract
+        console.log("Building project...");
+        build();
+        console.log("Publishing project...");
+        const imageCommitment = publish();
+        // create game by calling createGame
+    }
 }
 function version() {
     return;
