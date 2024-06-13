@@ -42,7 +42,39 @@ Navigate to the folder with the gameplay:
 
 `cd gameplay/provable_game_logic`
 
-### Defining the Provable Game Logic
+You'll want to implement 3 function:
+
+-   initialize_game [optional]
+-   step
+-   get_game_state
+
+### Initialize the Game: initialize_game(seed: u64)
+
+This is where you can initialize your gameplay. The function takes in a `seed` which could help you generate randomness. Note, please generate randomness purely deterministically from this seed. See an example here: [TODO: fill in example]
+
+### User Inputs: step(input: u64)
+
+The keyboard inputs will be passed as ASCII values, we'll only accept ASCII value from [0-127], inclusive.
+
+See the ASCII table here: https://www.ascii-code.com/
+
+The mouse click values will be passed in as input values from 1000 to 3399, this represent which character is been clicked in the 30x80 matrix.
+
+| input: u64              |    Format    |                   Value |
+| :---------------------- | :----------: | ----------------------: |
+| 0 - 127 (inclusive)     |    ASCII     |           0 - 127 ASCII |
+| 1000 - 3399 (inclusive) | Matrix Index | 0 - 2400 of the display |
+
+### Display: get_game_state() -> String
+
+> 2400 = 30 x 80
+
+This is where you'll display back to the user. The string you return should be less or equal to 2400 in length.
+If the size is less than 2400, the rest of the string is padding with `space` until size is 2400.
+
+### [Undert the Hood] Defining the Provable Game Logic
+
+> This part is optional for the hackathon, we already defined a zkmain.rs for you.
 
 Our ZK program takes public inputs, private inputs and produces outputs. We’ll define this program in the `zkmain.rs` file inside the zkmain function.
 
@@ -110,56 +142,9 @@ pub fn _get_game_state() -> RustGameState {
 }
 ```
 
-Here's an [example](https://github.com/m4-team/zk-sdk/blob/hackathon/sdk/gameplay/provable_game_logic/src/gameplay.rs) of `gameplay.rs` .
+Here's an [example](https://github.com/m4-team/spin-sdk/blob/sdk/gameplay/provable_game_logic/src/gameplay.rs) of `gameplay.rs` .
 
 > Note, the code is Rust needs be compatible with the `wasm-bindgen` library.
-
-Next, we'll put `gameplay.rs` and `zkamin.rs` , together.
-
-For example, using a more complex example
-
-```
-// zkmain.rs
-use wasm_bindgen::prelude::*;
-
-use zkwasm_rust_sdk::wasm_input;
-use zkwasm_rust_sdk::wasm_output;
-
-use crate::gameplay::{_get_game_state, init_game, step, GameState};
-
-#[wasm_bindgen]
-pub fn zkmain() -> i64 {
-    // specify the public inputs
-    let total_steps: u64 = unsafe { wasm_input(1) };
-    let position: u64 = unsafe { wasm_input(1) };
-
-    // ... core game logic: init game
-    init_game(total_steps, position);
-
-    // specify the private inputs
-    let actions_length = unsafe { wasm_input(0) };
-
-    for _i in 0..actions_length {
-        // specify more private inputs
-        let action = unsafe { wasm_input(0) };
-
-        // ... core game logic: moving a step
-        step(action);
-    }
-
-    unsafe {
-
-        // ... core game logic: getting the final game state
-        let final_game_state: GameState = _get_game_state();
-
-        // specify the outputs
-        wasm_output(final_game_state.total_steps as u64);
-        wasm_output(final_game_state.position as u64);
-    }
-
-    0
-}
-```
 
 > Note that zkmain is the definition for the ZK program. This is used when we generate the proof. We give the prover inputs, the prover will prove according to the code defined in zkmain.
 
