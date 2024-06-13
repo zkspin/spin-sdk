@@ -31,4 +31,8 @@ Check out the SPIN SDK [guide](./GUIDE.md), make sure to follow the path mention
 
 ## Step 2:
 
-...
+Finally, starting get hands on with a special version of the guide just for this hackathon: [-> Hackathon Technical Guide](./5_TECHNICAL_GUIDE_HACKATHON.md)
+
+## Submission:
+
+TODO

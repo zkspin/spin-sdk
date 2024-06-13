@@ -5,6 +5,7 @@ SDK for developing on-chain ZK proved application.
 ## Docs
 
 How to use SDK: [guide/GUIDE.md](./guide/GUIDE.md)
+
 Hackathon Guide: [guide/HACKATHON_GUIDE.md](./guide/HACKATHON_GUIDE.md)
 
 ## Installation

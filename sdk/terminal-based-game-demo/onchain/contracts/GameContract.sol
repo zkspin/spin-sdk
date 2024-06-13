@@ -26,14 +26,14 @@ contract SpinGamePlayground {
     address public verifier;
     address internal _owner;
 
-    mapping(uint256 => uint256[3]) public zk_image_commitments;
+    mapping(bytes32 => uint256[3]) public zk_image_commitments;
 
     modifier onlyOwner() {
         require(msg.sender == _owner, "Only owner can call this function");
         _;
     }
 
-    modifier onlyGameOwner(uint256 gameId) {
+    modifier onlyGameOwner(bytes32 gameId) {
         require(
             gameAuthors[gameId] == msg.sender || msg.sender == _owner, "Only the author or Admin can update the game"
         );
@@ -46,33 +46,42 @@ contract SpinGamePlayground {
         totalGames = 0;
     }
 
-    mapping(uint256 => Game) public games;
+    mapping(bytes32 => Game) public games;
 
-    mapping(uint256 => GameRecord[10]) public gameLeaderboard;
-    mapping(uint256 => mapping(address => GameRecord[])) public gameRecords;
+    mapping(bytes32 => GameRecord[10]) public gameLeaderboard;
+    mapping(bytes32 => mapping(address => GameRecord[])) public gameRecords;
 
-    mapping(uint256 => address) public gameAuthors;
+    mapping(bytes32 => address) public gameAuthors;
 
-    event GameCreated(uint256 gameId, string name, address author);
-    event GameStateUpdated(uint256 gameId, address player, uint256 score);
+    event GameCreated(bytes32 gameId, string name, address author);
+    event GameStateUpdated(bytes32 gameId, address player, uint256 score);
     event VerificationSucceeded(address indexed sender);
 
-    function getGameLeaderboard(uint256 gameId) external view returns (GameRecord[10] memory) {
+    function getGameLeaderboard(bytes32 gameId) external view returns (GameRecord[10] memory) {
         return gameLeaderboard[gameId];
     }
 
-    function getGame(uint256 gameId) external view returns (Game memory) {
+    function getGame(bytes32 gameId) external view returns (Game memory) {
         return games[gameId];
     }
 
-    function getPlayerGameRecords(uint256 gameId, address player) external view returns (GameRecord[] memory) {
+    function getPlayerGameRecords(bytes32 gameId, address player) external view returns (GameRecord[] memory) {
         return gameRecords[gameId][player];
+    }
+
+    function commitmentToBytes32(uint256[3] memory commitments) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(commitments[0], commitments[1], commitments[2]));
     }
 
     function createGame(string memory name, string memory description, uint256[3] calldata commitments) external {
         // increment totalGames
         totalGames = totalGames + 1;
-        uint256 gameId = totalGames;
+
+        require(bytes(name).length > 0, "Name cannot be empty");
+
+        bytes32 gameId = commitmentToBytes32(commitments);
+
+        require(games[gameId].createdTime == 0, "Game already exists");
 
         gameAuthors[gameId] = msg.sender;
         games[gameId] = Game(name, msg.sender, description, block.timestamp, 0, 0);
@@ -81,7 +90,7 @@ contract SpinGamePlayground {
         setVerifierImageCommitments(gameId, commitments);
     }
 
-    function updateGame(uint256 gameId, string memory newName, string memory newDescription)
+    function updateGame(bytes32 gameId, string memory newName, string memory newDescription)
         external
         onlyGameOwner(gameId)
     {
@@ -91,12 +100,12 @@ contract SpinGamePlayground {
     }
 
     function submitGame(
-        uint256 gameId,
         uint256[] calldata proof,
         uint256[] calldata verify_instance,
         uint256[] calldata aux,
         uint256[][] calldata instances
     ) external {
+        bytes32 gameId = commitmentToBytes32([verify_instance[1], verify_instance[2], verify_instance[3]]);
         require(games[gameId].createdTime != 0, "Game does not exist");
         address player = msg.sender;
 
@@ -119,7 +128,7 @@ contract SpinGamePlayground {
         emit GameStateUpdated(gameId, player, _scoreFromProof);
     }
 
-    function updateLeaderboard(uint256 newScore, uint256 gameId, uint256 seed) internal {
+    function updateLeaderboard(uint256 newScore, bytes32 gameId, uint256 seed) internal {
         GameRecord[10] storage leaderboard = gameLeaderboard[gameId];
         address player = msg.sender;
 
@@ -185,7 +194,7 @@ contract SpinGamePlayground {
         verifier = verifier_address;
     }
 
-    function setVerifierImageCommitments(uint256 gameId, uint256[3] calldata commitments)
+    function setVerifierImageCommitments(bytes32 gameId, uint256[3] calldata commitments)
         public
         onlyGameOwner(gameId)
     {
