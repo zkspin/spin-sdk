@@ -1,10 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-
-// const game = new Gameplay();
-
-// const randomGameState = game.get_state_in_string();
+import React, { useEffect } from "react";
+import { Spin } from "spin";
 
 const TERMINAL_WIDTH = 80;
 const TERMINAL_HEIGHT = 30;
@@ -15,37 +12,61 @@ interface TerminalProps {
     createGameOpen: boolean;
 }
 
+const ZK_CLOUD_USER_ADDRESS = "0xd8f157Cc95Bc40B4F0B58eb48046FebedbF26Bde";
+const ZK_CLOUD_USER_PRIVATE_KEY =
+    "2763537251e2f27dc6a30179e7bf1747239180f45b92db059456b7da8194995a";
+const ZK_CLOUD_URL = "https://rpc.zkwasmhub.com:8090";
+
+let spin: Spin;
+
 export default function Terminal({ createGameOpen }: TerminalProps) {
-    const [gameMatrix, setGameMatrix] = React.useState<number[][]>([]);
+    const [gameString, setGameString] = React.useState<string>("");
+    useEffect(() => {
+        spin = new Spin({
+            onReady: () => {
+                console.log("Spin is ready");
+                const randomSeed = Math.floor(Math.random() * 1000000);
+                spin.init_game(randomSeed);
+            },
+            cloudCredentials: {
+                USER_ADDRESS: ZK_CLOUD_USER_ADDRESS,
+                USER_PRIVATE_KEY: ZK_CLOUD_USER_PRIVATE_KEY,
+                IMAGE_HASH: "",
+                CLOUD_RPC_URL: ZK_CLOUD_URL,
+            },
+        });
+    }, []);
+    let processing = false;
 
     const handleKeyDown = (event: KeyboardEvent) => {
         if (createGameOpen) {
             return;
         }
 
-        const _temp: number[][] = [];
-        // When a key is pressed, update the matrix of ASCII values
-        for (let i = 0; i < TERMINAL_HEIGHT; i++) {
-            _temp[i] = [];
-            for (let j = 0; j < TERMINAL_WIDTH; j++) {
-                _temp[i][j] = getRandomAsciiValue();
-            }
+        if (processing) {
+            console.log("Processing...");
+            return;
         }
-        setGameMatrix(_temp);
+
+        processing = true;
+
+        spin.step(Number(event.keyCode));
+
+        const gameState = spin.getGameState();
+        const displayString: string =
+            typeof gameState === "string"
+                ? gameState
+                : JSON.stringify(gameState);
+        console.log("Game state: ", displayString);
+
+        setGameString(displayString.padEnd(30 * 80, " "));
+
+        processing = false;
     };
 
     // Listen to KeyDown event
     useEffect(() => {
-        const matrix: number[][] = []; // Assuming you have a matrix of ASCII values
-
-        // Generate the matrix of ASCII values
-        for (let i = 0; i < TERMINAL_HEIGHT; i++) {
-            matrix[i] = [];
-            for (let j = 0; j < TERMINAL_WIDTH; j++) {
-                matrix[i][j] = 43;
-            }
-        }
-        setGameMatrix(matrix);
+        setGameString("Welcome to the game!".padEnd(30 * 80, " "));
 
         window.addEventListener("keydown", handleKeyDown);
 
@@ -65,25 +86,23 @@ export default function Terminal({ createGameOpen }: TerminalProps) {
                 gridTemplateRows: `repeat(${TERMINAL_HEIGHT}, ${CELL_PIXEL_SIZE}px)`,
             }}
         >
-            {gameMatrix.map((row, i) =>
-                row.map((asciiValue, j) => (
-                    <div
-                        key={`${i}-${j}`}
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            width: CELL_PIXEL_SIZE + 1,
-                            height: CELL_PIXEL_SIZE + 1,
-                            backgroundColor: "black",
-                            color: Math.random() < 0.5 ? "green" : "darkgreen",
-                            font: "bold 16px monospace",
-                        }}
-                    >
-                        {String.fromCharCode(asciiValue)}
-                    </div>
-                ))
-            )}
+            {gameString.split("").map((asciiValue, i) => (
+                <div
+                    key={i}
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        width: CELL_PIXEL_SIZE + 1,
+                        height: CELL_PIXEL_SIZE + 1,
+                        backgroundColor: "black",
+                        color: Math.random() < 0.5 ? "green" : "darkgreen",
+                        font: "bold 16px monospace",
+                    }}
+                >
+                    {asciiValue}
+                </div>
+            ))}
         </div>
     );
 }

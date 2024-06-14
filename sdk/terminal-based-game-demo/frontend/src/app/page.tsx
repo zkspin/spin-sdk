@@ -9,20 +9,18 @@ export default function Home() {
     const [leaderboardOpen, setLeaderboardOpen] = React.useState(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
     const [createGameOpen, setCreateGameOpen] = React.useState(false);
-    const gameId = 1;
+    const gameId =
+        "0xa5a922478114ea4d8f4fc7cfde79468256060e240ac043748f82c0e1b079f081";
 
     function onClickOpenLeaderboard() {
         if (settingsOpen || createGameOpen) {
             return;
         }
         // Open the leaderboard
-        console.log("Open leaderboard");
         setLeaderboardOpen(true);
     }
 
     function onClickOpenSettings() {
-        console.log("settingsOpen", settingsOpen);
-        console.log("createGameOpen", createGameOpen);
         if (leaderboardOpen || createGameOpen) {
             return;
         }

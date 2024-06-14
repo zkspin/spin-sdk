@@ -3,7 +3,7 @@ import React from "react";
 import { getGameLeaderboard } from "./Web3API";
 
 interface LeaderboardProps {
-    gameId: number;
+    gameId: string;
     onClickCloseLeaderboard: () => void;
 }
 

@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { addImage } from "./zkwasm";
+import { ethers } from "ethers";
+
 const args = process.argv.slice(2);
 
 const FOLDER_IGNORE_LIST = [
@@ -192,6 +194,21 @@ async function publish() {
     );
 
     console.log("Image Commitment: ", imageCommitment);
+
+    // calculate image hash
+    // function commitmentToBytes32(uint256[3] memory commitments) public pure returns (bytes32) {
+    //     return keccak256(abi.encodePacked(commitments[0], commitments[1], commitments[2]));
+    // }
+
+    function createCommit2() {
+        return ethers.solidityPackedKeccak256(
+            ["uint256", "uint256", "uint256"],
+            [imageCommitment[0], imageCommitment[1], imageCommitment[2]]
+        );
+    }
+
+    console.log("Game ID: ", createCommit2());
+
     return imageCommitment;
 }
 

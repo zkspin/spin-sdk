@@ -38,7 +38,7 @@ pub fn step(input: u64) -> () {
     // IMPLEMENT THIS FUNCTION
     let mut game_state = GAME_STATE.lock().unwrap();
 
-    match input {
+    match input % 2 {
         0 => {
             if game_state.score > 0 {
                 game_state.score -= 1;
@@ -48,7 +48,7 @@ pub fn step(input: u64) -> () {
             game_state.score += 1;
         }
         _ => {
-            panic!("Invalid command");
+            // Do nothing
         }
     };
 }

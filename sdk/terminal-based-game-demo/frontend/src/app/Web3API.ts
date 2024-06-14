@@ -2,7 +2,7 @@ import { getAccount, writeContract, readContract } from "@wagmi/core";
 import { config } from "./config";
 import { abi } from "./ABI";
 import { waitForTransactionReceipt } from "wagmi/actions";
-const CONTRACT_ADDRESS = "0xDbbf44628850315aBc6DB55c05698e533a166f45";
+const CONTRACT_ADDRESS = "0x3e84b7f9563853e1e7622e00f228D33e215723A8";
 
 export async function getUserAccount() {
     const userWallet = await getAccount(config);
