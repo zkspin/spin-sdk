@@ -98,17 +98,36 @@ export async function getImageCommitmentBigInts(
 export async function load_proving_taks_util_result(
     task_id: string,
     cloudCredential: ProveCredentials,
-    retry_interval: number = 10000 // 10 seconds
+    retry_interval: number = 5000 // 10 seconds
 ) {
+    let INITIAL_RETRY_INTERVAL = 40000;
+    let init_flag = true;
     while (true) {
         const result = await load_proving_taks(task_id, cloudCredential);
-        if (result!.status !== "Pending" && result!.status !== "Processing") {
+        if (result!.status == "Done") {
             return result;
         }
+
+        if (result!.status == "Pending") {
+            console.log("Pending");
+        } else if (result!.status == "Processing") {
+            console.log("Processing");
+        } else {
+            throw new Error(`Proof generation failed, ${result}`);
+        }
+
+        let sleep_time: number;
+
+        if (init_flag) {
+            sleep_time = INITIAL_RETRY_INTERVAL;
+            init_flag = false;
+        } else {
+            sleep_time = retry_interval;
+        }
         console.log(
-            `waiting for proof generation... sleeping for ${retry_interval}ms`
+            `waiting for proof generation... sleeping for ${sleep_time}ms`
         );
-        await new Promise((_) => setTimeout(_, retry_interval));
+        await new Promise((_) => setTimeout(_, sleep_time));
     }
 }
 
@@ -137,7 +156,6 @@ export async function load_proving_taks(
     while (retryCount < 3) {
         try {
             tasksInfo = (await helper.loadTasks(query)).data;
-            console.log("proof data = ", tasksInfo);
             break;
         } catch (error: any) {
             console.error(`Caught error: ${error.message}`);
@@ -161,7 +179,7 @@ export async function load_proving_taks(
     const verify_instance = ZkWasmUtil.bytesToBigIntArray(
         task.shadow_instances
     );
-    console.log("verify_instance = ", task.shadow_instances);
+
     const aux = ZkWasmUtil.bytesToBigIntArray(task.aux);
     const instances = ZkWasmUtil.bytesToBigIntArray(task.instances);
 

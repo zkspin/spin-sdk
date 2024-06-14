@@ -1,15 +1,16 @@
 "use client";
 import React from "react";
-import { getGameLeaderboard } from "./Web3API";
+import { getGameLeaderboard, getGame } from "./Web3API";
+import { get } from "http";
 
 interface LeaderboardProps {
-    gameId: number;
     onClickCloseLeaderboard: () => void;
+    gameId: string;
 }
 
 export default function Leaderboard({
-    gameId,
     onClickCloseLeaderboard,
+    gameId,
 }: LeaderboardProps) {
     const [leaderboard, setLeaderboard] = React.useState<
         {
@@ -18,23 +19,21 @@ export default function Leaderboard({
         }[]
     >([]);
 
+    const [gameName, setGameName] = React.useState<string>("");
+    const [gameAuthor, setGameAuthor] = React.useState<string>("");
+    const [gameDescription, setGameDescription] = React.useState<string>("");
+
     React.useEffect(() => {
-        // getGameLeaderboard(gameId).then((data) => {
-        //     console.log(data);
-        // });
-        // Fetch leaderboard data
-        const demo_leaderboardData: {
-            player: string;
-            score: number;
-        }[] = [
-            {
-                player: "0x9a6034c84cd431409ac1a35278c7da36ffda53e5",
-                score: 100,
-            },
-            { player: "0x9a6034c84cd431409ac1a35278c7da36ffda53e5", score: 90 },
-            { player: "0x9a6034c84cd431409ac1a35278c7da36ffda53e5", score: 80 },
-        ];
-        setLeaderboard(demo_leaderboardData);
+        getGameLeaderboard(gameId).then((data) => {
+            setLeaderboard(data);
+        });
+
+        getGame(gameId).then((data: any) => {
+            console.log("Game Data: ", data);
+            setGameName(data.name);
+            setGameAuthor(data.author);
+            setGameDescription(data.description);
+        });
     }, []);
 
     return (
@@ -45,8 +44,8 @@ export default function Leaderboard({
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: "#f5f5f5",
-                padding: "20px",
-                borderRadius: "8px",
+                padding: "50px",
+                borderRadius: "10px",
                 boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
             }}
         >
@@ -56,17 +55,19 @@ export default function Leaderboard({
                     position: "absolute",
                     top: "10px",
                     right: "10px",
-                    padding: "5px",
+                    padding: "10px",
                     borderRadius: "50%",
                     backgroundColor: "#f5f5f5",
                     border: "none",
                     cursor: "pointer",
+                    transform: "scale(1.5)",
                 }}
             >
                 X
             </button>
-            <h1 style={{ marginBottom: "10px" }}>Game Name</h1>
-            <h2 style={{ marginBottom: "20px" }}>by Name (0x342...2111)</h2>
+            <h1 style={{ marginBottom: "10px" }}>{gameName}</h1>
+            <h2 style={{ marginBottom: "20px" }}>by {gameAuthor}</h2>
+            <p>{gameDescription}</p>
 
             <h3 style={{ marginBottom: "10px" }}>Leaderboard</h3>
 
@@ -80,12 +81,16 @@ export default function Leaderboard({
                 <tbody>
                     {leaderboard.map((data, index) => (
                         <tr key={index}>
-                            <td>
-                                {data.player.substring(0, 4) +
-                                    "..." +
-                                    data.player.substring(39)}
+                            <td
+                                style={{
+                                    fontFamily: "monospace",
+                                }}
+                            >
+                                {data.player}
                             </td>
-                            <td style={{ textAlign: "right" }}>{data.score}</td>
+                            <td style={{ textAlign: "right" }}>
+                                {Number(data.score)}
+                            </td>
                         </tr>
                     ))}
                 </tbody>

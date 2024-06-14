@@ -15,9 +15,9 @@ export const abi = [
         inputs: [
             {
                 indexed: false,
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "gameId",
-                type: "uint256",
+                type: "bytes32",
             },
             {
                 indexed: false,
@@ -40,9 +40,9 @@ export const abi = [
         inputs: [
             {
                 indexed: false,
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "gameId",
-                type: "uint256",
+                type: "bytes32",
             },
             {
                 indexed: false,
@@ -76,6 +76,25 @@ export const abi = [
     {
         inputs: [
             {
+                internalType: "uint256[3]",
+                name: "commitments",
+                type: "uint256[3]",
+            },
+        ],
+        name: "commitmentToBytes32",
+        outputs: [
+            {
+                internalType: "bytes32",
+                name: "",
+                type: "bytes32",
+            },
+        ],
+        stateMutability: "pure",
+        type: "function",
+    },
+    {
+        inputs: [
+            {
                 internalType: "string",
                 name: "name",
                 type: "string",
@@ -99,9 +118,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "",
-                type: "uint256",
+                type: "bytes32",
             },
         ],
         name: "gameAuthors",
@@ -118,9 +137,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "",
-                type: "uint256",
+                type: "bytes32",
             },
             {
                 internalType: "uint256",
@@ -162,9 +181,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "",
-                type: "uint256",
+                type: "bytes32",
             },
             {
                 internalType: "address",
@@ -211,9 +230,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "",
-                type: "uint256",
+                type: "bytes32",
             },
         ],
         name: "games",
@@ -268,9 +287,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "gameId",
-                type: "uint256",
+                type: "bytes32",
             },
         ],
         name: "getGame",
@@ -319,9 +338,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "gameId",
-                type: "uint256",
+                type: "bytes32",
             },
         ],
         name: "getGameLeaderboard",
@@ -365,9 +384,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "gameId",
-                type: "uint256",
+                type: "bytes32",
             },
             {
                 internalType: "address",
@@ -455,9 +474,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "gameId",
-                type: "uint256",
+                type: "bytes32",
             },
             {
                 internalType: "uint256[3]",
@@ -501,11 +520,6 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
-                name: "gameId",
-                type: "uint256",
-            },
-            {
                 internalType: "uint256[]",
                 name: "proof",
                 type: "uint256[]",
@@ -547,9 +561,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "gameId",
-                type: "uint256",
+                type: "bytes32",
             },
             {
                 internalType: "string",
@@ -583,9 +597,9 @@ export const abi = [
     {
         inputs: [
             {
-                internalType: "uint256",
+                internalType: "bytes32",
                 name: "",
-                type: "uint256",
+                type: "bytes32",
             },
             {
                 internalType: "uint256",

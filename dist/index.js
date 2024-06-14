@@ -16,6 +16,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const zkwasm_1 = require("./zkwasm");
+const ethers_1 = require("ethers");
 const args = process.argv.slice(2);
 const FOLDER_IGNORE_LIST = [
     "node_modules",
@@ -132,7 +133,7 @@ function publish() {
         const optionalArgs = args.filter((arg) => arg.startsWith("--"));
         if (!optionalArgs.includes("--path")) {
             console.error("--path flag is required, a path to provable_game_logic folder.");
-            console.error("Usage: npx spin build-image --path [path]");
+            console.error("Usage: npx spin publish-image --path [path]");
             process.exit(1);
         }
         const folderPath = args[args.indexOf("--path") + 1];
@@ -142,7 +143,7 @@ function publish() {
             process.exit(1);
         }
         if (!filePath.endsWith(".wasm")) {
-            console.error("Path must point to a .wasm file.");
+            console.error("Path must contain a .wasm file.");
             process.exit(1);
         }
         console.log("Publishing wasm image at path:", filePath);
@@ -153,6 +154,14 @@ function publish() {
             CLOUD_RPC_URL: ZK_CLOUD_URL,
         }, filePath);
         console.log("Image Commitment: ", imageCommitment);
+        // calculate image hash
+        // function commitmentToBytes32(uint256[3] memory commitments) public pure returns (bytes32) {
+        //     return keccak256(abi.encodePacked(commitments[0], commitments[1], commitments[2]));
+        // }
+        function createCommit2() {
+            return ethers_1.ethers.solidityPackedKeccak256(["uint256", "uint256", "uint256"], [imageCommitment[0], imageCommitment[1], imageCommitment[2]]);
+        }
+        console.log("Game ID: ", createCommit2());
         return imageCommitment;
     });
 }

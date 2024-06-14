@@ -1,10 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-
-// const game = new Gameplay();
-
-// const randomGameState = game.get_state_in_string();
+import React, { useEffect } from "react";
 
 const TERMINAL_WIDTH = 80;
 const TERMINAL_HEIGHT = 30;
@@ -12,48 +8,10 @@ const TERMINAL_HEIGHT = 30;
 const CELL_PIXEL_SIZE = 20;
 
 interface TerminalProps {
-    createGameOpen: boolean;
+    gameString: string;
 }
 
-export default function Terminal({ createGameOpen }: TerminalProps) {
-    const [gameMatrix, setGameMatrix] = React.useState<number[][]>([]);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-        if (createGameOpen) {
-            return;
-        }
-
-        const _temp: number[][] = [];
-        // When a key is pressed, update the matrix of ASCII values
-        for (let i = 0; i < TERMINAL_HEIGHT; i++) {
-            _temp[i] = [];
-            for (let j = 0; j < TERMINAL_WIDTH; j++) {
-                _temp[i][j] = getRandomAsciiValue();
-            }
-        }
-        setGameMatrix(_temp);
-    };
-
-    // Listen to KeyDown event
-    useEffect(() => {
-        const matrix: number[][] = []; // Assuming you have a matrix of ASCII values
-
-        // Generate the matrix of ASCII values
-        for (let i = 0; i < TERMINAL_HEIGHT; i++) {
-            matrix[i] = [];
-            for (let j = 0; j < TERMINAL_WIDTH; j++) {
-                matrix[i][j] = 43;
-            }
-        }
-        setGameMatrix(matrix);
-
-        window.addEventListener("keydown", handleKeyDown);
-
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [createGameOpen]);
-
+export default function Terminal({ gameString }: TerminalProps) {
     // display the matrix of ASCII values
     // each value in a square cell of 10x10 pixels
 
@@ -65,25 +23,23 @@ export default function Terminal({ createGameOpen }: TerminalProps) {
                 gridTemplateRows: `repeat(${TERMINAL_HEIGHT}, ${CELL_PIXEL_SIZE}px)`,
             }}
         >
-            {gameMatrix.map((row, i) =>
-                row.map((asciiValue, j) => (
-                    <div
-                        key={`${i}-${j}`}
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            width: CELL_PIXEL_SIZE + 1,
-                            height: CELL_PIXEL_SIZE + 1,
-                            backgroundColor: "black",
-                            color: Math.random() < 0.5 ? "green" : "darkgreen",
-                            font: "bold 16px monospace",
-                        }}
-                    >
-                        {String.fromCharCode(asciiValue)}
-                    </div>
-                ))
-            )}
+            {gameString.split("").map((asciiValue, i) => (
+                <div
+                    key={i}
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        width: CELL_PIXEL_SIZE + 1,
+                        height: CELL_PIXEL_SIZE + 1,
+                        backgroundColor: "black",
+                        color: Math.random() < 0.5 ? "green" : "darkgreen",
+                        font: "bold 16px monospace",
+                    }}
+                >
+                    {asciiValue}
+                </div>
+            ))}
         </div>
     );
 }

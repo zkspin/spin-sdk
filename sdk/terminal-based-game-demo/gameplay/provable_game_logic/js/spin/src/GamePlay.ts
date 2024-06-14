@@ -3,6 +3,7 @@ import init, {
     initialize_game,
     step,
     get_game_state,
+    get_game_score,
 } from "game_logic/gameplay.js";
 // import init from "game_logic/gameplay.js";
 // // ================================================================================================
@@ -26,7 +27,11 @@ export class GamePlay {
         step(command);
     }
 
-    getGameState() {
-        return JSON.parse(get_game_state());
+    getGameState(): string {
+        return get_game_state();
+    }
+
+    getGameScore(): number {
+        return Number(get_game_score());
     }
 }

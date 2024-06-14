@@ -1,9 +1,12 @@
 import { GamePlay } from "./GamePlay.js";
+import { ethers } from "ethers";
 import {
     add_proving_taks,
     load_proving_taks_util_result,
     ProveCredentials,
 } from "./Proof.js";
+import { ZkWasmServiceHelper, ZkWasmUtil } from "zkwasm-service-helper";
+
 interface SpinConstructor {
     onReady: () => void;
     cloudCredentials: ProveCredentials;
@@ -13,13 +16,19 @@ interface SpinConstructor {
 export class Spin {
     gamePlay: GamePlay;
     cloudCredentials: ProveCredentials;
+    public gameID: string = "";
     inputs: number[] = []; // public inputs
     witness: number[] = []; // private inputs
 
     /* Constructor */
     constructor({ onReady, cloudCredentials }: SpinConstructor) {
         this.gamePlay = new GamePlay({
-            callback: onReady,
+            callback: async () => {
+                await this.getGameID().then((gameID) => {
+                    this.gameID = gameID;
+                });
+                onReady();
+            },
         });
         this.cloudCredentials = cloudCredentials;
     }
@@ -50,12 +59,46 @@ export class Spin {
         return this.gamePlay.getGameState();
     }
 
+    getGameScore() {
+        return this.gamePlay.getGameScore();
+    }
+
     init_game(...args: number[]) {
         this.gamePlay.init_game.apply(
             null,
             args.map((a) => BigInt(a))
         );
         args.map((a) => this.add_public_input(a));
+    }
+
+    async getGameID() {
+        const helper = new ZkWasmServiceHelper(
+            this.cloudCredentials.CLOUD_RPC_URL,
+            "",
+            ""
+        );
+        const imageInfo = await helper.queryImage(
+            this.cloudCredentials.IMAGE_HASH
+        );
+
+        if (!imageInfo || !imageInfo.checksum) {
+            throw Error("Image not found");
+        }
+
+        const imageCommitment = commitmentUint8ArrayToVerifyInstanceBigInts(
+            imageInfo.checksum.x,
+            imageInfo.checksum.y
+        );
+
+        function createCommit2() {
+            return ethers.solidityPackedKeccak256(
+                ["uint256", "uint256", "uint256"],
+                [imageCommitment[0], imageCommitment[1], imageCommitment[2]]
+            );
+        }
+
+        const gameID = createCommit2();
+        return gameID;
     }
 
     // ================================================================================================
@@ -70,8 +113,6 @@ export class Spin {
             this.cloudCredentials
         );
 
-        console.debug("tasksInfo = ", tasksInfo);
-
         const task_id = tasksInfo.id;
 
         const proof = await load_proving_taks_util_result(
@@ -79,7 +120,7 @@ export class Spin {
             this.cloudCredentials
         );
 
-        console.debug("proof = ", proof);
+        console.log("final proof = ", proof);
 
         return proof;
     }
@@ -96,4 +137,38 @@ export class Spin {
             callback: onReady,
         });
     }
+}
+
+function commitmentUint8ArrayToVerifyInstanceBigInts(
+    xUint8Array: Uint8Array,
+    yUint8Array: Uint8Array
+) {
+    const xHexString = ZkWasmUtil.bytesToHexStrings(xUint8Array);
+    const yHexString = ZkWasmUtil.bytesToHexStrings(yUint8Array);
+    console.log("xHexString = ", xHexString);
+    console.log("yHexString = ", yHexString);
+    const verifyInstances = commitmentHexToHexString(
+        xHexString[0],
+        yHexString[0]
+    );
+    console.log("verifyInstances = ", verifyInstances);
+
+    const verifyingBytes = ZkWasmUtil.hexStringsToBytes(verifyInstances, 32);
+    console.log("verifyingBytes = ", verifyingBytes);
+    const verifyingBigInts = ZkWasmUtil.bytesToBigIntArray(verifyingBytes);
+    console.log("verifyingBigInts = ", verifyingBigInts);
+    return verifyingBigInts;
+}
+/* This function is used to convert the commitment hex to hex string
+ * in the format of verifying instance
+ * @param x: x hex string
+ * @param y: y hex string
+ */
+function commitmentHexToHexString(x: string, y: string) {
+    const hexString1 = "0x" + x.slice(11);
+    const hexString2 =
+        "0x" + y.slice(39) + "000000000000000000" + x.slice(2, 11);
+    const hexString3 = "0x" + y.slice(2, 39);
+
+    return [hexString1, hexString2, hexString3];
 }

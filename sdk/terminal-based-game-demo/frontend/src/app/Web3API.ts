@@ -2,7 +2,7 @@ import { getAccount, writeContract, readContract } from "@wagmi/core";
 import { config } from "./config";
 import { abi } from "./ABI";
 import { waitForTransactionReceipt } from "wagmi/actions";
-const CONTRACT_ADDRESS = "0xDbbf44628850315aBc6DB55c05698e533a166f45";
+const CONTRACT_ADDRESS = "0x3e84b7f9563853e1e7622e00f228D33e215723A8";
 
 export async function getUserAccount() {
     const userWallet = await getAccount(config);
@@ -15,7 +15,7 @@ export async function getUserAccount() {
 
 // READ FUNCTIONS
 
-export async function getGameLeaderboard(gameID: number) {
+export async function getGameLeaderboard(gameID: string) {
     try {
         const result = await readContract(config, {
             abi,
@@ -30,13 +30,14 @@ export async function getGameLeaderboard(gameID: number) {
     }
 }
 
-export async function getGame(gameID: number) {
+export async function getPlayerGameRecords(gameID: string) {
     try {
+        const userWallet = await getUserAccount();
         const result = await readContract(config, {
             abi,
             address: CONTRACT_ADDRESS,
-            functionName: "getGame",
-            args: [gameID],
+            functionName: "getPlayerGameRecords",
+            args: [gameID, userWallet.address],
         });
         return result;
     } catch (error) {
@@ -45,14 +46,13 @@ export async function getGame(gameID: number) {
     }
 }
 
-export async function getPlayerGameRecords(gameID: number) {
+export async function getGame(gameID: string) {
     try {
-        const userWallet = await getUserAccount();
         const result = await readContract(config, {
             abi,
             address: CONTRACT_ADDRESS,
-            functionName: "getPlayerGameRecords",
-            args: [gameID, userWallet.address],
+            functionName: "getGame",
+            args: [gameID],
         });
         return result;
     } catch (error) {
@@ -88,18 +88,25 @@ export async function createGame(
     }
 }
 
-export async function submitGame(
-    signature: string,
-    nonce: number,
-    userId: string
-) {
-    TODO;
+export async function submitGame({
+    proof,
+    verify_instance,
+    aux,
+    instances,
+    status,
+}: {
+    proof: BigInt[];
+    verify_instance: BigInt[];
+    aux: BigInt[];
+    instances: BigInt[];
+    status: any;
+}) {
     try {
         const result = await writeContract(config, {
             abi,
             address: CONTRACT_ADDRESS,
             functionName: "submitGame",
-            args: [signature, nonce, userId],
+            args: [proof, verify_instance, aux, [instances]],
         });
         return result;
     } catch (error) {

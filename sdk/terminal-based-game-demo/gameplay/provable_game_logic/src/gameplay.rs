@@ -38,7 +38,7 @@ pub fn step(input: u64) -> () {
     // IMPLEMENT THIS FUNCTION
     let mut game_state = GAME_STATE.lock().unwrap();
 
-    match input {
+    match input % 2 {
         0 => {
             if game_state.score > 0 {
                 game_state.score -= 1;
@@ -48,7 +48,7 @@ pub fn step(input: u64) -> () {
             game_state.score += 1;
         }
         _ => {
-            panic!("Invalid command");
+            // Do nothing
         }
     };
 }
@@ -62,6 +62,13 @@ pub fn get_game_state() -> String {
     // REWRITE THIS TO RETURN A STRING TO DISPLAY
     let game = _get_game_state();
     serde_json::to_string(&game).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn get_game_score() -> u64 {
+    // REWRITE THIS TO RETURN THE SIZE OF THE GAME STATE
+    let game = _get_game_state();
+    return game.score;
 }
 
 /* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
