@@ -22,23 +22,20 @@ pub fn initialize_game(seed: u64) -> () {
 }
 
 /* STATEFUL FUNCTIONS This is defines the logic when player moves one step/entering one command
-* The keyboard inputs will be passed as ASCII values, we'll only accept ASCII value from [0-127], inclusive.
-*
-* See the ASCII table here: https://www.ascii-code.com/
-*
-* The mouse click values will be passed in as input values from 1000 to 3399, this represent which character is been clicked in the 30x80 matrix.
-*
-* | input: u64              |    Format    |                   Value |
-* | :---------------------- | :----------: | ----------------------: |
-* | 0 - 127 (inclusive)     |    ASCII     |           0 - 127 ASCII |
-* | 1000 - 3399 (inclusive) | Matrix Index | 0 - 2400 of the display |
+
+The keyboard inputs will be passed as keyCode in Js.
+
+The keyCode are representations of the keys pressed.
+
+See a mapping of the keyCode to the key pressed: **https://www.toptal.com/developers/keycode/table**
+
 */
 #[wasm_bindgen]
-pub fn step(input: u64) -> () {
+pub fn step(keyCode: u64) -> () {
     // IMPLEMENT THIS FUNCTION
     let mut game_state = GAME_STATE.lock().unwrap();
 
-    match input % 2 {
+    match keyCode % 2 {
         0 => {
             if game_state.score > 0 {
                 game_state.score -= 1;
@@ -66,7 +63,6 @@ pub fn get_game_state() -> String {
 
 #[wasm_bindgen]
 pub fn get_game_score() -> u64 {
-    // REWRITE THIS TO RETURN THE SIZE OF THE GAME STATE
     let game = _get_game_state();
     return game.score;
 }

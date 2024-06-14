@@ -10,7 +10,7 @@ We’ll write the provable gameplay first, then test gameplay in a terminal befo
 
 Don't worry, Spin will provide help along the way.
 
-[![Provable Gameplay Architecture](https://app.eraser.io/workspace/VhcsNlA4uYelufEWe1gi/preview?elements=oGGqigcXhENT2ObWeuMzKg&type=embed)](https://app.eraser.io/workspace/VhcsNlA4uYelufEWe1gi?elements=oGGqigcXhENT2ObWeuMzKg)
+<img src="https://app.eraser.io/workspace/VhcsNlA4uYelufEWe1gi/preview?elements=oGGqigcXhENT2ObWeuMzKg&type=embed" width="400">
 
 #### Why Cloud Proving the Game:
 
@@ -48,22 +48,74 @@ You'll want to implement 3 function:
 -   step
 -   get_game_state
 
+> `:warning:` these three functions are required to be defined to make Spin to work.
+
+> `:warning:` the code is Rust needs be compatible with the `wasm-bindgen` library. You can test library compatibility in our [dry-run section](./5_TECHNICAL_GUIDE_HACKATHON.md#dry-run-zk-program)
+
+> `:warning:` avoid code that uses floating points.
+
+> `:warning:` avoid code that uses floating points.
+
+> `:warning:` The game should not use any OS or system function, including time, randomness, avoid using external crates
+
+> `:warning:` avoid any asynchrous logics
+
+> Note that zkmain is the definition for the ZK program. This is used when we generate the proof. We give the prover inputs, the prover will prove according to the code defined in zkmain.
+
+---
+
 ### Initialize the Game: initialize_game(seed: u64)
 
-This is where you can initialize your gameplay. The function takes in a `seed` which could help you generate randomness. Note, please generate randomness purely deterministically from this seed. See an example here: [TODO: fill in example]
+This is where you can initialize your gameplay.
 
-### User Inputs: step(input: u64)
+The function takes in a `seed` which could help you generate randomness. Note, please generate randomness purely deterministically from this seed.
 
-The keyboard inputs will be passed as ASCII values, we'll only accept ASCII value from [0-127], inclusive.
+Here's an example of determinstically generate randomensss:
 
-See the ASCII table here: https://www.ascii-code.com/
+```Rust
+const LCG_M: u64 = 4294967296;
+const LCG_A: u64 = 22695477;
+const LCG_C: u64 = 1;
 
-The mouse click values will be passed in as input values from 1000 to 3399, this represent which character is been clicked in the 30x80 matrix.
+#[derive(Debug)]
+pub struct LCGRandGen {
+    pub seed: u64,
+}
 
-| input: u64              |    Format    |                   Value |
-| :---------------------- | :----------: | ----------------------: |
-| 0 - 127 (inclusive)     |    ASCII     |           0 - 127 ASCII |
-| 1000 - 3399 (inclusive) | Matrix Index | 0 - 2400 of the display |
+// #[wasm_bindgen]
+impl LCGRandGen {
+    pub fn new(seed: u64) -> Self {
+        Self { seed }
+    }
+
+    // max is exclusive
+    pub fn randint(&mut self, max: u32) -> u32 {
+        self.seed = (self.seed * LCG_A + LCG_C) % LCG_M;
+        (self.seed % (max as u64)) as u32
+    }
+
+    // max is exclusive
+    pub fn randint_range(&mut self, min: u32, max: u32) -> u32 {
+        min + self.randint(max - min)
+    }
+}
+
+pub fn randint(seed: u64, max: i32) -> (u64, i32) {
+    let seed = (seed * LCG_A + LCG_C) % LCG_M;
+    (seed, (seed % (max as u64)) as i32)
+    // (self.seed % (max as u64)) as u32
+}
+```
+
+---
+
+### User Inputs: step(keyCode: u64)
+
+The keyCode are representations of the keys pressed.
+
+See a mapping of the keyCode to the key pressed: **https://www.toptal.com/developers/keycode/table**
+
+---
 
 ### Display: get_game_state() -> String
 
@@ -71,6 +123,8 @@ The mouse click values will be passed in as input values from 1000 to 3399, this
 
 This is where you'll display back to the user. The string you return should be less or equal to 2400 in length.
 If the size is less than 2400, the rest of the string is padding with `space` until size is 2400.
+
+---
 
 ### [Undert the Hood] Defining the Provable Game Logic
 
@@ -113,48 +167,15 @@ The rest of the game logic is written in Rust.
 
 The game logic needs to be provide four functions inside the `gameplay.rs`
 
-> Note, these four functions are required to be defined to make Spin to work.
+Here's an [example](https://github.com/m4-team/spin-sdk/blob/main/sdk/gameplay/provable_game_logic/src/gameplay.rs) of `gameplay.rs` .
 
-```
-// gameplay/provable_game_logic/src/gameplay.rs
-...
-/* STATEFUL FUNCTIONS This defines the initialization of the game*/
-#[wasm_bindgen]
-pub fn initialize_game(total_steps: u64, current_position: u64) {
-    ...
-}
-
-/* STATEFUL FUNCTIONS This is defines the logic when player moves one step/entering one command*/
-#[wasm_bindgen]
-pub fn step(input: u64) {
-    ...
-}
-
-/* PURE FUNCTIONS This function returns the game state, but parse into Json, so can be used in Javascript */
-#[wasm_bindgen]
-pub fn get_game_state() -> String {
-    ...
-}
-
-/* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
-pub fn _get_game_state() -> RustGameState {
-    ...
-}
-```
-
-Here's an [example](https://github.com/m4-team/spin-sdk/blob/sdk/gameplay/provable_game_logic/src/gameplay.rs) of `gameplay.rs` .
-
-> Note, the code is Rust needs be compatible with the `wasm-bindgen` library.
-
-> Note that zkmain is the definition for the ZK program. This is used when we generate the proof. We give the prover inputs, the prover will prove according to the code defined in zkmain.
-
-### Testing the Provable Game Logic
+## Testing the Provable Game Logic
 
 The ZK program only serves the definition of the program. We can write more complex Rust code outside `zkmain.rs` and import to use them. Therefore, sometime we may want to test these Rust codes directly.
 
 Since the ZK program is not compatible with many external Rust crates out there (e.g `termion` for working with terminal interface), we would want to separate our dev dependencies with our zkmain dependencies. We recommended using two separate crate like this:
 
-![image.png](https://eraser.imgix.net/workspaces/VhcsNlA4uYelufEWe1gi/pihQdzIKQ9QhmpC9EQzym8TLbGg2/P6Q-Ite_pPXjPWCxeehzV.png?ixlib=js-3.7.0 "image.png")
+<img src="https://eraser.imgix.net/workspaces/VhcsNlA4uYelufEWe1gi/pihQdzIKQ9QhmpC9EQzym8TLbGg2/P6Q-Ite_pPXjPWCxeehzV.png?ixlib=js-3.7.0" width="200">
 
 In our example from above the `provable_game_logic\` folder and ` testing_cli``\ ` folder are separated. The `provable_game_logic\` folder will contain all our game logic include `zkmain.rs` where as the `testing_cli\` folder will contain our dev dependencies.
 
@@ -202,9 +223,20 @@ So that the dev dependencies are separated.
 
 Following our example, you can test the game logic directly.
 
-[﻿Test the gameplay in terminal](https://github.com/m4-team/zk-sdk/blob/hackathon/README.md#test-gameplay-logic)
+#### Test the gameplay in terminal
 
-You can modify this [﻿file](https://github.com/m4-team/zk-sdk/blob/hackathon/sdk/gameplay/testing_cli/src/main.rs) to apply to your game's needs.
+```
+cd gameplay
+cargo run // This runs the `testing_cli/main.rs`
+```
+
+You can modify this `testing_cli/main.rs` to apply to your game's needs.
+
+### Dry-Run ZK Program
+
+This dry-runs to help debug any issue might happen during ZK proving, in turn it helps determine if Rust library used are compatible.
+
+TODO
 
 ### Exporting the Provable Game Logic
 
@@ -225,37 +257,6 @@ npx spin build-image --path [path]
 [path]: the path to your `gameplay/provable_game_logic` folder
 ```
 
-#### Publishing your ZK program image/Game to the Cloud Prover
-
-Since we are using a cloud prover, this is easily done by running. We can refer to this image later so ask it to prove an execution of the program.
-
-```
-npx spin publish-image --path [path]
-
-[path]: the path to your `gameplay/provable_game_logic` folder
-```
-
-If correct, you'll recieve an Image Commitment, save that somewhere to be used next.
-
-#### Create the Game & Upload the ZK Commitment On-Chain
-
-> So far, we can submit a proof on-chain and verify if this proof is correct. However, no where we have specified which ZK program this proof is for.
-> A malicious user can always write their own ZK program, generate a correct proof for that program and submit it to our contract.
-
-To prevent this, we need to verify which image the proofs are for.
-
-> For each proof we submit on-chain, they contain an image commitment, Spin Contract will handle verifying it. By default when no image commitment is set, this verification is skipped.
-
-To create a game, open your frontend and click on `Create Game` button.
-
-```
-Name: your game's name
-Description: a short description of the game
-Commitment0-3: copy from when you published the game from previous steps
-```
-
-After entering, this should prompt a metamask popup asking you to sign. This will be the transaction that creates the game on-chain.
-
 ## Frontend
 
 Spin Team has already built a simple frontend for you. There's no need to modify the frontend.
@@ -269,3 +270,51 @@ Go to `frontend/`
 ```
 npm install && npm run dev
 ```
+
+### Update After Modification to Image
+
+Everytime after modifying the gameplay, you need to [build](./5_TECHNICAL_GUIDE_HACKATHON.md#building-the-zk-program-image) to reflect changes to the frontend.
+
+## Publish Your Game
+
+It's time to publish your game to the cloud prover, and submit it on-chain.
+
+#### Publishing your ZK program image/Game to the Cloud Prover
+
+```
+npx spin publish-image --path [path]
+
+[path]: the path to your `gameplay/provable_game_logic` folder
+```
+
+If correct, you'll recieve an Image Commitment and Image Hash, save that somewhere to be used next.
+
+We'll refer to this image ID later so ask it to prove an execution of the program.
+
+> Record down `image_hash` and `image_commitments` and `game_id`. If you have not recorded it down, just run it again.
+
+#### Tell the Frontend About Your Game
+
+Fill in `.env` under `frontend/.env` with information from the previous `publish-image` step. If you have not recorded it down, just run it again.
+
+#### Create the Game & Upload the ZK Commitment On-Chain
+
+> About ZK Commitment: A malicious user can always write their own ZK program, generate a correct proof for that program and submit it to our contract. Therefore, we want to identify which ZK program generated that proof.
+
+> For each proof we submit on-chain, they contain an image commitment, Spin Contract will handle verifying it. By default when no image commitment is set, this verification is skipped.
+
+To create a game, open your frontend and click on `Create Game` button.
+
+```
+Name: your game's name
+Description: a short description of the game
+Commitment0-3: copy from when you published the game from previous `publish-image` steps
+```
+
+After entering, this should prompt a metamask popup asking you to sign. This will be the transaction that creates the game on-chain.
+
+Voilà! You have create a ZK game on-chain. Now let's play it!
+
+## Playing the Game
+
+TODO

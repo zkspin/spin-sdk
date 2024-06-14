@@ -2,7 +2,7 @@
 
 # Source Code Repository
 
-[﻿github.com/m4-team/spin-sdk](https://github.com/m4-team/spin-sdk)
+[github.com/m4-team/spin-sdk](https://github.com/m4-team/spin-sdk)
 
 # Outline
 
