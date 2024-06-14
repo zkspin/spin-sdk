@@ -16,7 +16,6 @@ interface SpinConstructor {
 export class Spin {
     gamePlay: GamePlay;
     cloudCredentials: ProveCredentials;
-    public gameID: string = "";
     inputs: number[] = []; // public inputs
     witness: number[] = []; // private inputs
 
@@ -24,9 +23,6 @@ export class Spin {
     constructor({ onReady, cloudCredentials }: SpinConstructor) {
         this.gamePlay = new GamePlay({
             callback: async () => {
-                await this.getGameID().then((gameID) => {
-                    this.gameID = gameID;
-                });
                 onReady();
             },
         });
@@ -77,28 +73,41 @@ export class Spin {
             "",
             ""
         );
-        const imageInfo = await helper.queryImage(
-            this.cloudCredentials.IMAGE_HASH
-        );
 
-        if (!imageInfo || !imageInfo.checksum) {
-            throw Error("Image not found");
+        let retryCount = 0;
+
+        while (retryCount < 3) {
+            try {
+                const imageInfo = await helper.queryImage(
+                    this.cloudCredentials.IMAGE_HASH
+                );
+
+                if (!imageInfo || !imageInfo.checksum) {
+                    throw Error("Image not found");
+                }
+                const imageCommitment =
+                    commitmentUint8ArrayToVerifyInstanceBigInts(
+                        imageInfo.checksum.x,
+                        imageInfo.checksum.y
+                    );
+
+                const gameID = ethers.solidityPackedKeccak256(
+                    ["uint256", "uint256", "uint256"],
+                    [imageCommitment[0], imageCommitment[1], imageCommitment[2]]
+                );
+                return gameID;
+            } catch (error: any) {
+                console.error(`Caught error: ${error}`);
+                if (error.message.startsWith("Too many requests")) {
+                    console.log(`Caught 429 error. Retrying in 5 seconds...`);
+                    await new Promise((resolve) => setTimeout(resolve, 5000));
+                    retryCount++;
+                } else {
+                    throw error;
+                }
+            }
         }
-
-        const imageCommitment = commitmentUint8ArrayToVerifyInstanceBigInts(
-            imageInfo.checksum.x,
-            imageInfo.checksum.y
-        );
-
-        function createCommit2() {
-            return ethers.solidityPackedKeccak256(
-                ["uint256", "uint256", "uint256"],
-                [imageCommitment[0], imageCommitment[1], imageCommitment[2]]
-            );
-        }
-
-        const gameID = createCommit2();
-        return gameID;
+        throw Error("Failed to get image commitment");
     }
 
     // ================================================================================================

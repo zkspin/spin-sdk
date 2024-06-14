@@ -2,35 +2,46 @@ import React, { useState } from "react";
 import { createGame } from "./Web3API";
 interface CreateGameProps {
     onClose: () => void;
+    setLoadingScreen: (loading: boolean) => void;
 }
 
-export default function CreateGame({ onClose }: CreateGameProps) {
+export default function CreateGame({
+    onClose,
+    setLoadingScreen,
+}: CreateGameProps) {
     const [gameName, setGameName] = useState("");
     const [gameDescription, setGameDescription] = useState("");
     const [commitment, setCommitment] = useState<string[]>(["", "", ""]);
 
     async function onClickCreateGame() {
-        // Create the game
-        console.log("Create game");
-        console.log("Game Name:", gameName);
-        console.log("Game Description:", gameDescription);
-        console.log("Commitment:", commitment);
+        try {
+            // Create the game
+            console.log("Create game");
+            console.log("Game Name:", gameName);
+            console.log("Game Description:", gameDescription);
+            console.log("Commitment:", commitment);
+            setLoadingScreen(true);
 
-        const commitmentBigInts = commitment.map((c) => {
-            const trimmedC = c.trim();
-            const endWithN = trimmedC.endsWith("n");
-            return endWithN
-                ? BigInt(trimmedC.substring(0, trimmedC.length - 1))
-                : BigInt(trimmedC);
-        });
+            const commitmentBigInts = commitment.map((c) => {
+                const trimmedC = c.trim();
+                const endWithN = trimmedC.endsWith("n");
+                return endWithN
+                    ? BigInt(trimmedC.substring(0, trimmedC.length - 1))
+                    : BigInt(trimmedC);
+            });
 
-        const result = await createGame(
-            gameName,
-            gameDescription,
-            commitmentBigInts
-        );
-        console.log(result);
-        onClose();
+            const result = await createGame(
+                gameName,
+                gameDescription,
+                commitmentBigInts
+            );
+            console.log(result);
+        } catch (error) {
+            alert(`Failed to create game: ${error}`);
+        } finally {
+            onClose();
+            setLoadingScreen(false);
+        }
     }
 
     return (
