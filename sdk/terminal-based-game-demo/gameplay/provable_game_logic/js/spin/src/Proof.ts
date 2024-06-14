@@ -81,18 +81,40 @@ export async function getImageCommitmentBigInts(
         "",
         ""
     );
-    const imageInfo = await helper.queryImage(cloudCredential.IMAGE_HASH);
-
-    if (!imageInfo || !imageInfo.checksum) {
-        throw Error("Image not found");
-    }
-
-    const commitment = commitmentUint8ArrayToVerifyInstanceBigInts(
-        imageInfo.checksum.x,
-        imageInfo.checksum.y
+    console.log(
+        "Getting Image Commitments cloudCredential.IMAGE_HASH = ",
+        cloudCredential.IMAGE_HASH
     );
+    let retryCount = 0;
 
-    return commitment;
+    while (retryCount < 3) {
+        try {
+            const imageInfo = await helper.queryImage(
+                cloudCredential.IMAGE_HASH
+            );
+
+            if (!imageInfo || !imageInfo.checksum) {
+                throw Error("Image not found");
+            }
+
+            const commitment = commitmentUint8ArrayToVerifyInstanceBigInts(
+                imageInfo.checksum.x,
+                imageInfo.checksum.y
+            );
+
+            return commitment;
+        } catch (error: any) {
+            console.error(`Caught error: ${error.message}`);
+            if (error.response && error.response.status === 429) {
+                console.log(`Caught 429 error. Retrying in 5 seconds...`);
+                await new Promise((resolve) => setTimeout(resolve, 5000));
+                retryCount++;
+            } else {
+                throw error;
+            }
+        }
+    }
+    throw Error("Failed to get image commitment");
 }
 
 export async function load_proving_taks_util_result(
@@ -158,8 +180,8 @@ export async function load_proving_taks(
             tasksInfo = (await helper.loadTasks(query)).data;
             break;
         } catch (error: any) {
-            console.error(`Caught error: ${error.message}`);
-            if (error.response && error.response.status === 429) {
+            console.error(`Caught error: ${error}`);
+            if (error.message.startsWith("Too many requests")) {
                 console.log(`Caught 429 error. Retrying in 5 seconds...`);
                 await new Promise((resolve) => setTimeout(resolve, 5000));
                 retryCount++;

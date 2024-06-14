@@ -6,6 +6,7 @@ import CreateGame from "./CreateGame";
 import Settings from "./Settings";
 import { Spin } from "spin";
 import { submitGame } from "./Web3API";
+import { LoadingScreen } from "./Loading";
 let spin: Spin;
 
 const ZK_CLOUD_USER_ADDRESS = "0xd8f157Cc95Bc40B4F0B58eb48046FebedbF26Bde";
@@ -17,8 +18,9 @@ export default function Home() {
     const [leaderboardOpen, setLeaderboardOpen] = React.useState(false);
     const [settingsOpen, setSettingsOpen] = React.useState(false);
     const [createGameOpen, setCreateGameOpen] = React.useState(false);
+    const [loadingScreen, setLoadingScreen] = React.useState(false);
+    const [loadingMessage, setLoadingMessage] = React.useState<string>("");
     const [gameString, setGameString] = React.useState<string>("");
-    const [gameID, setGameID] = React.useState<string>("");
     const [gameScore, setGameScore] = React.useState<number>(0);
 
     useEffect(() => {
@@ -27,7 +29,6 @@ export default function Home() {
                 console.log("Spin is ready");
                 const randomSeed = Math.floor(Math.random() * 1000000);
                 spin.init_game(randomSeed);
-                setGameID(spin.gameID);
             },
             cloudCredentials: {
                 USER_ADDRESS: ZK_CLOUD_USER_ADDRESS,
@@ -39,7 +40,7 @@ export default function Home() {
     }, []);
 
     const handleKeyDown = (event: KeyboardEvent) => {
-        if (createGameOpen) {
+        if (overlayOpen()) {
             return;
         }
 
@@ -64,25 +65,28 @@ export default function Home() {
         };
     }, [createGameOpen]);
 
+    function overlayOpen() {
+        return (
+            leaderboardOpen || settingsOpen || createGameOpen || loadingScreen
+        );
+    }
+
     function onClickOpenLeaderboard() {
-        if (settingsOpen || createGameOpen) {
+        if (overlayOpen()) {
             return;
         }
-        // Open the leaderboard
         setLeaderboardOpen(true);
     }
 
     function onClickOpenSettings() {
-        if (leaderboardOpen || createGameOpen) {
+        if (overlayOpen()) {
             return;
         }
-        // Open the settings
-        console.log("Open settings");
         setSettingsOpen(true);
     }
 
     function onClickOpenCreateGame() {
-        if (leaderboardOpen || settingsOpen) {
+        if (overlayOpen()) {
             return;
         }
         setCreateGameOpen(true);
@@ -101,19 +105,26 @@ export default function Home() {
     }
 
     async function onClickSubmitProof() {
-        const proof = await spin.generateProof();
+        try {
+            setLoadingScreen(true);
+            const proof = await spin.generateProof();
 
-        console.log("Proof: ", proof);
+            console.log("Proof: ", proof);
 
-        if (proof) {
-            await submitGame(proof);
+            if (proof) {
+                await submitGame(proof);
 
-            alert("Game submitted!");
-            spin.reset(() => {
-                console.log("Spin is reset ready");
-                const randomSeed = Math.floor(Math.random() * 1000000);
-                spin.init_game(randomSeed);
-            });
+                alert("Game submitted!");
+                spin.reset(() => {
+                    console.log("Spin is reset ready");
+                    const randomSeed = Math.floor(Math.random() * 1000000);
+                    spin.init_game(randomSeed);
+                });
+            }
+        } catch (error) {
+            alert(`Failed to Submit Proof: ${error}`);
+        } finally {
+            setLoadingScreen(false);
         }
     }
 
@@ -167,7 +178,7 @@ export default function Home() {
                                         padding: "10px",
                                     }}
                                 >
-                                    Game ID: {gameID}
+                                    Game ID: {process.env.NEXT_PUBLIC_GAME_ID}
                                 </span>
                             </div>
                             <div style={{ justifyContent: "flex-start" }}>
@@ -264,19 +275,27 @@ export default function Home() {
                         backgroundColor: "white",
                     }}
                 >
+                    {loadingScreen && (
+                        <LoadingScreen loadingMessage={loadingMessage} />
+                    )}
                     {leaderboardOpen && (
                         <Leaderboard
                             onClickCloseLeaderboard={closeLeaderboard}
-                            gameId={gameID}
+                            gameId={process.env.NEXT_PUBLIC_GAME_ID!}
                         />
                     )}
                     {settingsOpen && (
                         <Settings
                             onClickCloseSettings={closeSettings}
-                            gameID={gameID}
+                            gameID={process.env.NEXT_PUBLIC_GAME_ID!}
                         />
                     )}
-                    {createGameOpen && <CreateGame onClose={closeCreateGame} />}
+                    {createGameOpen && (
+                        <CreateGame
+                            onClose={closeCreateGame}
+                            setLoadingScreen={setLoadingScreen}
+                        />
+                    )}
                 </div>
             </div>
         </>
