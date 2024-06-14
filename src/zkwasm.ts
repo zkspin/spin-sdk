@@ -67,6 +67,9 @@ export async function addImage(
 
     try {
         await helper.addNewWasmImage(task);
+
+        // sleep for 2 seconds to wait for the image to be added
+        await new Promise((resolve) => setTimeout(resolve, 2000));
     } catch (e) {
         if (
             e instanceof Error &&
@@ -112,9 +115,9 @@ export async function getImageCommitmentBigInts(
  * @param y: y hex string
  */
 function commitmentHexToHexString(x: string, y: string) {
-    const hexString1 = "0x" + x.slice(12);
+    const hexString1 = "0x" + x.slice(11);
     const hexString2 =
-        "0x" + y.slice(39) + "00000000000000000" + x.slice(2, 12);
+        "0x" + y.slice(39) + "000000000000000000" + x.slice(2, 11);
     const hexString3 = "0x" + y.slice(2, 39);
 
     return [hexString1, hexString2, hexString3];

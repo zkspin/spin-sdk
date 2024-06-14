@@ -64,6 +64,13 @@ pub fn get_game_state() -> String {
     serde_json::to_string(&game).unwrap()
 }
 
+#[wasm_bindgen]
+pub fn get_game_score() -> u64 {
+    // REWRITE THIS TO RETURN THE SIZE OF THE GAME STATE
+    let game = _get_game_state();
+    return game.score;
+}
+
 /* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
 pub fn _get_game_state() -> RustGameState {
     let game = GAME_STATE.lock().unwrap().clone();
