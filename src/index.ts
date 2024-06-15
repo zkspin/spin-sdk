@@ -14,6 +14,7 @@ const FOLDER_IGNORE_LIST = [
     "artifacts",
     "cache",
     "typechain-types",
+    "pkg",
 ];
 const FILE_IGNORE_LIST = [".env"];
 
@@ -161,10 +162,13 @@ function build() {
     console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
 
-    const runMakefile = spawnSync("make", ["build"], { cwd: projectPath });
-    console.log(
-        `stdout: ${runMakefile.stdout.toString()} ${runMakefile.stderr.toString()}`
-    );
+    spawnSync("make", ["build"], {
+        cwd: projectPath,
+        stdio: "inherit",
+    });
+    // console.log(
+    //     `stdout: ${runMakefile.stdout.toString()} ${runMakefile.stderr.toString()}`
+    // );
 
     // """
     // @cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir pkg
@@ -302,15 +306,18 @@ function dryRun() {
 
     const { spawnSync } = require("child_process");
 
-    const runSetup = spawnSync(`${wasmPath}/zkwasm-cli`, [
-        "--params",
-        `${filePath}/params`,
-        "wasm_output",
-        "setup",
-        "--wasm",
-        `${filePath}/pkg/gameplay_bg.wasm`,
-    ]);
-    console.log(`${runSetup.stdout.toString()} ${runSetup.stderr.toString()}`);
+    const runSetup = spawnSync(
+        `${wasmPath}/zkwasm-cli`,
+        [
+            "--params",
+            `${filePath}/params`,
+            "wasm_output",
+            "setup",
+            "--wasm",
+            `${filePath}/pkg/gameplay_bg.wasm`,
+        ],
+        { stdio: "inherit" }
+    );
 
     const wasmArgs = [
         "--params",
@@ -329,11 +336,9 @@ function dryRun() {
 
     console.log("Running dry-run with args:", wasmArgs.join(" "));
 
-    const runDryRun = spawnSync(`${wasmPath}/zkwasm-cli`, wasmArgs);
-
-    console.log(
-        `${runDryRun.stdout.toString()} ${runDryRun.stderr.toString()}`
-    );
+    const runDryRun = spawnSync(`${wasmPath}/zkwasm-cli`, wasmArgs, {
+        stdio: "inherit",
+    });
 }
 
 const VERSION = "0.0.1";

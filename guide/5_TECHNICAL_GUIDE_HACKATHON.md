@@ -232,24 +232,6 @@ cargo run // This runs the `testing_cli/main.rs`
 
 You can modify this `testing_cli/main.rs` to apply to your game's needs.
 
-### Dry-Run ZK Program
-
-This dry-runs to help debug any issue might happen during ZK proving, in turn it helps determine if Rust library used are compatible.
-
-#### Prerequisites
-
--   [Install the zkwasm-cli](https://github.com/DelphinusLab/zkWasm?tab=readme-ov-file#quick-start-with-zkwasm-command-line)
--   [Build the WASM file](./5_TECHNICAL_GUIDE_HACKATHON.md#building-the-zk-program-image)
-
-#### Run Dry-Run
-
-```
-npx spin dry-run --path [path] --zkwasm [path to zkwasm-cli] --seed [random seed] --keyCode [input1]  --keyCode [input2]
-
-[path]: the path to your `gameplay/provable_game_logic` folder
-[zkwasm]: the path to zkwasm-cli, zkwasm-cli should be under `zkwasm/target/debug/zkwasm-cli`
-```
-
 ### Exporting the Provable Game Logic
 
 #### Prerequisites
@@ -269,6 +251,29 @@ npx spin build-image --path [path]
 [path]: the path to your `gameplay/provable_game_logic` folder
 ```
 
+### Dry-Run ZK Program
+
+This dry-runs to help debug any issue might happen during ZK proving, in turn it helps determine if Rust library used are compatible.
+
+#### Prerequisites
+
+-   [Install the zkwasm-cli](https://github.com/DelphinusLab/zkWasm?tab=readme-ov-file#quick-start-with-zkwasm-command-line) (installation might take a while)
+-   [Build the WASM file](./5_TECHNICAL_GUIDE_HACKATHON.md#building-the-zk-program-image)
+
+#### Run Dry-Run
+
+```
+npx spin dry-run --path [path] --zkwasm [path to zkwasm-cli] --seed [random seed] --keyCode [input1]  --keyCode [input2]
+
+[path]: the path to your `gameplay/provable_game_logic` folder
+[zkwasm]: the path to zkwasm-cli, zkwasm-cli should be under `zkwasm/target/debug/zkwasm-cli`
+```
+
+seed: the seed you want to force the game
+keyCode: the inputs to step(), you can enter multiple keyCode
+
+The dry-run command will output the final state of the game after all inputs has been executed.
+
 ## Frontend
 
 Spin Team has already built a simple frontend for you. There's no need to modify the frontend.
@@ -282,6 +287,10 @@ Go to `frontend/`
 ```
 npm install && npm run dev
 ```
+
+> `Finsh Game`,`Leaderboard`,`Settigns`, `Create Game` won't work until you [publish the game](./5_TECHNICAL_GUIDE_HACKATHON.md#publish-your-game)
+
+> If you face any issue with the UI, just refresh or contact us.
 
 ### Force A Seed
 
@@ -311,9 +320,13 @@ We'll refer to this image ID later so ask it to prove an execution of the progra
 
 > Record down `image_hash` and `image_commitments` and `game_id`. If you have not recorded it down, just run it again.
 
+> If you face `Image not found`, just wait for few seconds and run it again.
+
 #### Tell the Frontend About Your Game
 
-Fill in `.env` under `frontend/.env` with information from the previous `publish-image` step. If you have not recorded it down, just run it again.
+Create and fill in `.env.local` under `frontend/.env.local` with information from the previous `publish-image` step.
+
+If you have not recorded it down, just run it again.
 
 #### Create the Game & Upload the ZK Commitment On-Chain
 
@@ -335,4 +348,6 @@ Voilà! You have create a ZK game on-chain. Now let's play it!
 
 ## Playing the Game
 
-TODO
+Play the game, and when you finish playing, click `Finish & Prove Game`, this will generate a proof and ask you to submit it on-chain. (This will take a while, 1 minute or 2).
+
+Once the game is proved and submitted on-chain, you can check out `Leaderboard`.

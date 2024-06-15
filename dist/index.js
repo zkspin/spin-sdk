@@ -27,6 +27,7 @@ const FOLDER_IGNORE_LIST = [
     "artifacts",
     "cache",
     "typechain-types",
+    "pkg",
 ];
 const FILE_IGNORE_LIST = [".env"];
 const ZK_CLOUD_USER_ADDRESS = "0xd8f157Cc95Bc40B4F0B58eb48046FebedbF26Bde";
@@ -136,8 +137,13 @@ function build() {
     const projectPath = parsePath(args[args.indexOf("--path") + 1]);
     console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
-    const runMakefile = spawnSync("make", ["build"], { cwd: projectPath });
-    console.log(`stdout: ${runMakefile.stdout.toString()} ${runMakefile.stderr.toString()}`);
+    spawnSync("make", ["build"], {
+        cwd: projectPath,
+        stdio: "inherit",
+    });
+    // console.log(
+    //     `stdout: ${runMakefile.stdout.toString()} ${runMakefile.stderr.toString()}`
+    // );
     // """
     // @cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir pkg
     // # Append the JS import helper to the front of the generated JS file
@@ -237,8 +243,7 @@ function dryRun() {
         "setup",
         "--wasm",
         `${filePath}/pkg/gameplay_bg.wasm`,
-    ]);
-    console.log(`${runSetup.stdout.toString()} ${runSetup.stderr.toString()}`);
+    ], { stdio: "inherit" });
     const wasmArgs = [
         "--params",
         `${filePath}/params`,
@@ -254,8 +259,9 @@ function dryRun() {
         ...privateInputs.flatMap((i) => ["--private", `${i}:i64`]),
     ];
     console.log("Running dry-run with args:", wasmArgs.join(" "));
-    const runDryRun = spawnSync(`${wasmPath}/zkwasm-cli`, wasmArgs);
-    console.log(`${runDryRun.stdout.toString()} ${runDryRun.stderr.toString()}`);
+    const runDryRun = spawnSync(`${wasmPath}/zkwasm-cli`, wasmArgs, {
+        stdio: "inherit",
+    });
 }
 const VERSION = "0.0.1";
 const INTERNAL_VERSION = "0.2";
