@@ -29,7 +29,7 @@ export async function getImageCommitmentBigInts(
  * @param y: y hex string
  */
 function commitmentHexToHexString(x: string, y: string) {
-    const hexString1 = "0x" + x.slice(13);
+    const hexString1 = "0x" + x.slice(12, 66);
     const hexString2 =
         "0x" + y.slice(39) + "00000000000000000" + x.slice(2, 12);
     const hexString3 = "0x" + y.slice(2, 39);
@@ -45,19 +45,22 @@ function commitmentUint8ArrayToVerifyInstanceBigInts(
     const yHexString = ZkWasmUtil.bytesToHexStrings(yUint8Array);
     // console.log("xHexString = ", xHexString);
     // console.log("yHexString = ", yHexString);
+
+    console.log("xHexString[0] = ", xHexString, xHexString[0].length);
+    console.log("yHexString[0] = ", yHexString, yHexString[0].length);
     const verifyInstances = commitmentHexToHexString(
-        xHexString[0],
-        yHexString[0]
+        "0x" + xHexString[0].slice(2).padStart(64, "0"),
+        "0x" + yHexString[0].slice(2).padStart(64, "0")
     );
     // console.log("verifyInstances = ", verifyInstances);
-    return verifyInstances;
 
     // Ignoring the following code for now
-    // const verifyingBytes = ZkWasmUtil.hexStringsToBytes(verifyInstances, 32);
-    // // console.log("verifyingBytes = ", verifyingBytes);
-    // const verifyingBigInts = ZkWasmUtil.bytesToBigIntArray(verifyingBytes);
-    // // console.log("verifyingBigInts = ", verifyingBigInts);
+    const verifyingBytes = ZkWasmUtil.hexStringsToBytes(verifyInstances, 32);
+    // console.log("verifyingBytes = ", verifyingBytes);
+    const verifyingBigInts = ZkWasmUtil.bytesToBigIntArray(verifyingBytes);
+    console.log("verifyingBigInts = ", verifyingBigInts);
     // return verifyingBigInts;
+    return verifyInstances;
 }
 
 async function test() {
