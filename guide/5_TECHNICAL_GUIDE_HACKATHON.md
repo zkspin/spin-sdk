@@ -283,6 +283,12 @@ Go to `frontend/`
 npm install && npm run dev
 ```
 
+### Force A Seed
+
+The frontend will randomly generate seeds for you, if you want to force a seed:
+
+Modify `NEXT_PUBLIC_GAME_SEED` in `frontend/.env` to force a seed.
+
 ### Update After Modification to Image
 
 Everytime after modifying the gameplay, you need to [build](./5_TECHNICAL_GUIDE_HACKATHON.md#building-the-zk-program-image) to reflect changes to the frontend.

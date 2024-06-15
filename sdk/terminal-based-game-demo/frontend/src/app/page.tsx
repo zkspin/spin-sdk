@@ -20,6 +20,7 @@ export default function Home() {
     const [createGameOpen, setCreateGameOpen] = React.useState(false);
     const [loadingScreen, setLoadingScreen] = React.useState(false);
     const [loadingMessage, setLoadingMessage] = React.useState<string>("");
+    const [gameSeed, setGameSeed] = React.useState<number>(0);
     const [gameString, setGameString] = React.useState<string>("");
     const [gameScore, setGameScore] = React.useState<number>(0);
 
@@ -27,8 +28,11 @@ export default function Home() {
         spin = new Spin({
             onReady: () => {
                 console.log("Spin is ready");
-                const randomSeed = Math.floor(Math.random() * 1000000);
+                const randomSeed = process.env.NEXT_PUBLIC_GAME_SEED
+                    ? Number(process.env.NEXT_PUBLIC_GAME_SEED)
+                    : Math.floor(Math.random() * 1000000);
                 spin.init_game(randomSeed);
+                setGameSeed(randomSeed);
             },
             cloudCredentials: {
                 USER_ADDRESS: ZK_CLOUD_USER_ADDRESS,
@@ -182,7 +186,8 @@ export default function Home() {
                                 </span>
                             </div>
                             <div style={{ justifyContent: "flex-start" }}>
-                                Score: {gameScore}
+                                Seed(edit`frontend/.env` to force seed):{" "}
+                                {gameSeed} Score: {gameScore}
                             </div>
                         </div>
                     </div>
