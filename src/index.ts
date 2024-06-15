@@ -125,10 +125,23 @@ function init() {
 }
 
 function help() {
-    console.log("Usage: npx spin [command]");
+    console.log("Usage: npx spin [command] \n");
     console.log("Commands:");
     console.log("  init [folderName]  Initialize project with gameplay folder");
     console.log("  help               Show help information");
+    console.log("  build-image        Build the project wasm image");
+    console.log("  publish-image      Publish the project wasm image");
+    console.log("  dry-run            Run a dry-run of the wasm image");
+    console.log("  version            Show the version of spin");
+
+    console.log("Options:");
+    console.log("  --path             Path to the provable_game_logic folder");
+    console.log("  --zkwasm           Path to the zkwasm-cli folder");
+    console.log("  --public           Public inputs for the dry-run");
+    console.log("  --private          Private inputs for the dry-run");
+    console.log("  --seed             Seed for the dry-run");
+    console.log("  --keyCode          KeyCode for the dry-run");
+    console.log("  --hackathon        Initialize for the hackathon");
 }
 
 function build() {
@@ -144,14 +157,21 @@ function build() {
         process.exit(1);
     }
 
-    const path = args[args.indexOf("--path") + 1];
-    console.log("Building project at path:", path);
+    const projectPath = parsePath(args[args.indexOf("--path") + 1]);
+    console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
 
-    const runMakefile = spawnSync("make", ["build"]);
+    const runMakefile = spawnSync("make", ["build"], { cwd: projectPath });
     console.log(
         `stdout: ${runMakefile.stdout.toString()} ${runMakefile.stderr.toString()}`
     );
+
+    // """
+    // @cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir pkg
+    // # Append the JS import helper to the front of the generated JS file
+    // cat misc/wasm_import_template.js > temp.js && tail -n +2 pkg/$(OUT_NAME).js >> temp.js && mv temp.js pkg/$(OUT_NAME).js
+    // cd js/spin && npm install && npm run build
+    // """
 }
 
 async function publish() {
@@ -167,7 +187,7 @@ async function publish() {
         process.exit(1);
     }
 
-    const folderPath = args[args.indexOf("--path") + 1];
+    const folderPath = parsePath(args[args.indexOf("--path") + 1]);
 
     const filePath = path.join(folderPath, "pkg", "gameplay_bg.wasm");
 
@@ -183,7 +203,7 @@ async function publish() {
 
     console.log("Publishing wasm image at path:", filePath);
 
-    const imageCommitment = await addImage(
+    const { imageCommitment, md5 } = await addImage(
         {
             USER_ADDRESS: ZK_CLOUD_USER_ADDRESS,
             USER_PRIVATE_KEY: ZK_CLOUD_USER_PRIVATE_KEY,
@@ -193,13 +213,6 @@ async function publish() {
         filePath
     );
 
-    console.log("Image Commitment: ", imageCommitment);
-
-    // calculate image hash
-    // function commitmentToBytes32(uint256[3] memory commitments) public pure returns (bytes32) {
-    //     return keccak256(abi.encodePacked(commitments[0], commitments[1], commitments[2]));
-    // }
-
     function createCommit2() {
         return ethers.solidityPackedKeccak256(
             ["uint256", "uint256", "uint256"],
@@ -207,49 +220,120 @@ async function publish() {
         );
     }
 
-    console.log("Game ID: ", createCommit2());
+    const gameID = createCommit2();
+
+    console.log("--------------------");
+    console.log("Record The Following Information:");
+    console.log("Game ID: ", gameID);
+    console.log("Image Hash", md5);
+    console.log("Image Commitments: ", imageCommitment);
 
     return imageCommitment;
 }
 
-function hackathon() {
-    console.log("Initializing project for hackathon...");
-    if (args[1] === "build") {
-        const optionalArgs = args.filter((arg) => arg.startsWith("--"));
+function version() {
+    return;
+}
 
-        if (
-            !optionalArgs.includes("--name") ||
-            !optionalArgs.includes("--desc") ||
-            !optionalArgs.includes("--path")
-        ) {
-            console.error("--name flag is required, a name for the game.");
-            console.error(
-                "--desc flag is required, a description for the game."
-            );
-            console.error(
-                "--path flag is required, a path to provable_game_logic folder."
-            );
-            console.error(
-                "Usage: npx spin hackathon build --name [name] --desc [desc] --path [path]"
-            );
-            process.exit(1);
-        }
-
-        const name = args[args.indexOf("--name") + 1];
-        const desc = args[args.indexOf("--desc") + 1];
-
-        // this builds image, publish image, and deploy contract
-        console.log("Building project...");
-        build();
-        console.log("Publishing project...");
-        const imageCommitment = publish();
-
-        // create game by calling createGame
+function parsePath(_path: string) {
+    // check if wasmPath is absolute or relative
+    if (!path.isAbsolute(_path)) {
+        return path.join(process.cwd(), _path);
+    } else {
+        return _path;
     }
 }
 
-function version() {
-    return;
+function dryRun() {
+    // get the working directory
+
+    const optionalArgs = args.filter((arg) => arg.startsWith("--"));
+    if (
+        !optionalArgs.includes("--path") ||
+        !optionalArgs.includes("--zkwasm")
+    ) {
+        console.error(
+            "--path flag is required, a path to provable_game_logic folder."
+        );
+        console.error(
+            "--zkwasm flag is required, a path to folder containing zkwasm-cli"
+        );
+        console.error(
+            "Usage: npx spin dry-run --path [path] --zkwasm [zkwasm path] --public [public inputs] ... --private [private inputs] --private [private inputs] ...",
+
+            "Hackathon Usage: npx spin dry-run --path [path] --zkwasm [zkwasm path] --seed [seed] --keyCode [keyCode] --keyCode [keyCode] ..."
+        );
+        process.exit(1);
+    }
+
+    const filePath = parsePath(args[args.indexOf("--path") + 1]);
+    const wasmPath = parsePath(args[args.indexOf("--zkwasm") + 1]);
+
+    if (!fs.existsSync(filePath)) {
+        console.error("Path does not exist: ", filePath);
+        process.exit(1);
+    }
+
+    if (!fs.existsSync(wasmPath)) {
+        console.error("Zkwasm Path does not exist: ", wasmPath);
+        process.exit(1);
+    }
+
+    let publicInputs = [];
+
+    for (let i = 0; i < args.length; i++) {
+        if (args[i].startsWith("--public") || args[i].startsWith("--seed")) {
+            publicInputs.push(args[i + 1]);
+        }
+    }
+
+    let privateInputs = [];
+
+    for (let i = 0; i < args.length; i++) {
+        if (
+            args[i].startsWith("--private") ||
+            args[i].startsWith("--keyCode")
+        ) {
+            privateInputs.push(args[i + 1]);
+        }
+    }
+
+    console.log("Running dry-run for wasm at path:", filePath);
+
+    const { spawnSync } = require("child_process");
+
+    const runSetup = spawnSync(`${wasmPath}/zkwasm-cli`, [
+        "--params",
+        `${filePath}/params`,
+        "wasm_output",
+        "setup",
+        "--wasm",
+        `${filePath}/pkg/gameplay_bg.wasm`,
+    ]);
+    console.log(`${runSetup.stdout.toString()} ${runSetup.stderr.toString()}`);
+
+    const wasmArgs = [
+        "--params",
+        `${filePath}/params`,
+        "wasm_output",
+        "dry-run",
+        "--wasm",
+        `${filePath}/pkg/gameplay_bg.wasm`,
+        "--output",
+        `${filePath}/output`,
+        ...publicInputs.flatMap((i) => ["--public", `${i}:i64`]),
+        "--private",
+        `${privateInputs.length}:i64`,
+        ...privateInputs.flatMap((i) => ["--private", `${i}:i64`]),
+    ];
+
+    console.log("Running dry-run with args:", wasmArgs.join(" "));
+
+    const runDryRun = spawnSync(`${wasmPath}/zkwasm-cli`, wasmArgs);
+
+    console.log(
+        `${runDryRun.stdout.toString()} ${runDryRun.stderr.toString()}`
+    );
 }
 
 const VERSION = "0.0.1";
@@ -262,9 +346,8 @@ async function entry() {
         build();
     } else if (args[0] === "publish-image") {
         await publish();
-    } else if (args[0] == "hackathon") {
-        console.log("Initializing project for hackathon...");
-        hackathon();
+    } else if (args[0] === "dry-run") {
+        dryRun();
     } else if (args[0] === "version") {
         version();
     } else if (args[0] === "help") {

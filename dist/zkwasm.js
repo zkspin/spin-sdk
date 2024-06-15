@@ -42,8 +42,6 @@ function addImage(cloudCredential, wasm_path) {
         // TEMP FIX FOR ZKWASM's createAddImageSignMessage returning undefined
         // msgString = msgString.substring(0, msgString.length - "undefined".length);
         let signature = yield zkwasm_service_helper_1.ZkWasmUtil.signMessage(msgString, cloudCredential.USER_PRIVATE_KEY); //Need user private key to sign the msg
-        console.log("msgString = ", msgString);
-        console.log("signature = ", signature);
         let task = Object.assign(Object.assign({}, info), { signature });
         try {
             yield helper.addNewWasmImage(task);
@@ -62,8 +60,8 @@ function addImage(cloudCredential, wasm_path) {
             }
         }
         cloudCredential.IMAGE_HASH = md5;
-        const imageCommitment = getImageCommitmentBigInts(cloudCredential);
-        return imageCommitment;
+        const imageCommitment = yield getImageCommitmentBigInts(cloudCredential);
+        return { imageCommitment, md5 };
     });
 }
 exports.addImage = addImage;
@@ -85,8 +83,8 @@ exports.getImageCommitmentBigInts = getImageCommitmentBigInts;
  * @param y: y hex string
  */
 function commitmentHexToHexString(x, y) {
-    const hexString1 = "0x" + x.slice(11);
-    const hexString2 = "0x" + y.slice(39) + "000000000000000000" + x.slice(2, 11);
+    const hexString1 = "0x" + x.slice(13);
+    const hexString2 = "0x" + y.slice(39) + "00000000000000000" + x.slice(2, 12);
     const hexString3 = "0x" + y.slice(2, 39);
     return [hexString1, hexString2, hexString3];
 }

@@ -236,7 +236,19 @@ You can modify this `testing_cli/main.rs` to apply to your game's needs.
 
 This dry-runs to help debug any issue might happen during ZK proving, in turn it helps determine if Rust library used are compatible.
 
-TODO
+#### Prerequisites
+
+-   [Install the zkwasm-cli](https://github.com/DelphinusLab/zkWasm?tab=readme-ov-file#quick-start-with-zkwasm-command-line)
+-   [Build the WASM file](./5_TECHNICAL_GUIDE_HACKATHON.md#building-the-zk-program-image)
+
+#### Run Dry-Run
+
+```
+npx spin dry-run --path [path] --zkwasm [path to zkwasm-cli]
+
+[path]: the path to your `gameplay/provable_game_logic` folder
+[zkwasm]: the path to zkwasm-cli, zkwasm-cli should be under `zkwasm/target/debug/zkwasm-cli`
+```
 
 ### Exporting the Provable Game Logic
 
