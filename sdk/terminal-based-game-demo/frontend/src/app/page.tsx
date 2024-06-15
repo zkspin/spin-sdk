@@ -186,7 +186,7 @@ export default function Home() {
                                 </span>
                             </div>
                             <div style={{ justifyContent: "flex-start" }}>
-                                Seed(edit`frontend/.env` to force seed):{" "}
+                                Seed(edit`frontend/.env.local` to force seed):{" "}
                                 {gameSeed} Score: {gameScore}
                             </div>
                         </div>

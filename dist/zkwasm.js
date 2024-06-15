@@ -39,8 +39,6 @@ function addImage(cloudCredential, wasm_path) {
         };
         console.log("info is:", info);
         let msgString = zkwasm_service_helper_1.ZkWasmUtil.createAddImageSignMessage(info);
-        // TEMP FIX FOR ZKWASM's createAddImageSignMessage returning undefined
-        // msgString = msgString.substring(0, msgString.length - "undefined".length);
         let signature = yield zkwasm_service_helper_1.ZkWasmUtil.signMessage(msgString, cloudCredential.USER_PRIVATE_KEY); //Need user private key to sign the msg
         let task = Object.assign(Object.assign({}, info), { signature });
         try {
@@ -70,6 +68,7 @@ function getImageCommitmentBigInts(cloudCredential) {
         const helper = new zkwasm_service_helper_1.ZkWasmServiceHelper(cloudCredential.CLOUD_RPC_URL, "", "");
         const imageInfo = yield helper.queryImage(cloudCredential.IMAGE_HASH);
         if (!imageInfo || !imageInfo.checksum) {
+            console.error(cloudCredential.IMAGE_HASH, imageInfo);
             throw Error("Image not found");
         }
         const commitment = commitmentUint8ArrayToVerifyInstanceBigInts(imageInfo.checksum.x, imageInfo.checksum.y);
@@ -83,7 +82,7 @@ exports.getImageCommitmentBigInts = getImageCommitmentBigInts;
  * @param y: y hex string
  */
 function commitmentHexToHexString(x, y) {
-    const hexString1 = "0x" + x.slice(13);
+    const hexString1 = "0x" + x.slice(12, 66);
     const hexString2 = "0x" + y.slice(39) + "00000000000000000" + x.slice(2, 12);
     const hexString3 = "0x" + y.slice(2, 39);
     return [hexString1, hexString2, hexString3];
@@ -93,7 +92,7 @@ function commitmentUint8ArrayToVerifyInstanceBigInts(xUint8Array, yUint8Array) {
     const yHexString = zkwasm_service_helper_1.ZkWasmUtil.bytesToHexStrings(yUint8Array);
     console.log("xHexString = ", xHexString);
     console.log("yHexString = ", yHexString);
-    const verifyInstances = commitmentHexToHexString(xHexString[0], yHexString[0]);
+    const verifyInstances = commitmentHexToHexString("0x" + xHexString[0].slice(2).padStart(64, "0"), "0x" + yHexString[0].slice(2).padStart(64, "0"));
     console.log("verifyInstances = ", verifyInstances);
     const verifyingBytes = zkwasm_service_helper_1.ZkWasmUtil.hexStringsToBytes(verifyInstances, 32);
     console.log("verifyingBytes = ", verifyingBytes);

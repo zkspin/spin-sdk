@@ -51,9 +51,6 @@ export async function addImage(
 
     let msgString = ZkWasmUtil.createAddImageSignMessage(info);
 
-    // TEMP FIX FOR ZKWASM's createAddImageSignMessage returning undefined
-    // msgString = msgString.substring(0, msgString.length - "undefined".length);
-
     let signature: string = await ZkWasmUtil.signMessage(
         msgString,
         cloudCredential.USER_PRIVATE_KEY
@@ -98,6 +95,7 @@ export async function getImageCommitmentBigInts(
     const imageInfo = await helper.queryImage(cloudCredential.IMAGE_HASH);
 
     if (!imageInfo || !imageInfo.checksum) {
+        console.error(cloudCredential.IMAGE_HASH, imageInfo);
         throw Error("Image not found");
     }
 
