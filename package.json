@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "zkwasm-service-helper": "github:DelphinusLab/zkWasm-service-helper",
+    "zkwasm-service-helper": "github:DelphinusLab/zkWasm-service-helper#4e0183adf403ea467a9a1117330ee11d3b5cd59b",
     "@types/node": "^20.14.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
