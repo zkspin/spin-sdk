@@ -14,13 +14,13 @@ impl LCGRandGen {
     }
 
     // max is exclusive
-    pub fn randint(&mut self, max: u32) -> u32 {
+    pub fn randint(&mut self, max: u64) -> u64 {
         self.seed = (self.seed * LCG_A + LCG_C) % LCG_M;
-        (self.seed % (max as u64)) as u32
+        (self.seed % (max as u64)) as u64
     }
 
     // max is exclusive
-    pub fn randint_range(&mut self, min: u32, max: u32) -> u32 {
+    pub fn randint_range(&mut self, min: u64, max: u64) -> u64 {
         min + self.randint(max - min)
     }
 }

@@ -1,9 +1,10 @@
 use crate::definition::RustGameState;
+use crate::lcg_rand_gen::LCGRandGen;
 use once_cell::sync::Lazy;
+use std::collections::HashMap;
 use std::sync::Mutex;
 use wasm_bindgen::prelude::*;
 
-pub const MAX_POSITION: u64 = 10;
 pub static GAME_STATE: Lazy<Mutex<RustGameState>> = Lazy::new(|| Mutex::new(RustGameState::new()));
 
 /* STATEFUL FUNCTIONS This defines the initialization of the game
@@ -19,6 +20,17 @@ pub fn initialize_game(seed: u64) -> () {
 
     game_state.seed = seed;
     game_state.score = 0;
+
+    const MINE_COUNT: u64 = 300;
+
+    game_state.mine_positions = HashMap::new();
+
+    let mut lcg = LCGRandGen::new(seed);
+
+    for _ in 0..MINE_COUNT {
+        let mine_position = lcg.randint_range(0, 80 * 30);
+        game_state.mine_positions.insert(mine_position, 1);
+    }
 }
 
 /* STATEFUL FUNCTIONS This is defines the logic when player moves one step/entering one command
@@ -35,7 +47,45 @@ pub fn step(keyCode: u64) -> () {
     // IMPLEMENT THIS FUNCTION
     let mut game_state = GAME_STATE.lock().unwrap();
 
-    game_state.score += 1;
+    match keyCode {
+        // KeyW
+        87 => {
+            if (game_state.player_position_y > 0) {
+                game_state.player_position_y -= 1;
+            }
+        }
+        // KeyA
+        65 => {
+            if (game_state.player_position_x > 0) {
+                game_state.player_position_x -= 1;
+            }
+        }
+        // KeyS
+        83 => {
+            if (game_state.player_position_y < 29) {
+                game_state.player_position_y += 1;
+            }
+        }
+        // KeyD
+        68 => {
+            if (game_state.player_position_x < 79) {
+                game_state.player_position_x += 1;
+            }
+        }
+        _ => {
+            // Do nothing
+        }
+    };
+
+    if (game_state
+        .mine_positions
+        .contains_key(&(game_state.player_position_y * 80 + game_state.player_position_x))
+        && game_state.score > 0)
+    {
+        game_state.score -= 1;
+    } else {
+        game_state.score += 1;
+    }
 }
 
 /* PURE FUNCTIONS This function returns the game state, but parse into Json, so can be used in Javascript
@@ -46,13 +96,29 @@ pub fn step(keyCode: u64) -> () {
 pub fn get_game_state() -> String {
     // REWRITE THIS TO RETURN A STRING TO DISPLAY
     let game = _get_game_state();
-    serde_json::to_string(&game).unwrap()
+    let mut display_string = String::new();
+
+    for i in 0..30 {
+        for j in 0..80 {
+            if game.player_position_x == j && game.player_position_y == i {
+                display_string.push('P');
+            } else {
+                let is_mine = game.mine_positions.contains_key(&(i * 80 + j));
+                if is_mine {
+                    display_string.push('M');
+                } else {
+                    display_string.push(' ');
+                }
+            }
+        }
+    }
+    display_string
 }
 
 #[wasm_bindgen]
 pub fn get_game_score() -> u64 {
     let game = _get_game_state();
-    return game.score;
+    game.score
 }
 
 /* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
