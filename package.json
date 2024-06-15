@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && node script/add-shebang.js",
-    "start": "ts-node src/index.ts",
-    "demo": "echo demo"
+    "start": "ts-node src/index.ts"
   },
   "bin": {
     "spin": "dist/index.js"
