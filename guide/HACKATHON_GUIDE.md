@@ -18,7 +18,8 @@ The canvas for the game is a matrix of characters 30x80 in size.
 
 You'll be able to accept keyboard inputs and mouse click inputs, then return string of size 30x80 to display the game.
 
-The Spin team has written a frontend for you, check out how it looks here: [TODO: instruction to run frontend]
+The Spin team has written a frontend for you, check out how it looks [here](./5_TECHNICAL_GUIDE_HACKATHON.md#run-the-frontenpp
+'d)
 
 ### Constraints
 
