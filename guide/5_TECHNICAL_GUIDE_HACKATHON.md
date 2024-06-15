@@ -244,7 +244,7 @@ This dry-runs to help debug any issue might happen during ZK proving, in turn it
 #### Run Dry-Run
 
 ```
-npx spin dry-run --path [path] --zkwasm [path to zkwasm-cli]
+npx spin dry-run --path [path] --zkwasm [path to zkwasm-cli] --seed [random seed] --keyCode [input1]  --keyCode [input2]
 
 [path]: the path to your `gameplay/provable_game_logic` folder
 [zkwasm]: the path to zkwasm-cli, zkwasm-cli should be under `zkwasm/target/debug/zkwasm-cli`
