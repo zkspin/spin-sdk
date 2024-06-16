@@ -236,7 +236,7 @@ You can modify this `testing_cli/main.rs` to apply to your game's needs.
 
 #### Prerequisites
 
--   Install `wasm-pack` [github.com/rustwasm/wasm-pack](https://github.com/rustwasm/wasm-pack)
+-   Install `wasm-pack` [github.com/rustwasm/wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
 
 There are two places we want to expose our Rust code:
 
@@ -257,7 +257,22 @@ This dry-runs to help debug any issue might happen during ZK proving, in turn it
 
 #### Prerequisites
 
--   [Install the zkwasm-cli](https://github.com/DelphinusLab/zkWasm?tab=readme-ov-file#quick-start-with-zkwasm-command-line) (installation might take a while)
+-   [Install the zkwasm-cli](https://github.com/DelphinusLab/zkWasm?tab=readme-ov-file#quick-start-with-zkwasm-command-line)
+    (installation might take a while)
+
+```
+Dependency
+Make sure the following packages are installed.
+
+1. clang lld
+2. cmake
+
+
+git clone --recurse-submodules https://github.com/DelphinusLab/zkwasm
+cd zkwasm
+cargo build
+```
+
 -   [Build the WASM file](./5_TECHNICAL_GUIDE_HACKATHON.md#building-the-zk-program-image)
 
 #### Run Dry-Run

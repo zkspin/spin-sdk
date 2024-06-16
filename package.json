@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && node script/add-shebang.js",
-    "start": "ts-node src/index.ts",
-    "demo": "echo demo"
+    "start": "ts-node src/index.ts"
   },
   "bin": {
     "spin": "dist/index.js"
@@ -15,9 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "zkwasm-service-helper": "github:DelphinusLab/zkWasm-service-helper"
-  },
-  "devDependencies": {
+    "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper",
     "@types/node": "^20.14.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
