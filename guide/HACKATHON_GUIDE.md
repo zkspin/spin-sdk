@@ -36,4 +36,6 @@ Finally, starting get hands on with a special version of the guide just for this
 
 ## Submission:
 
-TODO
+Please commit your code to a **public** github repo.
+
+Then submit the link of the repo to [To be determined].
