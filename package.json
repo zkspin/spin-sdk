@@ -14,9 +14,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper",
     "@types/node": "^20.14.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper"
   }
 }
