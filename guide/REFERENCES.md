@@ -11,9 +11,3 @@ Needs update
 | Scroll Testnet   | 0x77d5a9bcd01fc28838061b8d7497beece2f78408 | 534351
 | BSC Testnet      | 0xe0f7c20edecedfa18b83b6fc4e89d2af56d5ff62 | 97
 ```
-
-# Terminal Based Game:
-
-ASCII Range:
-
--   Visible ASCII [32, 126]
