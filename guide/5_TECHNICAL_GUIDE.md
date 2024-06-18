@@ -456,7 +456,7 @@ The instance is an array of un-signed integers. The public inputs are ordered fi
 
 To prevent this, we need to verify which image the proofs are for.
 
-This is done by [﻿setting a verifier image commitment](https://github.com/m4-team/zk-sdk/blob/f5f777611628b8e2d026409901ea8c2d1b1a40fc/sdk/onchain/contracts/SpinContract.sol#L58). We obtain the image commitment when publishing the image. [ TODO: return image commitment when publishing]
+This is done by [﻿setting a verifier image commitment](https://github.com/m4-team/zk-sdk/blob/f5f777611628b8e2d026409901ea8c2d1b1a40fc/sdk/onchain/contracts/SpinContract.sol#L58). We obtain the image commitment when publishing the image.
 
 > For each proof we submit on-chain, they contain an image commitment, Spin Contract will handle verifying it. By default when no image commitment is set, this verification is skipped.
 
@@ -514,8 +514,4 @@ You can then [﻿submit the proof on-chain](https://github.com/m4-team/zk-sdk/bl
 
 ## Put Everything Together
 
-[TODO: make the 2048 game using the SDK framework]
-
 For a full-fledged demo game, see our game Cats vs. Dogs
-
-[TODO: make CVD using the SDK framework]

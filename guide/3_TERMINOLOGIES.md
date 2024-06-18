@@ -11,7 +11,3 @@
 **ZK Program**: This refers to off-chain gameplay logic that’s provable, this logic will be written in Rust, then built into a WASM package.
 
 **WASM package**: the WASM files build from the ZK Program that contains game logic
-
-[TODO: multi-player [**Blog**]]
-
-[TODO: If you are familiar with rollup, this … [**Blog**]]
