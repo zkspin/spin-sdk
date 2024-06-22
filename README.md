@@ -15,12 +15,8 @@ Hackathon Guide: [guide/HACKATHON_GUIDE.md](./guide/HACKATHON_GUIDE.md) <--
 [Install NodeJs V18 or above](https://nodejs.org/en/download/package-manager/current)
 
 ```shell
-mkdir your_folder
-cd your_folder
-npm install github:m4-team/spin-sdk
+npm install -g spin-m4
 ```
-
-> Only run `npx spin` from `your_folder/` since this is a local NPM package.
 
 #### For Windows:
 

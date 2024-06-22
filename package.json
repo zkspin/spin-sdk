@@ -1,5 +1,5 @@
 {
-  "name": "spin",
+  "name": "spin-m4",
   "version": "0.0.2",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
