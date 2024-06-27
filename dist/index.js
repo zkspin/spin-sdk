@@ -30,8 +30,8 @@ const FOLDER_IGNORE_LIST = [
     "pkg",
 ];
 const FILE_IGNORE_LIST = [".env"];
-const ZK_CLOUD_USER_ADDRESS = "0xd8f157Cc95Bc40B4F0B58eb48046FebedbF26Bde";
-const ZK_CLOUD_USER_PRIVATE_KEY = "2763537251e2f27dc6a30179e7bf1747239180f45b92db059456b7da8194995a";
+const ZK_CLOUD_USER_ADDRESS = "0xF7B267C190841C5cFf482AeAb0ED538bc410fEfF";
+const ZK_CLOUD_USER_PRIVATE_KEY = "a29c4d75df9870c8d318960584daaeed306b8b4687f2fa58f2b2a02626596702";
 const ZK_CLOUD_URL = "https://rpc.zkwasmhub.com:8090";
 /**
  * Copy the contents of one folder to another.
@@ -264,7 +264,7 @@ function dryRun() {
     });
 }
 const VERSION = "0.0.1";
-const INTERNAL_VERSION = "0.2";
+const INTERNAL_VERSION = "0.3";
 function entry() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("Running Spin version", VERSION, INTERNAL_VERSION);
