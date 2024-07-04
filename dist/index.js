@@ -128,22 +128,29 @@ function help() {
 }
 function build() {
     console.log("Building project...");
+    console.log("Args: ", args);
     const optionalArgs = args.filter((arg) => arg.startsWith("--"));
+    console.log("Optional Args: ", optionalArgs);
     if (!optionalArgs.includes("--path")) {
         console.error("--path flag is required, a path to provable_game_logic folder.");
         console.error("Usage: npx spin build-image --path [path]");
         process.exit(1);
     }
     const projectPath = parsePath(args[args.indexOf("--path") + 1]);
+    const miscPath = path_1.default.join(__dirname, "..", "misc");
+    const makeFilePath = path_1.default.join(miscPath, "Makefile");
     console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
-    spawnSync("make", ["build"], {
+    spawnSync("make", [
+        "--makefile",
+        makeFilePath,
+        "build",
+        "--print-directory",
+        `MISC_PATH=${miscPath}`,
+    ], {
         cwd: projectPath,
         stdio: "inherit",
     });
-    // console.log(
-    //     `stdout: ${runMakefile.stdout.toString()} ${runMakefile.stderr.toString()}`
-    // );
     // """
     // @cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir pkg
     // # Append the JS import helper to the front of the generated JS file
@@ -264,7 +271,7 @@ function dryRun() {
     });
 }
 const VERSION = "0.0.1";
-const INTERNAL_VERSION = "0.3";
+const INTERNAL_VERSION = "0.4";
 function entry() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("Running Spin version", VERSION, INTERNAL_VERSION);

@@ -9,9 +9,10 @@ import json from '@rollup/plugin-json'
 export default {
   input: 'src/index.ts', // Adjust the path to your entry file
   output: [{
-    file: 'dist/bundle.cjs.js',
+    file: 'dist/bundle.cjs.cjs',
     sourcemap: true,
-    format: 'esm', // Use 'esm' for ES module
+    format: 'cjs', // Use 'esm' for ES module
+    inlineDynamicImports: true,
   }],
   plugins: [
     nodeResolve({ preferBuiltins: false }),
@@ -19,5 +20,6 @@ export default {
     typescript(),
     wasm(),
     json(),
-  ]
+  ],
+  external: ["ethers", "zkwasm-service-helper"]
 };

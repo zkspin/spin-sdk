@@ -25,3 +25,25 @@ Each component has its own README.md under each folder. Follow the setups there.
 #### [troubleshooting]
 
 `npm -g uninstall spin`
+
+## Testing
+
+Testing the SDK and SDK itself should be separate.
+
+Tests located in `tests/` folder.
+
+### Unit testing process
+
+... TODO
+
+### Integration testing process
+
+1. Use npx spin to install the package locally.
+2. Copy over test specific files
+3. Run spin end-to-end
+
+`cd tests/integration`
+
+Build image `npm run build`
+
+Run local spin `npm exec -- spin ...`

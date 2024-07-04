@@ -1,16 +1,17 @@
 {
-  "name": "spin-frontend",
+  "name": "spin-wasm",
   "version": "0.0.1",
   "main": "dist/bundle.cjs.js",
   "module": "dist/bundle.mjs.js",
   "types": "dist/types/src/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "rollup -c rollup.commonjs.config.js && rollup -c rollup.esm.config.js && cp ../../pkg/gameplay_bg.wasm dist/",
+    "build": "rollup -c rollup.commonjs.config.js && rollup -c rollup.esm.config.js && cp ../wasm/esm/gameplay_bg.wasm dist/",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "game_logic": "file:../../pkg",
+    "game_logic_esm": "file:../wasm/esm",
+    "game_logic_common": "file:../wasm/commonjs",
     "zkwasm-service-helper": "github:DelphinusLab/zkWasm-service-helper"
   },
   "devDependencies": {

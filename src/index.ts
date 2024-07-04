@@ -147,9 +147,9 @@ function help() {
 
 function build() {
     console.log("Building project...");
-
+    console.log("Args: ", args);
     const optionalArgs = args.filter((arg) => arg.startsWith("--"));
-
+    console.log("Optional Args: ", optionalArgs);
     if (!optionalArgs.includes("--path")) {
         console.error(
             "--path flag is required, a path to provable_game_logic folder."
@@ -159,16 +159,26 @@ function build() {
     }
 
     const projectPath = parsePath(args[args.indexOf("--path") + 1]);
+    const miscPath = path.join(__dirname, "..", "misc");
+    const makeFilePath = path.join(miscPath, "Makefile");
+
     console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
 
-    spawnSync("make", ["build"], {
-        cwd: projectPath,
-        stdio: "inherit",
-    });
-    // console.log(
-    //     `stdout: ${runMakefile.stdout.toString()} ${runMakefile.stderr.toString()}`
-    // );
+    spawnSync(
+        "make",
+        [
+            "--makefile",
+            makeFilePath,
+            "build",
+            "--print-directory",
+            `MISC_PATH=${miscPath}`,
+        ],
+        {
+            cwd: projectPath,
+            stdio: "inherit",
+        }
+    );
 
     // """
     // @cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir pkg
@@ -342,7 +352,7 @@ function dryRun() {
 }
 
 const VERSION = "0.0.1";
-const INTERNAL_VERSION = "0.3";
+const INTERNAL_VERSION = "0.4";
 async function entry() {
     console.log("Running Spin version", VERSION, INTERNAL_VERSION);
     if (args[0] === "init") {
