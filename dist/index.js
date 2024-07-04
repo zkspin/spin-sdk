@@ -140,9 +140,9 @@ function build() {
     const miscPath = path_1.default.join(__dirname, "..", "misc");
     const makeFilePath = path_1.default.join(miscPath, "Makefile");
     let outDir = projectPath;
-    if (optionalArgs.includes("--out")) {
-        outDir = parsePath(args[args.indexOf("--out") + 1]);
-    }
+    // if (optionalArgs.includes("--out")) {
+    //     outDir = parsePath(args[args.indexOf("--out") + 1]);
+    // }
     console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
     spawnSync("make", [

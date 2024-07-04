@@ -8,7 +8,6 @@ import {
 import { ZkWasmServiceHelper, ZkWasmUtil } from "zkwasm-service-helper";
 
 interface SpinConstructor {
-    onReady: () => void;
     cloudCredentials: ProveCredentials;
 }
 
@@ -20,13 +19,14 @@ export class Spin {
     witness: number[] = []; // private inputs
 
     /* Constructor */
-    constructor({ onReady, cloudCredentials }: SpinConstructor) {
-        this.gamePlay = new GamePlay({
-            callback: async () => {
-                onReady();
-            },
-        });
+    constructor({ cloudCredentials }: SpinConstructor) {
         this.cloudCredentials = cloudCredentials;
+        console.log("cloudCredentials = ", cloudCredentials);
+        this.gamePlay = new GamePlay();
+    }
+
+    async newGame() {
+        await this.gamePlay.init();
     }
 
     private add_public_input(input: number) {
@@ -138,13 +138,12 @@ export class Spin {
      * Keeping the same onReady callback and cloud credentials
      */
 
-    reset(onReady: () => void) {
+    async reset() {
         this.inputs = [];
         this.witness = [];
 
-        this.gamePlay = new GamePlay({
-            callback: onReady,
-        });
+        this.gamePlay = new GamePlay();
+        await this.gamePlay.init();
     }
 }
 

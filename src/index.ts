@@ -166,9 +166,9 @@ function build() {
 
     let outDir = projectPath;
 
-    if (optionalArgs.includes("--out")) {
-        outDir = parsePath(args[args.indexOf("--out") + 1]);
-    }
+    // if (optionalArgs.includes("--out")) {
+    //     outDir = parsePath(args[args.indexOf("--out") + 1]);
+    // }
 
     console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");

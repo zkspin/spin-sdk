@@ -18,7 +18,7 @@
     "viem": "^2.9.19",
     "vite": "^5.2.11",
     "wagmi": "^2.5.20",
-    "spin": "file:../gameplay/provable_game_logic/build/js"
+    "spin": "file:../gameplay/provable_game_logic/spin"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

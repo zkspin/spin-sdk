@@ -10,6 +10,7 @@ export default {
     file: 'dist/bundle.mjs.js',
     sourcemap: true,
     format: 'esm', // Use 'esm' for ES module
+    inlineDynamicImports: true,
   }],
   plugins: [
     commonjs(),

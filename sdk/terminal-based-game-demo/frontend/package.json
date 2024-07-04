@@ -15,7 +15,7 @@
     "node-pty": "^1.0.0",
     "react": "^18",
     "react-dom": "^18",
-    "spin": "file:../gameplay/provable_game_logic/js/spin",
+    "spin": "file:../gameplay/provable_game_logic/spin",
     "viem": "^2.13.8",
     "wagmi": "^2.10.2",
     "zkwasm-service-helper": "github:DelphinusLab/zkWasm-service-helper"

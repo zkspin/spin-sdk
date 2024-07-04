@@ -26,20 +26,21 @@ export default function Home() {
 
     useEffect(() => {
         spin = new Spin({
-            onReady: () => {
-                console.log("Spin is ready");
-                const randomSeed = process.env.NEXT_PUBLIC_GAME_SEED
-                    ? Number(process.env.NEXT_PUBLIC_GAME_SEED)
-                    : Math.floor(Math.random() * 1000000);
-                spin.init_game(randomSeed);
-                setGameSeed(randomSeed);
-            },
             cloudCredentials: {
                 USER_ADDRESS: ZK_CLOUD_USER_ADDRESS,
                 USER_PRIVATE_KEY: ZK_CLOUD_USER_PRIVATE_KEY,
                 IMAGE_HASH: process.env.NEXT_PUBLIC_IMAGE_HASH!,
                 CLOUD_RPC_URL: ZK_CLOUD_URL,
             },
+        });
+
+        spin.newGame().then(() => {
+            console.log("Spin is ready");
+            const randomSeed = process.env.NEXT_PUBLIC_GAME_SEED
+                ? Number(process.env.NEXT_PUBLIC_GAME_SEED)
+                : Math.floor(Math.random() * 1000000);
+            spin.init_game(randomSeed);
+            setGameSeed(randomSeed);
         });
     }, []);
 
@@ -119,11 +120,11 @@ export default function Home() {
                 await submitGame(proof);
 
                 alert("Game submitted!");
-                spin.reset(() => {
-                    console.log("Spin is reset ready");
-                    const randomSeed = Math.floor(Math.random() * 1000000);
-                    spin.init_game(randomSeed);
-                });
+                await spin.reset();
+
+                console.log("Spin is reset ready");
+                const randomSeed = Math.floor(Math.random() * 1000000);
+                spin.init_game(randomSeed);
             }
         } catch (error) {
             alert(`Failed to Submit Proof: ${error}`);
