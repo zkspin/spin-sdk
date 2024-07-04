@@ -71,7 +71,6 @@ function App() {
             });
 
             spin = new Spin({
-                onReady: onGameInitReady(total_steps, current_position),
                 cloudCredentials: {
                     CLOUD_RPC_URL: ZK_CLOUD_RPC_URL,
                     USER_ADDRESS: ZK_USER_ADDRESS,
@@ -79,6 +78,10 @@ function App() {
                     IMAGE_HASH: ZK_IMAGE_MD5,
                 },
             });
+
+            spin.newGame().then(() =>
+                onGameInitReady(total_steps, current_position)()
+            );
         });
     }, []);
 
