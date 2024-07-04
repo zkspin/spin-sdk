@@ -1,5 +1,5 @@
 {
-  "name": "spin-wasm",
+  "name": "spinjs",
   "version": "0.0.1",
   "main": "dist/bundle.cjs.js",
   "module": "dist/bundle.mjs.js",

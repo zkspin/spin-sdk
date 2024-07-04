@@ -1,5 +1,5 @@
 OUT_NAME=gameplay
-OUT_DIR=$(OUTPUT_PATH)/spin
+OUT_DIR=$(OUTPUT_PATH)/spinjs
 
 wasm-build-web:
 	@cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir $(OUT_DIR)/wasm/esm
