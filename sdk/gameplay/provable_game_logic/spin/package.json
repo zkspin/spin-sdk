@@ -6,12 +6,12 @@
   "types": "dist/types/src/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "rollup -c rollup.commonjs.config.js && rollup -c rollup.esm.config.js && cp ../wasm/esm/gameplay_bg.wasm dist/",
+    "build": "rollup -c rollup.commonjs.config.js && rollup -c rollup.esm.config.js && cp ./wasm/esm/gameplay_bg.wasm dist/",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "game_logic_esm": "file:../wasm/esm",
-    "game_logic_common": "file:../wasm/commonjs",
+    "game_logic_esm": "file:./wasm/esm",
+    "game_logic_common": "file:./wasm/commonjs",
     "zkwasm-service-helper": "github:DelphinusLab/zkWasm-service-helper"
   },
   "devDependencies": {

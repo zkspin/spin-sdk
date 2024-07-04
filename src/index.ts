@@ -149,10 +149,12 @@ function build() {
     console.log("Building project...");
     console.log("Args: ", args);
     const optionalArgs = args.filter((arg) => arg.startsWith("--"));
+
     console.log("Optional Args: ", optionalArgs);
+
     if (!optionalArgs.includes("--path")) {
         console.error(
-            "--path flag is required, a path to provable_game_logic folder."
+            "--path flag is required, path of the provable_game_logic folder."
         );
         console.error("Usage: npx spin build-image --path [path]");
         process.exit(1);
@@ -161,6 +163,12 @@ function build() {
     const projectPath = parsePath(args[args.indexOf("--path") + 1]);
     const miscPath = path.join(__dirname, "..", "misc");
     const makeFilePath = path.join(miscPath, "Makefile");
+
+    let outDir = projectPath;
+
+    if (optionalArgs.includes("--out")) {
+        outDir = parsePath(args[args.indexOf("--out") + 1]);
+    }
 
     console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
@@ -171,7 +179,7 @@ function build() {
             "--makefile",
             makeFilePath,
             "build",
-            "--print-directory",
+            `OUTPUT_PATH=${outDir}`,
             `MISC_PATH=${miscPath}`,
         ],
         {
