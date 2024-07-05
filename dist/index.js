@@ -17,6 +17,7 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const zkwasm_1 = require("./zkwasm");
 const ethers_1 = require("ethers");
+const comment_1 = require("./comment");
 const args = process.argv.slice(2);
 const FOLDER_IGNORE_LIST = [
     "node_modules",
@@ -127,40 +128,66 @@ function help() {
     console.log("  --hackathon        Initialize for the hackathon");
 }
 function build() {
-    console.log("Building project...");
-    console.log("Args: ", args);
-    const optionalArgs = args.filter((arg) => arg.startsWith("--"));
-    console.log("Optional Args: ", optionalArgs);
-    if (!optionalArgs.includes("--path")) {
-        console.error("--path flag is required, path of the provable_game_logic folder.");
-        console.error("Usage: npx spin build-image --path [path]");
-        process.exit(1);
-    }
-    const projectPath = parsePath(args[args.indexOf("--path") + 1]);
-    const miscPath = path_1.default.join(__dirname, "..", "misc");
-    const makeFilePath = path_1.default.join(miscPath, "Makefile");
-    let outDir = projectPath;
-    // if (optionalArgs.includes("--out")) {
-    //     outDir = parsePath(args[args.indexOf("--out") + 1]);
-    // }
-    console.log("Building project at path:", projectPath);
-    const { spawnSync } = require("child_process");
-    spawnSync("make", [
-        "--makefile",
-        makeFilePath,
-        "build",
-        `OUTPUT_PATH=${outDir}`,
-        `MISC_PATH=${miscPath}`,
-    ], {
-        cwd: projectPath,
-        stdio: "inherit",
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log("Building project...");
+        console.log("Args: ", args);
+        const optionalArgs = args.filter((arg) => arg.startsWith("--"));
+        console.log("Optional Args: ", optionalArgs);
+        if (!optionalArgs.includes("--path")) {
+            console.error("--path flag is required, path of the provable_game_logic folder.");
+            console.error("Usage: npx spin build-image --path [path]");
+            process.exit(1);
+        }
+        const projectPath = parsePath(args[args.indexOf("--path") + 1]);
+        const miscPath = path_1.default.join(__dirname, "..", "misc");
+        const makeFilePath = path_1.default.join(miscPath, "Makefile");
+        const exportPath = path_1.default.join(projectPath, "..", "export");
+        let outDir = projectPath;
+        // if (optionalArgs.includes("--out")) {
+        //     outDir = parsePath(args[args.indexOf("--out") + 1]);
+        // }
+        console.log("Building project at path:", projectPath);
+        const { spawnSync } = require("child_process");
+        console.log("Building javascript packages...");
+        spawnSync("make", [
+            "--makefile",
+            makeFilePath,
+            "build-js",
+            `OUTPUT_PATH=${outDir}`,
+            `MISC_PATH=${miscPath}`,
+        ], {
+            cwd: exportPath,
+            stdio: "inherit",
+        });
+        console.log("Building wasm packages for proving...");
+        // !!! Caveat for build WASM for proving:
+        // zkWASM doesn't support #[wasm_bindgen] for Struct types.
+        // As a workaround, we need to comment out the #[wasm_bindgen]
+        // and then commonet it back after building the wasm.
+        const bindGenComment = "#[wasm_bindgen";
+        yield (0, comment_1.commentAllFiles)(projectPath, bindGenComment);
+        yield (0, comment_1.commentLinesInFile)(path_1.default.join(exportPath, "src", "export.rs"), bindGenComment, "//SPIN_INTERMEDITE_COMMENT@");
+        try {
+            spawnSync("make", [
+                "--makefile",
+                makeFilePath,
+                "build-wasm-zk",
+                `OUTPUT_PATH=${outDir}`,
+                `MISC_PATH=${miscPath}`,
+            ], {
+                cwd: exportPath,
+                stdio: "inherit",
+            });
+        }
+        catch (e) {
+            console.error("Failed to build wasm for proving.");
+            console.error(e);
+        }
+        finally {
+            yield (0, comment_1.unCommentAllFiles)(projectPath, bindGenComment);
+            yield (0, comment_1.uncommentLinesInFile)(path_1.default.join(exportPath, "src", "export.rs"), bindGenComment, "//SPIN_INTERMEDITE_COMMENT@");
+        }
     });
-    // """
-    // @cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir pkg
-    // # Append the JS import helper to the front of the generated JS file
-    // cat misc/wasm_import_template.js > temp.js && tail -n +2 pkg/$(OUT_NAME).js >> temp.js && mv temp.js pkg/$(OUT_NAME).js
-    // cd js/spin && npm install && npm run build
-    // """
 }
 function publish() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -172,7 +199,7 @@ function publish() {
             process.exit(1);
         }
         const folderPath = parsePath(args[args.indexOf("--path") + 1]);
-        const filePath = path_1.default.join(folderPath, "pkg", "gameplay_bg.wasm");
+        const filePath = path_1.default.join(folderPath, "wasm", "gameplay_bg.wasm");
         if (!fs_1.default.existsSync(filePath)) {
             console.error("Path does not exist: ", filePath);
             process.exit(1);
@@ -222,7 +249,8 @@ function dryRun() {
         console.error("Usage: npx spin dry-run --path [path] --zkwasm [zkwasm path] --public [public inputs] ... --private [private inputs] --private [private inputs] ...", "Hackathon Usage: npx spin dry-run --path [path] --zkwasm [zkwasm path] --seed [seed] --keyCode [keyCode] --keyCode [keyCode] ...");
         process.exit(1);
     }
-    const filePath = parsePath(args[args.indexOf("--path") + 1]);
+    const gameLogicPath = parsePath(args[args.indexOf("--path") + 1]);
+    const filePath = path_1.default.join(gameLogicPath, "..", "export");
     const wasmPath = parsePath(args[args.indexOf("--zkwasm") + 1]);
     if (!fs_1.default.existsSync(filePath)) {
         console.error("Path does not exist: ", filePath);
@@ -253,7 +281,7 @@ function dryRun() {
         "wasm_output",
         "setup",
         "--wasm",
-        `${filePath}/pkg/gameplay_bg.wasm`,
+        `${filePath}/wasm/gameplay_bg.wasm`,
     ], { stdio: "inherit" });
     const wasmArgs = [
         "--params",
@@ -261,7 +289,7 @@ function dryRun() {
         "wasm_output",
         "dry-run",
         "--wasm",
-        `${filePath}/pkg/gameplay_bg.wasm`,
+        `${filePath}/wasm/gameplay_bg.wasm`,
         "--output",
         `${filePath}/output`,
         ...publicInputs.flatMap((i) => ["--public", `${i}:i64`]),
@@ -283,13 +311,13 @@ function entry() {
             init();
         }
         else if (args[0] === "build-image") {
-            build();
+            yield build();
         }
         else if (args[0] === "publish-image") {
             yield publish();
         }
         else if (args[0] === "dry-run") {
-            dryRun();
+            yield dryRun();
         }
         else if (args[0] === "version") {
             version();

@@ -1,0 +1,14 @@
+[package]
+name = "export"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "export"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+provable_game_logic = { path = "../provable_game_logic" }
+wasm-bindgen = "0.2.92"
+zkwasm-rust-sdk = { git = "https://github.com/DelphinusLab/zkWasm-rust.git", default-features = true, branch = "main" }
