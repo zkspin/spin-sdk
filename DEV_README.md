@@ -47,3 +47,7 @@ Tests located in `tests/` folder.
 Build image `npm run build`
 
 Run local spin `npm exec -- spin ...`
+
+## Publishing
+
+`npm publish`

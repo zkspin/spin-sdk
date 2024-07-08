@@ -199,7 +199,7 @@ function publish() {
             process.exit(1);
         }
         const folderPath = parsePath(args[args.indexOf("--path") + 1]);
-        const filePath = path_1.default.join(folderPath, "wasm", "gameplay_bg.wasm");
+        const filePath = path_1.default.join(folderPath, "..", "export", "wasm", "gameplay_bg.wasm");
         if (!fs_1.default.existsSync(filePath)) {
             console.error("Path does not exist: ", filePath);
             process.exit(1);
@@ -302,11 +302,10 @@ function dryRun() {
         stdio: "inherit",
     });
 }
-const VERSION = "0.0.1";
-const INTERNAL_VERSION = "0.4";
+const VERSION = "0.2.0";
 function entry() {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log("Running Spin version", VERSION, INTERNAL_VERSION);
+        console.log("Running Spin version", VERSION);
         if (args[0] === "init") {
             init();
         }
