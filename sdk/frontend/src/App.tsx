@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
 import { abi } from "./ABI.json";
-import { Spin } from "spin";
+import { Spin, SpinGameInitArgs } from "spin";
 import { config } from "./web3";
 import { readContract } from "wagmi/actions";
 import { TaskStatus } from "zkwasm-service-helper";
@@ -14,8 +14,8 @@ const ZK_IMAGE_MD5 = import.meta.env.VITE_ZK_CLOUD_IMAGE_MD5;
 const ZK_CLOUD_RPC_URL = import.meta.env.VITE_ZK_CLOUD_URL;
 
 interface GameState {
-    total_steps: number;
-    current_position: number;
+    total_steps: bigint;
+    current_position: bigint;
 }
 
 /* This function is used to verify the proof on-chain */
@@ -51,8 +51,8 @@ async function getOnchainGameStates() {
         address: GAME_CONTRACT_ADDRESS,
         functionName: "getStates",
         args: [],
-    })) as [BigInt, BigInt];
-    return result.map((r) => Number(r));
+    })) as [bigint, bigint];
+    return result;
 }
 
 let spin: Spin;
@@ -86,31 +86,34 @@ function App() {
     }, []);
 
     const [gameState, setGameState] = useState<GameState>({
-        total_steps: 0,
-        current_position: 0,
+        total_steps: BigInt(0),
+        current_position: BigInt(0),
     });
 
     const [onChainGameStates, setOnChainGameStates] = useState<GameState>({
-        total_steps: 0,
-        current_position: 0,
+        total_steps: BigInt(0),
+        current_position: BigInt(0),
     });
 
-    const [moves, setMoves] = useState<number[]>([]);
+    const [moves, setMoves] = useState<bigint[]>([]);
 
-    const onClick = (command: number) => () => {
+    const onClick = (command: bigint) => () => {
         spin.step(command);
         updateDisplay();
     };
 
     const updateDisplay = () => {
         const newGameState = spin.getGameState();
-        setGameState(newGameState);
+        setGameState({
+            total_steps: newGameState.total_steps,
+            current_position: newGameState.current_position,
+        });
         setMoves(spin.witness);
     };
 
     const onGameInitReady =
-        (total_steps: number, current_position: number) => () => {
-            spin.init_game(total_steps, current_position);
+        (total_steps: bigint, current_position: bigint) => () => {
+            spin.init_game(new SpinGameInitArgs(total_steps, current_position));
 
             updateDisplay();
         };
@@ -139,7 +142,8 @@ function App() {
             current_position: gameStates[1],
         });
 
-        spin.reset(onGameInitReady(gameStates[0], gameStates[1]));
+        await spin.reset();
+        onGameInitReady(gameStates[0], gameStates[1]);
     };
 
     return (
@@ -155,12 +159,20 @@ function App() {
                     submitted on-chain, the progresses are updated and recorded
                     on-chain{" "}
                 </header>
-                <header>Game State: {JSON.stringify(gameState)}</header>
                 <header>
-                    OnChain Game State: {JSON.stringify(onChainGameStates)}
+                    Game State:{" "}
+                    {JSON.stringify(gameState, (_, v) =>
+                        typeof v === "bigint" ? v.toString() : v
+                    )}
                 </header>
-                <button onClick={onClick(0)}>Decrement</button>
-                <button onClick={onClick(1)}>Increment</button>
+                <header>
+                    OnChain Game State:{" "}
+                    {JSON.stringify(onChainGameStates, (_, v) =>
+                        typeof v === "bigint" ? v.toString() : v
+                    )}
+                </header>
+                <button onClick={onClick(BigInt(0))}>Decrement</button>
+                <button onClick={onClick(BigInt(1))}>Increment</button>
             </header>
             <button onClick={submitProof}>Submit</button>
         </div>

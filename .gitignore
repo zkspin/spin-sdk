@@ -396,3 +396,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+sdk/gameplay/.DS_Store
+sdk/gameplay/export/.DS_Store

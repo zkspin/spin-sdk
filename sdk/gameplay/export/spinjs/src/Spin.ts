@@ -1,4 +1,4 @@
-import { GamePlay } from "./GamePlay.js";
+import { GamePlay, SpinGameInitArgs } from "./GamePlay.js";
 import { ethers } from "ethers";
 import {
     add_proving_taks,
@@ -15,8 +15,8 @@ interface SpinConstructor {
 export class Spin {
     gamePlay: GamePlay;
     cloudCredentials: ProveCredentials;
-    inputs: number[] = []; // public inputs
-    witness: number[] = []; // private inputs
+    inputs: bigint[] = []; // public inputs
+    witness: bigint[] = []; // private inputs
 
     /* Constructor */
     constructor({ cloudCredentials }: SpinConstructor) {
@@ -29,11 +29,11 @@ export class Spin {
         await this.gamePlay.init();
     }
 
-    private add_public_input(input: number) {
+    private add_public_input(input: bigint) {
         this.inputs.push(input);
     }
 
-    private add_private_input(input: number) {
+    private add_private_input(input: bigint) {
         this.witness.push(input);
     }
 
@@ -44,7 +44,7 @@ export class Spin {
      * part of the private inputs
      */
 
-    step(command: number) {
+    step(command: bigint) {
         this.gamePlay.step(BigInt(command));
         this.add_private_input(command);
     }
@@ -55,12 +55,13 @@ export class Spin {
         return this.gamePlay.getGameState();
     }
 
-    init_game(...args: number[]) {
-        this.gamePlay.init_game.apply(
-            null,
-            args.map((a) => BigInt(a))
-        );
-        args.map((a) => this.add_public_input(a));
+    init_game(arg: SpinGameInitArgs) {
+        this.gamePlay.init_game(arg);
+
+        // TODO: dynamic add public inputs
+        // args.map((a) => this.add_public_input(a));
+        this.add_public_input(arg.total_steps);
+        this.add_public_input(arg.current_position);
     }
 
     async getGameID() {

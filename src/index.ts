@@ -2,7 +2,12 @@ import fs from "fs";
 import path from "path";
 import { addImage } from "./zkwasm";
 import { ethers } from "ethers";
-
+import {
+    commentAllFiles,
+    unCommentAllFiles,
+    uncommentLinesInFile,
+    commentLinesInFile,
+} from "./comment";
 const args = process.argv.slice(2);
 
 const FOLDER_IGNORE_LIST = [
@@ -145,7 +150,7 @@ function help() {
     console.log("  --hackathon        Initialize for the hackathon");
 }
 
-function build() {
+async function build() {
     console.log("Building project...");
     console.log("Args: ", args);
     const optionalArgs = args.filter((arg) => arg.startsWith("--"));
@@ -163,6 +168,7 @@ function build() {
     const projectPath = parsePath(args[args.indexOf("--path") + 1]);
     const miscPath = path.join(__dirname, "..", "misc");
     const makeFilePath = path.join(miscPath, "Makefile");
+    const exportPath = path.join(projectPath, "..", "export");
 
     let outDir = projectPath;
 
@@ -173,27 +179,61 @@ function build() {
     console.log("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
 
+    console.log("Building javascript packages...");
     spawnSync(
         "make",
         [
             "--makefile",
             makeFilePath,
-            "build",
+            "build-js",
             `OUTPUT_PATH=${outDir}`,
             `MISC_PATH=${miscPath}`,
         ],
         {
-            cwd: projectPath,
+            cwd: exportPath,
             stdio: "inherit",
         }
     );
 
-    // """
-    // @cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir pkg
-    // # Append the JS import helper to the front of the generated JS file
-    // cat misc/wasm_import_template.js > temp.js && tail -n +2 pkg/$(OUT_NAME).js >> temp.js && mv temp.js pkg/$(OUT_NAME).js
-    // cd js/spin && npm install && npm run build
-    // """
+    console.log("Building wasm packages for proving...");
+    // !!! Caveat for build WASM for proving:
+    // zkWASM doesn't support #[wasm_bindgen] for Struct types.
+    // As a workaround, we need to comment out the #[wasm_bindgen]
+    // and then commonet it back after building the wasm.
+
+    const bindGenComment = "#[wasm_bindgen";
+    await commentAllFiles(projectPath, bindGenComment);
+    await commentLinesInFile(
+        path.join(exportPath, "src", "export.rs"),
+        bindGenComment,
+        "//SPIN_INTERMEDITE_COMMENT@"
+    );
+    try {
+        spawnSync(
+            "make",
+            [
+                "--makefile",
+                makeFilePath,
+                "build-wasm-zk",
+                `OUTPUT_PATH=${outDir}`,
+                `MISC_PATH=${miscPath}`,
+            ],
+            {
+                cwd: exportPath,
+                stdio: "inherit",
+            }
+        );
+    } catch (e) {
+        console.error("Failed to build wasm for proving.");
+        console.error(e);
+    } finally {
+        await unCommentAllFiles(projectPath, bindGenComment);
+        await uncommentLinesInFile(
+            path.join(exportPath, "src", "export.rs"),
+            bindGenComment,
+            "//SPIN_INTERMEDITE_COMMENT@"
+        );
+    }
 }
 
 async function publish() {
@@ -211,7 +251,13 @@ async function publish() {
 
     const folderPath = parsePath(args[args.indexOf("--path") + 1]);
 
-    const filePath = path.join(folderPath, "pkg", "gameplay_bg.wasm");
+    const filePath = path.join(
+        folderPath,
+        "..",
+        "export",
+        "wasm",
+        "gameplay_bg.wasm"
+    );
 
     if (!fs.existsSync(filePath)) {
         console.error("Path does not exist: ", filePath);
@@ -288,7 +334,8 @@ function dryRun() {
         process.exit(1);
     }
 
-    const filePath = parsePath(args[args.indexOf("--path") + 1]);
+    const gameLogicPath = parsePath(args[args.indexOf("--path") + 1]);
+    const filePath = path.join(gameLogicPath, "..", "export");
     const wasmPath = parsePath(args[args.indexOf("--zkwasm") + 1]);
 
     if (!fs.existsSync(filePath)) {
@@ -332,7 +379,7 @@ function dryRun() {
             "wasm_output",
             "setup",
             "--wasm",
-            `${filePath}/pkg/gameplay_bg.wasm`,
+            `${filePath}/wasm/gameplay_bg.wasm`,
         ],
         { stdio: "inherit" }
     );
@@ -343,7 +390,7 @@ function dryRun() {
         "wasm_output",
         "dry-run",
         "--wasm",
-        `${filePath}/pkg/gameplay_bg.wasm`,
+        `${filePath}/wasm/gameplay_bg.wasm`,
         "--output",
         `${filePath}/output`,
         ...publicInputs.flatMap((i) => ["--public", `${i}:i64`]),
@@ -359,18 +406,17 @@ function dryRun() {
     });
 }
 
-const VERSION = "0.0.1";
-const INTERNAL_VERSION = "0.4";
+const VERSION = "0.2.0";
 async function entry() {
-    console.log("Running Spin version", VERSION, INTERNAL_VERSION);
+    console.log("Running Spin version", VERSION);
     if (args[0] === "init") {
         init();
     } else if (args[0] === "build-image") {
-        build();
+        await build();
     } else if (args[0] === "publish-image") {
         await publish();
     } else if (args[0] === "dry-run") {
-        dryRun();
+        await dryRun();
     } else if (args[0] === "version") {
         version();
     } else if (args[0] === "help") {
