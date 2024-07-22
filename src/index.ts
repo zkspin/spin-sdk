@@ -85,33 +85,6 @@ function init() {
     const sourcePath = path.join(__dirname, "..", "sdk");
     const destinationPath = path.join(process.cwd(), folderName);
 
-    if (optionalArgs.includes("--hackathon")) {
-        // Copy Rust Gameplay Contract Example
-        const sourceDirGameplay = path.join(
-            sourcePath,
-            "terminal-based-game-demo",
-            "gameplay"
-        );
-        const destinationDirGameplay = path.join(destinationPath, "gameplay");
-        copyFolderSync(sourceDirGameplay, destinationDirGameplay);
-
-        // Copy Frontend Example
-        const sourceDirFrontend = path.join(
-            sourcePath,
-            "terminal-based-game-demo",
-            "frontend"
-        );
-        const destinationDirFrontend = path.join(destinationPath, "frontend");
-        copyFolderSync(sourceDirFrontend, destinationDirFrontend);
-
-        // No need for a onchain contract for the hackathon
-        // Everyone shares the same contract, deployed by the organizers
-        console.log(
-            `Successfully initialized under folder for hackathon: ${destinationPath}`
-        );
-        return;
-    }
-
     // Copy Frontend Example
     const sourceDirFrontend = path.join(sourcePath, "frontend");
     const destinationDirFrontend = path.join(destinationPath, "frontend");
@@ -147,7 +120,6 @@ function help() {
     console.log("  --private          Private inputs for the dry-run");
     console.log("  --seed             Seed for the dry-run");
     console.log("  --keyCode          KeyCode for the dry-run");
-    console.log("  --hackathon        Initialize for the hackathon");
 }
 
 async function build() {
