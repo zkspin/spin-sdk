@@ -7,6 +7,7 @@ use std::sync::Mutex;
 use wasm_bindgen::prelude::*;
 
 pub const MAX_POSITION: u64 = 10;
+
 pub static GAME_STATE: Lazy<Mutex<SpinGameIntermediateStates>> =
     Lazy::new(|| Mutex::new(SpinGameIntermediateStates::new()));
 
