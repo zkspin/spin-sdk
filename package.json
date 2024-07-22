@@ -1,14 +1,15 @@
 {
   "name": "spin-m4",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && node script/add-shebang.js",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "publish": "npm publish"
   },
   "bin": {
-    "spin": "dist/index.js"
+    "spin-m4": "dist/index.js"
   },
   "keywords": [],
   "author": "",
