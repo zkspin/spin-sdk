@@ -22,38 +22,6 @@ npm install -g spin-m4
 
 > use Windows Subsystem for Linux (WSL)
 
-# Hardhat Integrations for Smart Contract Development
-
-Note: make sure you filled in `.env` first.
-
-Setup
-
-```shell
-cd onchain
-npm install
-```
-
-## Test Contracts
-
-```shell
-cd onchain
-npm run test
-```
-
-## Deploy Contracts
-
-```shell
-cd onchain
-npm run deploy
-```
-
-## Force New Deploy Contracts
-
-```shell
-cd onchain
-npm run deploy-reset
-```
-
 # **Your feedback is more than welcomed!**
 
 Please feel free to submit issues or send your feedback to spin-sdk@m4.team

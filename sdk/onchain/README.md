@@ -1,31 +1,31 @@
-# Spin On-chain Template
+# Hardhat Integrations for Smart Contract Development
 
-## Setups
+Note: make sure you filled in `.env` first.
 
-Setup `.env` following the example from `template.env`
+Setup
 
-```
-yarn
+```shell
+cd onchain
+npm install
 ```
 
 ## Test Contracts
 
-Test are under test/
-
-```
-yarn test
+```shell
+cd onchain
+npm run test
 ```
 
 ## Deploy Contracts
 
-To test deploying contracts, after you have deployed the contracts, hardhat keeps track of them under /ignition/deployments
-
 ```shell
-yarn deploy
+cd onchain
+npm run deploy
 ```
 
-To deploy your own contracts, run hardhat with reset so that it clears our deployment history
+## Force New Deploy Contracts
 
 ```shell
-yarn deploy-reset
+cd onchain
+npm run deploy-reset
 ```
