@@ -8,6 +8,8 @@ SDK for developing on-chain ZK proved application.
 
 [Install NodeJs V18 or above](https://nodejs.org/en/download/package-manager/current)
 
+[Install `wasm-pack`](github.com/rustwasm/wasm-pack)
+
 ```shell
 npm install -g spin-m4
 ```
