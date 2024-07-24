@@ -378,7 +378,7 @@ function dryRun() {
     });
 }
 
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 async function entry() {
     console.log("Running Spin version", VERSION);
     if (args[0] === "init") {

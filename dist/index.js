@@ -287,7 +287,7 @@ function dryRun() {
         stdio: "inherit",
     });
 }
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 function entry() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("Running Spin version", VERSION);
