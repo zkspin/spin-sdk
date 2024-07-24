@@ -100,15 +100,34 @@ export async function load_proving_taks_util_result(
     cloudCredential: ProveCredentials,
     retry_interval: number = 10000 // 10 seconds
 ) {
+    let INITIAL_RETRY_INTERVAL = 40000;
+    let init_flag = true;
     while (true) {
         const result = await load_proving_taks(task_id, cloudCredential);
-        if (result!.status !== "Pending" && result!.status !== "Processing") {
+        if (result!.status == "Done") {
             return result;
         }
+
+        if (result!.status == "Pending") {
+            console.log("Pending");
+        } else if (result!.status == "Processing") {
+            console.log("Processing");
+        } else {
+            throw new Error(`Proof generation failed, ${result}`);
+        }
+
+        let sleep_time: number;
+
+        if (init_flag) {
+            sleep_time = INITIAL_RETRY_INTERVAL;
+            init_flag = false;
+        } else {
+            sleep_time = retry_interval;
+        }
         console.log(
-            `waiting for proof generation... sleeping for ${retry_interval}ms`
+            `waiting for proof generation... sleeping for ${sleep_time}ms`
         );
-        await new Promise((r) => setTimeout(r, retry_interval));
+        await new Promise((_) => setTimeout(_, sleep_time));
     }
 }
 
@@ -134,14 +153,18 @@ export async function load_proving_taks(
 
     let tasksInfo;
 
-    while (retryCount < 3) {
+    while (retryCount < 4) {
         try {
             tasksInfo = (await helper.loadTasks(query)).data;
             console.log("proof data = ", tasksInfo);
             break;
         } catch (error: any) {
             console.error(`Caught error: ${error.message}`);
-            if (error.response && error.response.status === 429) {
+            if (
+                (error.response && error.response.status === 429) ||
+                error.code == 429 ||
+                error.message.includes("Too many requests")
+            ) {
                 console.log(`Caught 429 error. Retrying in 5 seconds...`);
                 await new Promise((resolve) => setTimeout(resolve, 5000));
                 retryCount++;

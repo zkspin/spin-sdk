@@ -25,10 +25,6 @@ export class Spin {
         this.gamePlay = new GamePlay();
     }
 
-    async newGame() {
-        await this.gamePlay.init();
-    }
-
     private add_public_input(input: bigint) {
         this.inputs.push(input);
     }
@@ -55,13 +51,17 @@ export class Spin {
         return this.gamePlay.getGameState();
     }
 
-    init_game(arg: SpinGameInitArgs) {
+    async initialize_import() {
+        await this.gamePlay.init();
+    }
+
+    initialize_game(arg: SpinGameInitArgs) {
+        this.add_public_input(arg.total_steps);
+        this.add_public_input(arg.current_position);
         this.gamePlay.init_game(arg);
 
         // TODO: dynamic add public inputs
         // args.map((a) => this.add_public_input(a));
-        this.add_public_input(arg.total_steps);
-        this.add_public_input(arg.current_position);
     }
 
     async getGameID() {

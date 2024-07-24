@@ -59,7 +59,7 @@ let spin: Spin;
 
 function App() {
     useEffect(() => {
-        getOnchainGameStates().then((result): any => {
+        getOnchainGameStates().then(async (result): Promise<any> => {
             const total_steps = result[0];
             const current_position = result[1];
 
@@ -78,10 +78,12 @@ function App() {
                     IMAGE_HASH: ZK_IMAGE_MD5,
                 },
             });
-
-            spin.newGame().then(() =>
-                onGameInitReady(total_steps, current_position)()
-            );
+            spin.initialize_import().then(() => {
+                const arg = new SpinGameInitArgs(total_steps, current_position);
+                console.log("arg = ", arg);
+                spin.initialize_game(arg);
+                updateDisplay();
+            });
         });
     }, []);
 
@@ -111,13 +113,6 @@ function App() {
         setMoves(spin.witness);
     };
 
-    const onGameInitReady =
-        (total_steps: bigint, current_position: bigint) => () => {
-            spin.init_game(new SpinGameInitArgs(total_steps, current_position));
-
-            updateDisplay();
-        };
-
     // Submit the proof to the cloud
     const submitProof = async () => {
         const proof = await spin.generateProof();
@@ -143,7 +138,7 @@ function App() {
         });
 
         await spin.reset();
-        onGameInitReady(gameStates[0], gameStates[1]);
+        // awonGameInitReady(gameStates[0], gameStates[1]);
     };
 
     return (
