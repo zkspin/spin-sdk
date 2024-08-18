@@ -15,5 +15,8 @@
     "declaration": true,
   },
   "include": ["src/**/*", "test/"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
+  "paths": {
+      "zkwasm-service-helper": ["node_modules/zkwasm-service-helper/src/index.ts"]
+    }
 }
