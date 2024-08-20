@@ -12,7 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uncommentLinesInFile = exports.commentLinesInFile = exports.unCommentAllFiles = exports.commentAllFiles = void 0;
+exports.commentAllFiles = commentAllFiles;
+exports.unCommentAllFiles = unCommentAllFiles;
+exports.commentLinesInFile = commentLinesInFile;
+exports.uncommentLinesInFile = uncommentLinesInFile;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 function commentAllFiles(folderPath_1, searchString_1) {
@@ -25,7 +28,6 @@ function commentAllFiles(folderPath_1, searchString_1) {
         }
     });
 }
-exports.commentAllFiles = commentAllFiles;
 function unCommentAllFiles(folderPath_1, searchString_1) {
     return __awaiter(this, arguments, void 0, function* (folderPath, searchString, comment = "//SPIN_INTERMEDITE_COMMENT@") {
         const files = yield getFiles(folderPath);
@@ -36,7 +38,6 @@ function unCommentAllFiles(folderPath_1, searchString_1) {
         }
     });
 }
-exports.unCommentAllFiles = unCommentAllFiles;
 function getFiles(dir_1) {
     return __awaiter(this, arguments, void 0, function* (dir, allFiles = []) {
         const files = yield fs_1.default.promises.readdir(dir);
@@ -66,7 +67,6 @@ function commentLinesInFile(filePath, searchString, comment) {
         yield fs_1.default.promises.writeFile(filePath, commentedLines.join("\n"), "utf8");
     });
 }
-exports.commentLinesInFile = commentLinesInFile;
 function uncommentLinesInFile(filePath, searchString, comment) {
     return __awaiter(this, void 0, void 0, function* () {
         const data = yield fs_1.default.promises.readFile(filePath, "utf8");
@@ -82,4 +82,3 @@ function uncommentLinesInFile(filePath, searchString, comment) {
         return;
     });
 }
-exports.uncommentLinesInFile = uncommentLinesInFile;

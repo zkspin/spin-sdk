@@ -8,6 +8,8 @@ import {
     uncommentLinesInFile,
     commentLinesInFile,
 } from "./comment";
+import logger from './logger';
+
 const args = process.argv.slice(2);
 
 const FOLDER_IGNORE_LIST = [
@@ -36,13 +38,13 @@ const ZK_CLOUD_URL = "https://rpc.zkwasmhub.com:8090";
  */
 function copyFolderSync(src: string, dest: string): void {
     if (!fs.existsSync(src)) {
-        console.error(`Source folder does not exist: ${src}`);
+        logger.error(`Source folder does not exist: ${src}`);
         return;
     }
 
     // Create destination folder if it doesn't exist
     if (fs.existsSync(dest)) {
-        console.error(`Destination folder already exists: ${dest}`);
+        logger.error(`Destination folder already exists: ${dest}`);
     }
     fs.mkdirSync(dest, { recursive: true });
 
@@ -67,19 +69,19 @@ function copyFolderSync(src: string, dest: string): void {
 function init() {
     // Argument Parsing and Validation
     if (args.length < 2) {
-        console.error("Please provide a folder name.");
-        console.error(" Usage: npx spin init [folderName] --[optionalArgs]");
+        logger.error("Please provide a folder name.");
+        logger.error(" Usage: npx spin init [folderName] --[optionalArgs]");
         process.exit(1);
     }
     const optionalArgs = args.filter((arg) => arg.startsWith("--"));
     const folderName = args[1];
 
     if (optionalArgs.includes(folderName)) {
-        console.error(
+        logger.error(
             "Please provide a valid folder name. Provided: ",
             folderName
         );
-        console.error(" Usage: npx spin init [folderName] --[optionalArgs]");
+        logger.error(" Usage: npx spin init [folderName] --[optionalArgs]");
     }
 
     const sourcePath = path.join(__dirname, "..", "sdk");
@@ -100,34 +102,34 @@ function init() {
     const destinationDirGameplay = path.join(destinationPath, "gameplay");
     copyFolderSync(sourceDirGameplay, destinationDirGameplay);
 
-    console.log(`Successfully initialized under folder: ${destinationPath}`);
+    logger.info(`Successfully initialized under folder: ${destinationPath}`);
 }
 
 function help() {
-    console.log("Usage: npx spin [command] \n");
-    console.log("Commands:");
-    console.log("  init [folderName]  Initialize project with gameplay folder");
-    console.log("  help               Show help information");
-    console.log("  build-image        Build the project wasm image");
-    console.log("  publish-image      Publish the project wasm image");
-    console.log("  dry-run            Run a dry-run of the wasm image");
-    console.log("  version            Show the version of spin");
+    logger.info("Usage: npx spin [command] \n");
+    logger.info("Commands:");
+    logger.info("  init [folderName]  Initialize project with gameplay folder");
+    logger.info("  help               Show help information");
+    logger.info("  build-image        Build the project wasm image");
+    logger.info("  publish-image      Publish the project wasm image");
+    logger.info("  dry-run            Run a dry-run of the wasm image");
+    logger.info("  version            Show the version of spin");
 
-    console.log("Options:");
-    console.log("  --path             Path to the provable_game_logic folder");
-    console.log("  --zkwasm           Path to the zkwasm-cli folder");
-    console.log("  --public           Public inputs for the dry-run");
-    console.log("  --private          Private inputs for the dry-run");
-    console.log("  --seed             Seed for the dry-run");
-    console.log("  --keyCode          KeyCode for the dry-run");
+    logger.info("Options:");
+    logger.info("  --path             Path to the provable_game_logic folder");
+    logger.info("  --zkwasm           Path to the zkwasm-cli folder");
+    logger.info("  --public           Public inputs for the dry-run");
+    logger.info("  --private          Private inputs for the dry-run");
+    logger.info("  --seed             Seed for the dry-run");
+    logger.info("  --keyCode          KeyCode for the dry-run");
 }
 
 async function build() {
-    console.log("Building project...");
-    console.log("Args: ", args);
+    logger.info("Building project...");
+    logger.info(`Args: ${JSON.stringify(args)}`);
     const optionalArgs = args.filter((arg) => arg.startsWith("--"));
 
-    console.log("Optional Args: ", optionalArgs);
+    logger.info(`Optional Args: ${JSON.stringify(optionalArgs)}`);
 
     if (!optionalArgs.includes("--path")) {
         console.error(
@@ -148,10 +150,10 @@ async function build() {
     //     outDir = parsePath(args[args.indexOf("--out") + 1]);
     // }
 
-    console.log("Building project at path:", projectPath);
+    logger.info("Building project at path:", projectPath);
     const { spawnSync } = require("child_process");
 
-    console.log("Building javascript packages...");
+    logger.info("Building javascript packages...");
     spawnSync(
         "make",
         [
@@ -167,7 +169,7 @@ async function build() {
         }
     );
 
-    console.log("Building wasm packages for proving...");
+    logger.info("Building wasm packages for proving...");
     // !!! Caveat for build WASM for proving:
     // zkWASM doesn't support #[wasm_bindgen] for Struct types.
     // As a workaround, we need to comment out the #[wasm_bindgen]
@@ -209,7 +211,7 @@ async function build() {
 }
 
 async function publish() {
-    console.log("Publishing project...");
+    logger.info("Publishing project...");
 
     const optionalArgs = args.filter((arg) => arg.startsWith("--"));
 
@@ -241,7 +243,7 @@ async function publish() {
         process.exit(1);
     }
 
-    console.log("Publishing wasm image at path:", filePath);
+    logger.info("Publishing wasm image at path:", filePath);
 
     const { imageCommitment, md5 } = await addImage(
         {
@@ -262,11 +264,11 @@ async function publish() {
 
     const gameID = createCommit2();
 
-    console.log("--------------------");
-    console.log("Record The Following Information:");
-    console.log("Game ID: ", gameID);
-    console.log("Image Hash", md5);
-    console.log("Image Commitments: ", imageCommitment);
+    logger.info("--------------------");
+    logger.info("Record The Following Information:");
+    logger.info("Game ID: ", gameID);
+    logger.info("Image Hash", md5);
+    logger.info("Image Commitments: ", imageCommitment);
 
     return imageCommitment;
 }
@@ -339,7 +341,7 @@ function dryRun() {
         }
     }
 
-    console.log("Running dry-run for wasm at path:", filePath);
+    logger.info("Running dry-run for wasm at path:", filePath);
 
     const { spawnSync } = require("child_process");
 
@@ -371,7 +373,7 @@ function dryRun() {
         ...privateInputs.flatMap((i) => ["--private", `${i}:i64`]),
     ];
 
-    console.log("Running dry-run with args:", wasmArgs.join(" "));
+    logger.info("Running dry-run with args:", wasmArgs.join(" "));
 
     const runDryRun = spawnSync(`${wasmPath}/zkwasm-cli`, wasmArgs, {
         stdio: "inherit",
@@ -380,7 +382,7 @@ function dryRun() {
 
 const VERSION = "0.5.0";
 async function entry() {
-    console.log("Running Spin version", VERSION);
+    logger.info("Running Spin version", VERSION);
     if (args[0] === "init") {
         init();
     } else if (args[0] === "build-image") {

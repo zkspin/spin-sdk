@@ -12,7 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getImageCommitmentBigInts = exports.addImage = void 0;
+exports.addImage = addImage;
+exports.getImageCommitmentBigInts = getImageCommitmentBigInts;
 /* SDK FILE*/
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
@@ -62,7 +63,6 @@ function addImage(cloudCredential, wasm_path) {
         return { imageCommitment, md5 };
     });
 }
-exports.addImage = addImage;
 function getImageCommitmentBigInts(cloudCredential) {
     return __awaiter(this, void 0, void 0, function* () {
         const helper = new zkwasm_service_helper_1.ZkWasmServiceHelper(cloudCredential.CLOUD_RPC_URL, "", "");
@@ -75,7 +75,6 @@ function getImageCommitmentBigInts(cloudCredential) {
         return commitment;
     });
 }
-exports.getImageCommitmentBigInts = getImageCommitmentBigInts;
 /* This function is used to convert the commitment hex to hex string
  * in the format of verifying instance
  * @param x: x hex string

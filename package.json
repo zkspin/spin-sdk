@@ -16,8 +16,14 @@
   "license": "ISC",
   "dependencies": {
     "@types/node": "^20.14.2",
+    "pino": "^9.3.2",
+    "pino-pretty": "^11.2.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
+    "wasm-pack": "^0.13.0",
     "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper"
+  },
+  "devDependencies": {
+    "@types/pino": "^7.0.5"
   }
 }
