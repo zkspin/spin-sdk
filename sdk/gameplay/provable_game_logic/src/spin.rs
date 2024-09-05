@@ -1,11 +1,11 @@
-use crate::definition::SpinGameInitArgs;
-use crate::definition::SpinGameIntermediateStates;
+use crate::definition::SpinGameStates;
 
 // DO NOT MODIFY THIS FILE
 pub trait SpinGameTrait {
-    fn initialize_game(args: SpinGameInitArgs);
+    fn initialize_game(args: SpinGameStates);
     fn step(input: u64);
-    fn get_game_state() -> SpinGameIntermediateStates;
+    fn get_game_state() -> SpinGameStates;
+    fn get_game_state_hash() -> [u64; 4];
 }
 
 pub struct SpinGame {}
