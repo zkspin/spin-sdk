@@ -1,5 +1,6 @@
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
+
 const LCG_M: u64 = 4294967296;
 const LCG_A: u64 = 22695477;
 const LCG_C: u64 = 1;

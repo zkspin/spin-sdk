@@ -1,5 +1,5 @@
 const fs = require('fs');
-const filePath = './dist/index.js';
+const filePath = './dist/src/index.js';
 const shebang = '#!/usr/bin/env node\n';
 
 fs.readFile(filePath, 'utf8', (err, data) => {

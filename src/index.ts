@@ -1,3 +1,11 @@
+// Save the original console.log function
+const originalConsoleLog = console.log;
+
+// Override console.log
+console.log = (message?: any, ...optionalParams: any[]) => {
+    // temporary injection to reduce zkwasmutil logs
+};
+
 import fs from "fs";
 import path from "path";
 import { logger } from "./logger";
@@ -15,6 +23,7 @@ import {
     FILE_IGNORE_LIST,
     ZK_CLOUD_USER_PRIVATE_KEY,
 } from "./config";
+import { log } from "console";
 
 const args = process.argv.slice(2);
 
@@ -111,8 +120,6 @@ function help() {
 }
 
 async function build() {
-    logger.info("Building project...");
-
     const optionalArgs = args.filter((arg) => arg.startsWith("--"));
 
     if (!optionalArgs.includes("--path")) {
@@ -124,7 +131,7 @@ async function build() {
     }
 
     const projectPath = parsePath(args[args.indexOf("--path") + 1]);
-    const miscPath = path.join(__dirname, "..", "misc");
+    const miscPath = path.join(__dirname, "..", "..", "misc");
     const makeFilePath = path.join(miscPath, "Makefile");
     const exportPath = path.join(projectPath, "..", "export");
 
@@ -136,26 +143,30 @@ async function build() {
 
     logger.info(`Successfully built project at path: ${projectPath}`);
 
-    logger.info("Building javascript packages...");
+    logger.info("Start building WASM for browser & node packages...");
 
-    spawnSync(
+    const build_spin_output = spawnSync(
         "make",
         [
             "--makefile",
             makeFilePath,
-            "build-js",
+            "build-spin",
             `OUTPUT_PATH=${outDir}`,
             `MISC_PATH=${miscPath}`,
         ],
         {
             cwd: exportPath,
-            stdio: "inherit",
+            stdio: "pipe",
         }
-    );
+    ).stdout;
 
-    logger.info("Successfully built javascript packages.");
+    if (!build_spin_output.toString().includes("BUILD_SPIN_SUCCESS")) {
+        logger.error(build_spin_output.toString());
+        logger.error("Failed to build web & node packages.");
+        process.exit(1);
+    }
 
-    logger.info("Building wasm packages for proving...");
+    logger.info("Start building wasm packages for proving...");
     // !!! Caveat for build WASM for proving:
     // zkWASM doesn't support #[wasm_bindgen] for Struct types.
     // As a workaround, we need to comment out the #[wasm_bindgen]
@@ -168,8 +179,17 @@ async function build() {
         bindGenComment,
         "//SPIN_INTERMEDITE_COMMENT@"
     );
+    const importBindGenComment = "use wasm_bindgen::prelude::*;";
+
+    await commentAllFiles(projectPath, importBindGenComment);
+    await commentLinesInFile(
+        path.join(exportPath, "src", "export.rs"),
+        importBindGenComment,
+        "//SPIN_INTERMEDITE_COMMENT@"
+    );
+
     try {
-        spawnSync(
+        const build_zk_wasm_out = spawnSync(
             "make",
             [
                 "--makefile",
@@ -180,9 +200,15 @@ async function build() {
             ],
             {
                 cwd: exportPath,
-                stdio: "inherit",
+                stdio: "pipe",
             }
-        );
+        ).stdout;
+
+        if (build_zk_wasm_out.toString().includes("BUILD_WASM_ZK_SUCCESS")) {
+            logger.info(`Successfully built wasm packages for proving.`);
+        } else {
+            throw new Error(build_zk_wasm_out.toString());
+        }
     } catch (err) {
         logger.error(`Failed to build wasm for proving. \n${err}`);
     } finally {
@@ -190,6 +216,12 @@ async function build() {
         await uncommentLinesInFile(
             path.join(exportPath, "src", "export.rs"),
             bindGenComment,
+            "//SPIN_INTERMEDITE_COMMENT@"
+        );
+        await unCommentAllFiles(projectPath, importBindGenComment);
+        await uncommentLinesInFile(
+            path.join(exportPath, "src", "export.rs"),
+            importBindGenComment,
             "//SPIN_INTERMEDITE_COMMENT@"
         );
     }
@@ -245,7 +277,9 @@ async function publish() {
     logger.info("Record The Following Information:");
     logger.info("--------------------");
     logger.info(`MD5: ${md5}`);
-    logger.info(`Image Commitment: ${imageCommitment}`);
+    logger.info(
+        `Image Commitments: [${imageCommitment[0]}n,${imageCommitment[1]}n,${imageCommitment[2]}n]`
+    );
     logger.info("--------------------");
 
     return imageCommitment;
@@ -279,9 +313,7 @@ function dryRun() {
             "--zkwasm flag is required, a path to folder containing zkwasm-cli"
         );
         logger.error(
-            "Usage: npx spin dry-run --path [path] --zkwasm [zkwasm path] --public [public inputs] ... --private [private inputs] --private [private inputs] ...",
-
-            "Hackathon Usage: npx spin dry-run --path [path] --zkwasm [zkwasm path] --seed [seed] --keyCode [keyCode] --keyCode [keyCode] ..."
+            "Usage: npx spin dry-run --path [path] --zkwasm [zkwasm path] --public [public inputs] ... --private [private inputs] --private [private inputs] ..."
         );
         process.exit(1);
     }
@@ -303,7 +335,7 @@ function dryRun() {
     let publicInputs = [];
 
     for (let i = 0; i < args.length; i++) {
-        if (args[i].startsWith("--public") || args[i].startsWith("--seed")) {
+        if (args[i].startsWith("--public")) {
             publicInputs.push(args[i + 1]);
         }
     }
@@ -311,10 +343,7 @@ function dryRun() {
     let privateInputs = [];
 
     for (let i = 0; i < args.length; i++) {
-        if (
-            args[i].startsWith("--private") ||
-            args[i].startsWith("--keyCode")
-        ) {
+        if (args[i].startsWith("--private")) {
             privateInputs.push(args[i + 1]);
         }
     }
@@ -322,6 +351,10 @@ function dryRun() {
     logger.info("Running dry-run for wasm at path:", filePath);
 
     const { spawnSync } = require("child_process");
+
+    logger.info(
+        `Running setup with args --wasm ${filePath}/wasm/gameplay_bg.wasm`
+    );
 
     const runSetup = spawnSync(
         `${wasmPath}/zkwasm-cli`,
@@ -333,8 +366,10 @@ function dryRun() {
             "--wasm",
             `${filePath}/wasm/gameplay_bg.wasm`,
         ],
-        { stdio: "inherit" }
+        { stdio: "pipe" }
     );
+
+    logger.debug(`Setup output: ${runSetup.stdout.toString()}`);
 
     const wasmArgs = [
         "--params",
@@ -351,16 +386,18 @@ function dryRun() {
         ...privateInputs.flatMap((i) => ["--private", `${i}:i64`]),
     ];
 
-    logger.info("Running dry-run with args:", wasmArgs.join(" "));
+    logger.info("Running dry-run with args:" + wasmArgs.join(" "));
 
     const runDryRun = spawnSync(`${wasmPath}/zkwasm-cli`, wasmArgs, {
-        stdio: "inherit",
+        stdio: "pipe",
     });
+
+    logger.info(`Dry-run output: ${runDryRun.stdout.toString()}`);
 }
 
 const VERSION = "0.5.0";
 async function entry() {
-    logger.info("Running Spin version", VERSION);
+    logger.info(`Running Spin version ${VERSION}`);
     if (args[0] === "init") {
         init();
     } else if (args[0] === "build-image") {

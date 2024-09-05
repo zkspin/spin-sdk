@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -12,6 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// Save the original console.log function
+const originalConsoleLog = console.log;
+// Override console.log
+console.log = (message, ...optionalParams) => {
+    // temporary injection to reduce zkwasmutil logs
+};
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const logger_1 = require("./logger");
@@ -97,7 +104,6 @@ function help() {
 }
 function build() {
     return __awaiter(this, void 0, void 0, function* () {
-        logger_1.logger.info("Building project...");
         const optionalArgs = args.filter((arg) => arg.startsWith("--"));
         if (!optionalArgs.includes("--path")) {
             logger_1.logger.error("--path flag is required, path of the provable_game_logic folder.");
@@ -105,26 +111,30 @@ function build() {
             process.exit(1);
         }
         const projectPath = parsePath(args[args.indexOf("--path") + 1]);
-        const miscPath = path_1.default.join(__dirname, "..", "misc");
+        const miscPath = path_1.default.join(__dirname, "..", "..", "misc");
         const makeFilePath = path_1.default.join(miscPath, "Makefile");
         const exportPath = path_1.default.join(projectPath, "..", "export");
         const outDir = projectPath;
         logger_1.logger.info(`Building project at path: ${projectPath}...`);
         const { spawnSync } = require("child_process");
         logger_1.logger.info(`Successfully built project at path: ${projectPath}`);
-        logger_1.logger.info("Building javascript packages...");
-        spawnSync("make", [
+        logger_1.logger.info("Start building WASM for browser & node packages...");
+        const build_spin_output = spawnSync("make", [
             "--makefile",
             makeFilePath,
-            "build-js",
+            "build-spin",
             `OUTPUT_PATH=${outDir}`,
             `MISC_PATH=${miscPath}`,
         ], {
             cwd: exportPath,
-            stdio: "inherit",
-        });
-        logger_1.logger.info("Successfully built javascript packages.");
-        logger_1.logger.info("Building wasm packages for proving...");
+            stdio: "pipe",
+        }).stdout;
+        if (!build_spin_output.toString().includes("BUILD_SPIN_SUCCESS")) {
+            logger_1.logger.error(build_spin_output.toString());
+            logger_1.logger.error("Failed to build web & node packages.");
+            process.exit(1);
+        }
+        logger_1.logger.info("Start building wasm packages for proving...");
         // !!! Caveat for build WASM for proving:
         // zkWASM doesn't support #[wasm_bindgen] for Struct types.
         // As a workaround, we need to comment out the #[wasm_bindgen]
@@ -132,8 +142,11 @@ function build() {
         const bindGenComment = "#[wasm_bindgen";
         yield (0, comment_1.commentAllFiles)(projectPath, bindGenComment);
         yield (0, comment_1.commentLinesInFile)(path_1.default.join(exportPath, "src", "export.rs"), bindGenComment, "//SPIN_INTERMEDITE_COMMENT@");
+        const importBindGenComment = "use wasm_bindgen::prelude::*;";
+        yield (0, comment_1.commentAllFiles)(projectPath, importBindGenComment);
+        yield (0, comment_1.commentLinesInFile)(path_1.default.join(exportPath, "src", "export.rs"), importBindGenComment, "//SPIN_INTERMEDITE_COMMENT@");
         try {
-            spawnSync("make", [
+            const build_zk_wasm_out = spawnSync("make", [
                 "--makefile",
                 makeFilePath,
                 "build-wasm-zk",
@@ -141,8 +154,14 @@ function build() {
                 `MISC_PATH=${miscPath}`,
             ], {
                 cwd: exportPath,
-                stdio: "inherit",
-            });
+                stdio: "pipe",
+            }).stdout;
+            if (build_zk_wasm_out.toString().includes("BUILD_WASM_ZK_SUCCESS")) {
+                logger_1.logger.info(`Successfully built wasm packages for proving.`);
+            }
+            else {
+                throw new Error(build_zk_wasm_out.toString());
+            }
         }
         catch (err) {
             logger_1.logger.error(`Failed to build wasm for proving. \n${err}`);
@@ -150,6 +169,8 @@ function build() {
         finally {
             yield (0, comment_1.unCommentAllFiles)(projectPath, bindGenComment);
             yield (0, comment_1.uncommentLinesInFile)(path_1.default.join(exportPath, "src", "export.rs"), bindGenComment, "//SPIN_INTERMEDITE_COMMENT@");
+            yield (0, comment_1.unCommentAllFiles)(projectPath, importBindGenComment);
+            yield (0, comment_1.uncommentLinesInFile)(path_1.default.join(exportPath, "src", "export.rs"), importBindGenComment, "//SPIN_INTERMEDITE_COMMENT@");
         }
     });
 }
@@ -184,7 +205,7 @@ function publish() {
         logger_1.logger.info("Record The Following Information:");
         logger_1.logger.info("--------------------");
         logger_1.logger.info(`MD5: ${md5}`);
-        logger_1.logger.info(`Image Commitment: ${imageCommitment}`);
+        logger_1.logger.info(`Image Commitment: [${imageCommitment[0]}n,${imageCommitment[1]}n,${imageCommitment[2]}n]`);
         logger_1.logger.info("--------------------");
         return imageCommitment;
     });
@@ -267,7 +288,7 @@ function dryRun() {
 const VERSION = "0.5.0";
 function entry() {
     return __awaiter(this, void 0, void 0, function* () {
-        logger_1.logger.info("Running Spin version", VERSION);
+        logger_1.logger.info(`Running Spin version ${VERSION}`);
         if (args[0] === "init") {
             init();
         }

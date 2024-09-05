@@ -20,9 +20,9 @@ pub fn zkmain() -> i64 {
     let onchain_meta_transaction_hash_3: u64 = unsafe { wasm_input(1) };
 
     // --- META transaction data ---
-    let gameId: u64 = unsafe { wasm_input(0) };
+    let game_id: u64 = unsafe { wasm_input(0) };
 
-    zkwasm_rust_sdk::dbg!("PI: gameId: {}\n", gameId);
+    zkwasm_rust_sdk::dbg!("PI: gameId: {}\n", game_id);
 
     // --- GAME transaction data ---
     let previous_state_total_steps: u64 = unsafe { wasm_input(0) };
@@ -63,7 +63,7 @@ pub fn zkmain() -> i64 {
 
     let computed_meta_transaction_hash = hash_vec(
         vec![
-            gameId,
+            game_id,
             computed_game_state_hash[0],
             computed_game_state_hash[1],
             computed_game_state_hash[2],
@@ -92,12 +92,12 @@ pub fn zkmain() -> i64 {
         require(computed_meta_transaction_hash[3] == onchain_meta_transaction_hash_3);
     }
 
-    let final_game_state: SpinGameStates = SpinGame::get_game_state();
+    // let final_game_state: SpinGameStates = SpinGame::get_game_state();
 
     // --- GAME transaction data output ---
 
     // Hash of game state output
-    let game_state_hash = final_game_state.get_game_state_hash();
+    let game_state_hash = SpinGame::get_game_state_hash();
 
     unsafe {
         wasm_output(game_state_hash[0]);

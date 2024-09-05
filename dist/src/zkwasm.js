@@ -19,6 +19,7 @@ const path_1 = require("path");
 const zkwasm_service_helper_1 = require("zkwasm-service-helper");
 const logger_1 = require("./logger");
 const config_1 = require("./config");
+const zkwasm_1 = require("../sdk/lib/zkwasm");
 function addImage(cloudCredential, wasm_path) {
     return __awaiter(this, void 0, void 0, function* () {
         const helper = new zkwasm_service_helper_1.ZkWasmServiceHelper(cloudCredential.CLOUD_RPC_URL, "", "");
@@ -42,7 +43,11 @@ function addImage(cloudCredential, wasm_path) {
         const task = Object.assign(Object.assign({}, info), { signature });
         yield helper
             .addNewWasmImage(task)
-            .then(yield new Promise((resolve) => setTimeout(resolve, 2000)))
+            .then(() => __awaiter(this, void 0, void 0, function* () {
+            logger_1.logger.info(`Image with md5 ${md5} added successfully`);
+            yield new Promise((resolve) => setTimeout(resolve, 2000));
+            return;
+        }))
             .catch((e) => {
             if (e instanceof Error &&
                 e.message ===
@@ -57,12 +62,12 @@ function addImage(cloudCredential, wasm_path) {
         cloudCredential.IMAGE_HASH = md5;
         for (let i = 0; i < config_1.PUBLISH_IMAGE_RETRY_COUNT; i++) {
             try {
-                const imageCommitment = yield getImageCommitmentBigInts(cloudCredential);
+                const imageCommitment = yield (0, zkwasm_1.getImageCommitmentBigInts)(cloudCredential);
                 return { imageCommitment, md5 };
             }
             catch (e) {
                 if (e instanceof Error && e.message.includes("Image not found")) {
-                    logger_1.logger.warn(`Image not found: ${md5}, retrying... retry ${i}`);
+                    logger_1.logger.warn(`Image not found: ${md5}, retrying... retry ${i}/${config_1.PUBLISH_IMAGE_RETRY_COUNT}`);
                     logger_1.logger.warn(`Sleeping for ${config_1.PUBLISH_IMAGE_RETRY_DELAY_IN_SECONDS} seconds...`);
                     yield new Promise((resolve) => setTimeout(resolve, config_1.PUBLISH_IMAGE_RETRY_DELAY_IN_SECONDS * 1000));
                 }

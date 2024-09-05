@@ -1,4 +1,4 @@
-use serde::{ Deserialize, Serialize };
+use serde::Serialize;
 use std::fmt;
 use wasm_bindgen::prelude::*;
 

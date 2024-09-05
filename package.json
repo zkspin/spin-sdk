@@ -1,5 +1,5 @@
 {
-  "name": "spin-m4",
+  "name": "zkspin",
   "version": "0.5.0",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
@@ -10,7 +10,7 @@
     "test": "mocha tests/*.ts"
   },
   "bin": {
-    "spin-m4": "dist/index.js"
+    "zkspin": "dist/src/index.js"
   },
   "keywords": [],
   "author": "",

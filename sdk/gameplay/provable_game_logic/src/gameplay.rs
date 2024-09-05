@@ -1,14 +1,14 @@
 use crate::definition::SpinGameStates;
 use crate::spin::SpinGame;
 use crate::spin::SpinGameTrait;
+use crate::hasher::hash_vec;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
-use wasm_bindgen::prelude::*;
 
 pub const MAX_POSITION: u64 = 10;
 
 pub static GAME_STATE: Lazy<Mutex<SpinGameStates>> = Lazy::new(||
-    Mutex::new(SpinGameStates::new())
+    Mutex::new(SpinGameStates::new(0, 0))
 );
 
 impl SpinGameTrait for SpinGame {

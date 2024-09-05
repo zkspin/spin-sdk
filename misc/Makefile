@@ -2,7 +2,7 @@ OUT_NAME=gameplay
 OUT_DIR=$(OUTPUT_PATH)/../export/spinjs
 
 build-wasm-zk:
-	@cargo build && wasm-pack build --release --out-name $(OUT_NAME) --out-dir $(OUTPUT_PATH)/../export/wasm
+	@cargo build && wasm-pack build --release --out-name $(OUT_NAME) --out-dir $(OUTPUT_PATH)/../export/wasm && echo "BUILD_WASM_ZK_SUCCESS"
 
 wasm-build-web:
 	@cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target web --out-dir $(OUT_DIR)/wasm/esm
@@ -15,11 +15,8 @@ wasm-build-node:
 	# Append the JS import helper to the front of the generated JS file
 	cat $(MISC_PATH)/wasm_import_template_commonjs.js > temp.js && tail -n +3 $(OUT_DIR)/wasm/commonjs/$(OUT_NAME).js >> temp.js && mv temp.js $(OUT_DIR)/wasm/commonjs/$(OUT_NAME).js
 
-build-js: wasm-build-web wasm-build-node
-	cd $(OUT_DIR) && npm install && npm run build
-
-build-spin:
-	cd $(OUT_DIR) && npm install && npm run build
+build-spin: wasm-build-web wasm-build-node
+	@echo "BUILD_SPIN_SUCCESS"
 
 clean:
 	rm -rf $(OUT_DIR)

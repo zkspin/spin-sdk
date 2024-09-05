@@ -60,7 +60,11 @@ export async function addImage(
 
     await helper
         .addNewWasmImage(task)
-        .then(await new Promise((resolve) => setTimeout(resolve, 2000)))
+        .then(async () => {
+            logger.info(`Image with md5 ${md5} added successfully`);
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            return;
+        })
         .catch((e) => {
             if (
                 e instanceof Error &&
@@ -84,7 +88,9 @@ export async function addImage(
             return { imageCommitment, md5 };
         } catch (e) {
             if (e instanceof Error && e.message.includes("Image not found")) {
-                logger.warn(`Image not found: ${md5}, retrying... retry ${i}`);
+                logger.warn(
+                    `Image not found: ${md5}, retrying... retry ${i}/${PUBLISH_IMAGE_RETRY_COUNT}`
+                );
                 logger.warn(
                     `Sleeping for ${PUBLISH_IMAGE_RETRY_DELAY_IN_SECONDS} seconds...`
                 );
