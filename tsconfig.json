@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "module": "CommonJS",
     "target": "es6",
     "strict": true,
     "esModuleInterop": true,
     "types": ["node"],
   },
-  "include": ["src/**/*", "sdk/misc"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts", "sdk/**/*"]
 }

@@ -20,7 +20,8 @@
     "pino": "^9.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper"
+    "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper",
+    "shared-lib": "file:./sdk/lib"
   },
   "devDependencies": {
     "@types/chai": "^4.3.19",
