@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import { logger } from "./logger";
 import { addImage } from "./zkwasm";
-import { ethers } from "ethers";
 import {
     commentAllFiles,
     unCommentAllFiles,
@@ -16,7 +15,6 @@ import {
     FILE_IGNORE_LIST,
     ZK_CLOUD_USER_PRIVATE_KEY,
 } from "./config";
-import { error } from "console";
 
 const args = process.argv.slice(2);
 
