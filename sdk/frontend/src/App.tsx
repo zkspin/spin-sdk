@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
-import { abi } from "./ABI.json";
-import { Spin, SpinGameInitArgs } from "spin";
+import { abi } from "../../onchain/artifacts/contracts/GameContract.sol/GameContract.json";
 import { config } from "./web3";
 import { readContract } from "wagmi/actions";
 import { TaskStatus } from "zkwasm-service-helper";
+import { SpinGame } from "../../lib/spin_game";
+import { SpinDummyProver } from "../../lib/spin_game_prover";
+import { Gameplay } from "./gameplay";
 
 const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_GAME_CONTRACT_ADDRESS;
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_CLOUD_USER_ADDRESS;
@@ -31,7 +33,6 @@ async function verify_onchain({
     instances: BigInt[];
     status: TaskStatus;
 }) {
-    console.log("proof", proof, verify_instance, aux, instances);
     const result = await writeContract(config, {
         abi,
         address: GAME_CONTRACT_ADDRESS,
@@ -46,6 +47,7 @@ async function verify_onchain({
 
 /* This function is used to get the on-chain game states */
 async function getOnchainGameStates() {
+    return [BigInt(0), BigInt(0)];
     const result = (await readContract(config, {
         abi,
         address: GAME_CONTRACT_ADDRESS,
@@ -55,7 +57,7 @@ async function getOnchainGameStates() {
     return result;
 }
 
-let spin: Spin;
+let spin: SpinGame;
 
 function App() {
     useEffect(() => {
@@ -65,25 +67,22 @@ function App() {
 
             console.log("total_steps = ", total_steps);
             console.log("current_position = ", current_position);
+
             setOnChainGameStates({
                 total_steps,
                 current_position,
             });
 
-            spin = new Spin({
-                cloudCredentials: {
-                    CLOUD_RPC_URL: ZK_CLOUD_RPC_URL,
-                    USER_ADDRESS: ZK_USER_ADDRESS,
-                    USER_PRIVATE_KEY: ZK_USER_PRIVATE_KEY,
-                    IMAGE_HASH: ZK_IMAGE_MD5,
-                },
+            spin = new SpinGame({
+                gameplay: new Gameplay(),
+                gameplayProver: new SpinDummyProver(),
             });
-            spin.initialize_import().then(() => {
-                const arg = new SpinGameInitArgs(total_steps, current_position);
-                console.log("arg = ", arg);
-                spin.initialize_game(arg);
-                updateDisplay();
+
+            await spin.newGame({
+                initialStates: [total_steps, current_position],
             });
+
+            updateDisplay();
         });
     }, []);
 
@@ -105,41 +104,41 @@ function App() {
     };
 
     const updateDisplay = () => {
-        const newGameState = spin.getGameState();
+        const newGameState = spin.getCurrentGameState();
         setGameState({
-            total_steps: newGameState.total_steps,
-            current_position: newGameState.current_position,
+            total_steps: newGameState[0],
+            current_position: newGameState[1],
         });
-        setMoves(spin.witness);
+        setMoves(spin.playerInputs);
     };
 
     // Submit the proof to the cloud
-    const submitProof = async () => {
-        const proof = await spin.generateProof();
+    // const submitProof = async () => {
+    //     const proof = await spin.generateProof();
 
-        if (!proof) {
-            console.error("Proof generation failed");
-            return;
-        }
-        // onchain verification operations
-        console.log("submitting proof");
-        const verificationResult = await verify_onchain(proof);
+    //     if (!proof) {
+    //         console.error("Proof generation failed");
+    //         return;
+    //     }
+    //     // onchain verification operations
+    //     console.log("submitting proof");
+    //     const verificationResult = await verify_onchain(proof);
 
-        console.log("verificationResult = ", verificationResult);
+    //     console.log("verificationResult = ", verificationResult);
 
-        // wait for the transaction to be broadcasted, better way is to use event listener
-        await new Promise((r) => setTimeout(r, 1000));
+    //     // wait for the transaction to be broadcasted, better way is to use event listener
+    //     await new Promise((r) => setTimeout(r, 1000));
 
-        const gameStates = await getOnchainGameStates();
+    //     const gameStates = await getOnchainGameStates();
 
-        setOnChainGameStates({
-            total_steps: gameStates[0],
-            current_position: gameStates[1],
-        });
+    //     setOnChainGameStates({
+    //         total_steps: gameStates[0],
+    //         current_position: gameStates[1],
+    //     });
 
-        await spin.reset();
-        // awonGameInitReady(gameStates[0], gameStates[1]);
-    };
+    //     await spin.reset();
+    //     // awonGameInitReady(gameStates[0], gameStates[1]);
+    // };
 
     return (
         <div className="App">
@@ -169,7 +168,7 @@ function App() {
                 <button onClick={onClick(BigInt(0))}>Decrement</button>
                 <button onClick={onClick(BigInt(1))}>Increment</button>
             </header>
-            <button onClick={submitProof}>Submit</button>
+            {/* <button onClick={submitProof}>Submit</button> */}
         </div>
     );
 }

@@ -24,8 +24,8 @@ export class SpinGame {
         this.playerInputs.push(command);
     }
 
-    async getCurrentGameState() {
-        return await this.gamePlay.getGameState();
+    getCurrentGameState() {
+        return this.gamePlay.getGameState();
     }
 
     async newGame({ initialStates }: { initialStates: bigint[] }) {

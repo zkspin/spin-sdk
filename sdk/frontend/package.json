@@ -17,8 +17,7 @@
     "react-dom": "^18.2.0",
     "viem": "^2.9.19",
     "vite": "^5.2.11",
-    "wagmi": "^2.5.20",
-    "spin": "file:../gameplay/export/spinjs"
+    "wagmi": "^2.5.20"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
