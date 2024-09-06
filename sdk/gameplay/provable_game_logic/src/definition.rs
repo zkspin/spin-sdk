@@ -2,6 +2,8 @@ use serde::Serialize;
 use std::fmt;
 use wasm_bindgen::prelude::*;
 
+pub const STATE_SIZE: usize = 2;
+
 #[derive(Clone, Serialize)]
 #[wasm_bindgen]
 pub struct SpinGameStates {

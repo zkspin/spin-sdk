@@ -7,7 +7,7 @@ console.log = (message?: any, ...optionalParams: any[]) => {
 };
 
 import fs from "fs";
-import path from "path";
+import path, { basename } from "path";
 import { logger } from "./logger";
 import { addImage } from "./zkwasm";
 import {
@@ -23,10 +23,9 @@ import {
     FILE_IGNORE_LIST,
     ZK_CLOUD_USER_PRIVATE_KEY,
 } from "./config";
-import { log } from "console";
-
-const args = process.argv.slice(2);
-
+import { Command, Option } from "commander";
+import { convertPlayerActionToPublicPrivateInputs } from "../sdk/lib/spin_game_prover";
+import { converToBigInts } from "../sdk/lib/util";
 /**
  * Copy the contents of one folder to another.
  * Ignore file in the .gitignore file.
@@ -63,24 +62,7 @@ function copyFolderSync(src: string, dest: string): void {
     }
 }
 
-function init() {
-    // Argument Parsing and Validation
-    if (args.length < 2) {
-        logger.error("Please provide a folder name.");
-        logger.error(" Usage: npx spin init [folderName] --[optionalArgs]");
-        process.exit(1);
-    }
-    const optionalArgs = args.filter((arg) => arg.startsWith("--"));
-    const folderName = args[1];
-
-    if (optionalArgs.includes(folderName)) {
-        logger.error(
-            "Please provide a valid folder name. Provided: ",
-            folderName
-        );
-        logger.error(" Usage: npx spin init [folderName] --[optionalArgs]");
-    }
-
+function init(folderName: string, provingType: "ZK" | "OPZK") {
     const sourcePath = path.join(__dirname, "..", "sdk");
     const destinationPath = path.join(process.cwd(), folderName);
 
@@ -102,40 +84,12 @@ function init() {
     logger.info(`Successfully initialized under folder: ${destinationPath}`);
 }
 
-function help() {
-    logger.info("Usage: npx spin [command] \n");
-    logger.info("Commands:");
-    logger.info("  init [folderName]  Initialize project with gameplay folder");
-    logger.info("  help               Show help information");
-    logger.info("  build-image        Build the project wasm image");
-    logger.info("  publish-image      Publish the project wasm image");
-    logger.info("  dry-run            Run a dry-run of the wasm image");
-    logger.info("  version            Show the version of spin");
-
-    logger.info("Options:");
-    logger.info("  --path             Path to the provable_game_logic folder");
-    logger.info("  --zkwasm           Path to the zkwasm-cli folder");
-    logger.info("  --public           Public inputs for the dry-run");
-    logger.info("  --private          Private inputs for the dry-run");
-}
-
-async function build() {
-    const optionalArgs = args.filter((arg) => arg.startsWith("--"));
-
-    if (!optionalArgs.includes("--path")) {
-        logger.error(
-            "--path flag is required, path of the provable_game_logic folder."
-        );
-        logger.error("Usage: npx spin build-image --path [path]");
-        process.exit(1);
-    }
-
-    const projectPath = parsePath(args[args.indexOf("--path") + 1]);
+async function buildImage(projectPath: string) {
     const miscPath = path.join(__dirname, "..", "..", "misc");
     const makeFilePath = path.join(miscPath, "Makefile");
     const exportPath = path.join(projectPath, "..", "export");
 
-    const outDir = projectPath;
+    const outDir = ".";
 
     logger.info(`Building project at path: ${projectPath}...`);
 
@@ -158,10 +112,11 @@ async function build() {
             cwd: exportPath,
             stdio: "pipe",
         }
-    ).stdout;
+    );
 
-    if (!build_spin_output.toString().includes("BUILD_SPIN_SUCCESS")) {
-        logger.error(build_spin_output.toString());
+    if (!build_spin_output.stdout.toString().includes("BUILD_SPIN_SUCCESS")) {
+        logger.error(build_spin_output.stdout.toString());
+        logger.error(build_spin_output.stderr.toString());
         logger.error("Failed to build web & node packages.");
         process.exit(1);
     }
@@ -202,12 +157,19 @@ async function build() {
                 cwd: exportPath,
                 stdio: "pipe",
             }
-        ).stdout;
+        );
 
-        if (build_zk_wasm_out.toString().includes("BUILD_WASM_ZK_SUCCESS")) {
+        logger.debug(build_zk_wasm_out.stdout.toString());
+        if (
+            build_zk_wasm_out.stdout
+                .toString()
+                .includes("BUILD_WASM_ZK_SUCCESS")
+        ) {
             logger.info(`Successfully built wasm packages for proving.`);
         } else {
-            throw new Error(build_zk_wasm_out.toString());
+            logger.error(build_zk_wasm_out.stdout.toString());
+            logger.error(build_zk_wasm_out.stderr.toString());
+            throw new Error("Failed to build wasm packages for proving.");
         }
     } catch (err) {
         logger.error(`Failed to build wasm for proving. \n${err}`);
@@ -227,23 +189,11 @@ async function build() {
     }
 }
 
-async function publish() {
+async function publishImage(projectPath: string) {
     logger.info("Publishing project...");
 
-    const optionalArgs = args.filter((arg) => arg.startsWith("--"));
-
-    if (!optionalArgs.includes("--path")) {
-        logger.error(
-            "--path flag is required, a path to provable_game_logic folder."
-        );
-        logger.error("Usage: npx spin publish-image --path [path]");
-        process.exit(1);
-    }
-
-    const folderPath = parsePath(args[args.indexOf("--path") + 1]);
-
     const filePath = path.join(
-        folderPath,
+        projectPath,
         "..",
         "export",
         "wasm",
@@ -286,66 +236,28 @@ async function publish() {
 }
 
 function version() {
+    logger.info(`Version: ${VERSION}`);
     return;
 }
 
-function parsePath(_path: string) {
-    // check if wasmPath is absolute or relative
-    if (!path.isAbsolute(_path)) {
-        return path.join(process.cwd(), _path);
-    } else {
-        return _path;
-    }
-}
-
-function dryRun() {
-    // get the working directory
-
-    const optionalArgs = args.filter((arg) => arg.startsWith("--"));
-    if (
-        !optionalArgs.includes("--path") ||
-        !optionalArgs.includes("--zkwasm")
-    ) {
-        logger.error(
-            "--path flag is required, a path to provable_game_logic folder."
-        );
-        logger.error(
-            "--zkwasm flag is required, a path to folder containing zkwasm-cli"
-        );
-        logger.error(
-            "Usage: npx spin dry-run --path [path] --zkwasm [zkwasm path] --public [public inputs] ... --private [private inputs] --private [private inputs] ..."
-        );
-        process.exit(1);
-    }
-
-    const gameLogicPath = parsePath(args[args.indexOf("--path") + 1]);
+function dryRun(
+    projectPath: string,
+    zkwasmCLIPath: string,
+    publicInputs: bigint[],
+    privateInputs: bigint[]
+) {
+    const gameLogicPath = projectPath;
     const filePath = path.join(gameLogicPath, "..", "export");
-    const wasmPath = parsePath(args[args.indexOf("--zkwasm") + 1]);
+    const wasmPath = zkwasmCLIPath;
 
     if (!fs.existsSync(filePath)) {
         logger.error("Path does not exist: ", filePath);
         process.exit(1);
     }
 
-    if (!fs.existsSync(wasmPath)) {
+    if (!fs.existsSync(wasmPath) || basename(wasmPath) !== "zkwasm-cli") {
         logger.error("Zkwasm Path does not exist: ", wasmPath);
         process.exit(1);
-    }
-
-    let publicInputs = [];
-
-    for (let i = 0; i < args.length; i++) {
-        if (args[i].startsWith("--public")) {
-            publicInputs.push(args[i + 1]);
-        }
-    }
-
-    let privateInputs = [];
-
-    for (let i = 0; i < args.length; i++) {
-        if (args[i].startsWith("--private")) {
-            privateInputs.push(args[i + 1]);
-        }
     }
 
     logger.info("Running dry-run for wasm at path:", filePath);
@@ -357,7 +269,7 @@ function dryRun() {
     );
 
     const runSetup = spawnSync(
-        `${wasmPath}/zkwasm-cli`,
+        `${wasmPath}`,
         [
             "--params",
             `${filePath}/params`,
@@ -381,14 +293,12 @@ function dryRun() {
         "--output",
         `${filePath}/output`,
         ...publicInputs.flatMap((i) => ["--public", `${i}:i64`]),
-        "--private",
-        `${privateInputs.length}:i64`,
         ...privateInputs.flatMap((i) => ["--private", `${i}:i64`]),
     ];
 
     logger.info("Running dry-run with args:" + wasmArgs.join(" "));
 
-    const runDryRun = spawnSync(`${wasmPath}/zkwasm-cli`, wasmArgs, {
+    const runDryRun = spawnSync(`${wasmPath}`, wasmArgs, {
         stdio: "pipe",
     });
 
@@ -396,24 +306,116 @@ function dryRun() {
 }
 
 const VERSION = "0.5.0";
-async function entry() {
-    logger.info(`Running Spin version ${VERSION}`);
-    if (args[0] === "init") {
-        init();
-    } else if (args[0] === "build-image") {
-        await build();
-    } else if (args[0] === "publish-image") {
-        await publish();
-    } else if (args[0] === "dry-run") {
-        await dryRun();
-    } else if (args[0] === "version") {
-        version();
-    } else if (args[0] === "help") {
-        help();
-    } else {
-        logger.error("Invalid command.");
-        help();
+
+const program = new Command();
+
+function collectRepeatable(value: any, previous: any) {
+    // console.log(arguments);
+    if (previous._isDefault) {
+        return [value];
     }
+    previous.push(value);
+    return previous;
 }
 
-entry();
+function commaSeparatedList(value: string, dummyPrevious: any) {
+    return value.split(",");
+}
+
+program
+    .name("zkspin-cli")
+    .description("CLI for developing on-chain ZK proved application.")
+    .version(VERSION)
+    .showHelpAfterError()
+    .showSuggestionAfterError();
+
+program
+    .command("init")
+    .description("Initialize a new folder")
+    .argument("<folder-name>", "Name for the project folder")
+    .addOption(
+        new Option("-t, --type <ZK|OPZK>", "Choice of ZK Only or OPZK")
+            .choices(["ZK", "OPZK"])
+            .makeOptionMandatory()
+    )
+    .action((folderName, type) => {
+        init(folderName, type);
+    });
+
+program
+    .command("build-image")
+    .description("Build an image from an existing project")
+    .argument("<path>", "Path to the provable_game_logic folder")
+    .action((projectPath) => {
+        buildImage(projectPath);
+    });
+
+program
+    .command("publish-image")
+    .description("Publish an image to ZKWASM")
+    .argument("<path>", "Path to the provable_game_logic folder")
+    .action((projectPath) => {
+        publishImage(projectPath);
+    });
+
+program
+    .command("dry-run-raw")
+    .description("Dry run an image with raw inputs, outputs for debugging")
+    .argument("<path>", "Path to the provable_game_logic folder")
+    .argument("<wasm-path>", "Path to the zkwasm cli")
+    .option("-p, --public <input>", "Public input", collectRepeatable, [])
+    .option("-s, --private <input>", "Private input", collectRepeatable, [])
+    .action((projectPath, wasmPath, options) => {
+        dryRun(projectPath, wasmPath, options.public, options.private);
+    });
+
+program
+    .command("dry-run")
+    .description("Dry run an image")
+    .argument("<path>", "Path to the provable_game_logic folder")
+    .argument("<wasm-path>", "Path to the zkwasm cli")
+    .option(
+        "-i, --initial <list of initial states, comma separated>",
+        "Initial game states",
+        commaSeparatedList
+    )
+    .option(
+        "-a, --action <list of actions, comma separated>",
+        "player actions",
+        commaSeparatedList
+    )
+    .option("--game_id <game id>", "Meta:  Game ID", "123")
+    .action((projectPath, wasmPath, options) => {
+        if (!options.initial || !options.action) {
+            throw new Error("Missing initial or action");
+        }
+
+        // check if options.initial and options.action are arrays
+        if (Array.isArray(options.initial) === false) {
+            throw new Error("Initial state is not an array");
+        }
+        if (Array.isArray(options.action) === false) {
+            throw new Error("Action is not an array");
+        }
+
+        // check if options.initial and options.action can be converted to bigint
+
+        const _initialStates = converToBigInts(options.initial);
+        const _action = converToBigInts(options.action);
+
+        const { publicInputs, privateInputs } =
+            convertPlayerActionToPublicPrivateInputs(_initialStates, _action, {
+                game_id: BigInt(options.game_id),
+            });
+
+        dryRun(projectPath, wasmPath, publicInputs, privateInputs);
+    });
+
+program
+    .command("version")
+    .description("Print version")
+    .action(() => {
+        version();
+    });
+
+program.parse();

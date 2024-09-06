@@ -24,16 +24,16 @@ export class SpinGame {
         this.playerInputs.push(command);
     }
 
-    getCurrentGameState() {
-        return this.gamePlay.getGameState();
+    async getCurrentGameState() {
+        return await this.gamePlay.getGameState();
     }
 
-    newGame({ initialStates }: { initialStates: bigint[] }) {
+    async newGame({ initialStates }: { initialStates: bigint[] }) {
         for (const arg of initialStates) {
             this.initialState.push(arg);
         }
 
-        this.gamePlay.newGame(initialStates);
+        await this.gamePlay.newGame(initialStates);
     }
 
     async generateSubmission() {

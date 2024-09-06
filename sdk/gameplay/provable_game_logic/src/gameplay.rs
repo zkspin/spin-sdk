@@ -1,7 +1,6 @@
 use crate::definition::SpinGameStates;
 use crate::spin::SpinGame;
 use crate::spin::SpinGameTrait;
-use crate::hasher::hash_vec;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
@@ -14,11 +13,11 @@ pub static GAME_STATE: Lazy<Mutex<SpinGameStates>> = Lazy::new(||
 impl SpinGameTrait for SpinGame {
     /* STATEFUL FUNCTIONS This defines the initialization of the game*/
     // TODO clean this up
-    fn initialize_game(args: SpinGameStates) {
+    fn initialize_game(args: Vec<u64>) {
         let mut game_state = GAME_STATE.lock().unwrap();
 
-        game_state.total_steps = args.total_steps;
-        game_state.current_position = args.current_position;
+        game_state.total_steps = args[0];
+        game_state.current_position = args[1];
     }
 
     /* STATEFUL FUNCTIONS This is defines the logic when player moves one step/entering one command*/
@@ -47,14 +46,8 @@ impl SpinGameTrait for SpinGame {
     }
 
     /* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
-    fn get_game_state() -> SpinGameStates {
+    fn get_game_state() -> Vec<u64> {
         let game = GAME_STATE.lock().unwrap().clone();
-        return game;
-    }
-
-    /* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
-    fn get_game_state_hash() -> [u64; 4] {
-        let game = GAME_STATE.lock().unwrap().clone();
-        return hash_vec(vec![game.total_steps, game.current_position]);
+        return vec![game.total_steps, game.current_position];
     }
 }

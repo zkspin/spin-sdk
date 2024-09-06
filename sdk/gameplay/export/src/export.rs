@@ -1,10 +1,9 @@
-use provable_game_logic::definition::SpinGameStates;
 use provable_game_logic::spin::SpinGame;
 use provable_game_logic::spin::SpinGameTrait;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub fn initialize_game(args: SpinGameStates) {
+pub fn initialize_game(args: Vec<u64>) {
     SpinGame::initialize_game(args);
 }
 
@@ -14,6 +13,6 @@ pub fn step(input: u64) {
 }
 
 #[wasm_bindgen]
-pub fn get_game_state() -> SpinGameStates {
+pub fn get_game_state() -> Vec<u64> {
     SpinGame::get_game_state()
 }

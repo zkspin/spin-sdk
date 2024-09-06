@@ -1,6 +1,6 @@
-use provable_game_logic::definition::SpinGameStates;
 use provable_game_logic::spin::SpinGame;
 use provable_game_logic::spin::SpinGameTrait;
+use provable_game_logic::definition::STATE_SIZE;
 use provable_game_logic::hasher::hash_vec;
 use wasm_bindgen::prelude::*;
 use zkwasm_rust_sdk::wasm_input;
@@ -14,23 +14,27 @@ use zkwasm_rust_sdk::require;
 #[wasm_bindgen]
 pub fn zkmain() -> i64 {
     // public Input: hash META transaction data
-    let onchain_meta_transaction_hash_0: u64 = unsafe { wasm_input(1) };
-    let onchain_meta_transaction_hash_1: u64 = unsafe { wasm_input(1) };
-    let onchain_meta_transaction_hash_2: u64 = unsafe { wasm_input(1) };
-    let onchain_meta_transaction_hash_3: u64 = unsafe { wasm_input(1) };
+    let segment_meta_hash_0: u64 = unsafe { wasm_input(1) };
+    let segment_meta_hash_1: u64 = unsafe { wasm_input(1) };
+    let segment_meta_hash_2: u64 = unsafe { wasm_input(1) };
+    let segment_meta_hash_3: u64 = unsafe { wasm_input(1) };
 
     // --- META transaction data ---
     let game_id: u64 = unsafe { wasm_input(0) };
 
-    zkwasm_rust_sdk::dbg!("PI: gameId: {}\n", game_id);
+    zkwasm_rust_sdk::dbg!("META: gameId: {}\n", game_id);
 
-    // --- GAME transaction data ---
-    let previous_state_total_steps: u64 = unsafe { wasm_input(0) };
-    let previous_state_current_position: u64 = unsafe { wasm_input(0) };
+    // --- GAME STATE ---
+    let mut initial_game_state_vec = Vec::new();
 
-    let computed_game_state_hash = hash_vec(
-        vec![previous_state_total_steps, previous_state_current_position]
-    );
+    for _i in 0..STATE_SIZE {
+        let _game_state = unsafe { wasm_input(0) };
+        initial_game_state_vec.push(_game_state);
+
+        zkwasm_rust_sdk::dbg!("game_state: {}\n", _game_state);
+    }
+
+    let computed_initial_game_state_hash = hash_vec(&initial_game_state_vec);
 
     // let _debug0 = computed_game_state_hash[0];
     // zkwasm_rust_sdk::dbg!("computed_game_state_hash[0]: {}\n", _debug0);
@@ -41,10 +45,7 @@ pub fn zkmain() -> i64 {
     // let _debug3 = computed_game_state_hash[3];
     // zkwasm_rust_sdk::dbg!("computed_game_state_hash[3]: {}\n", _debug3);
 
-    SpinGame::initialize_game(SpinGameStates {
-        total_steps: previous_state_total_steps,
-        current_position: previous_state_current_position,
-    });
+    SpinGame::initialize_game(initial_game_state_vec);
 
     // specify the private inputs
     let private_inputs_length = unsafe { wasm_input(0) };
@@ -53,21 +54,23 @@ pub fn zkmain() -> i64 {
 
     for _i in 0..private_inputs_length {
         let _private_input = unsafe { wasm_input(0) };
+
+        zkwasm_rust_sdk::dbg!("private input: {}\n", _private_input);
         SpinGame::step(_private_input);
 
         // record to game inputs
         game_inputs[_i as usize] = _private_input;
     }
 
-    let computed_game_input_hash = hash_vec(game_inputs);
+    let computed_game_input_hash = hash_vec(&game_inputs);
 
     let computed_meta_transaction_hash = hash_vec(
-        vec![
+        &vec![
             game_id,
-            computed_game_state_hash[0],
-            computed_game_state_hash[1],
-            computed_game_state_hash[2],
-            computed_game_state_hash[3],
+            computed_initial_game_state_hash[0],
+            computed_initial_game_state_hash[1],
+            computed_initial_game_state_hash[2],
+            computed_initial_game_state_hash[3],
             computed_game_input_hash[0],
             computed_game_input_hash[1],
             computed_game_input_hash[2],
@@ -86,10 +89,10 @@ pub fn zkmain() -> i64 {
 
     // Verify the integers are the same as the meta_transaction_hash
     unsafe {
-        require(computed_meta_transaction_hash[0] == onchain_meta_transaction_hash_0);
-        require(computed_meta_transaction_hash[1] == onchain_meta_transaction_hash_1);
-        require(computed_meta_transaction_hash[2] == onchain_meta_transaction_hash_2);
-        require(computed_meta_transaction_hash[3] == onchain_meta_transaction_hash_3);
+        require(computed_meta_transaction_hash[0] == segment_meta_hash_0);
+        require(computed_meta_transaction_hash[1] == segment_meta_hash_1);
+        require(computed_meta_transaction_hash[2] == segment_meta_hash_2);
+        require(computed_meta_transaction_hash[3] == segment_meta_hash_3);
     }
 
     // let final_game_state: SpinGameStates = SpinGame::get_game_state();
@@ -97,23 +100,17 @@ pub fn zkmain() -> i64 {
     // --- GAME transaction data output ---
 
     // Hash of game state output
-    let game_state_hash = SpinGame::get_game_state_hash();
+    let final_game_state = SpinGame::get_game_state();
+    let final_game_state_hash = hash_vec(&final_game_state);
 
     unsafe {
-        wasm_output(game_state_hash[0]);
-        wasm_output(game_state_hash[1]);
-        wasm_output(game_state_hash[2]);
-        wasm_output(game_state_hash[3]);
+        wasm_output(final_game_state_hash[0]);
+        wasm_output(final_game_state_hash[1]);
+        wasm_output(final_game_state_hash[2]);
+        wasm_output(final_game_state_hash[3]);
     }
-    // zkwasm_rust_sdk::dbg!("final_game_state: {}\n", final_game_state);
-    // let _debug0 = game_state_hash[0];
-    // zkwasm_rust_sdk::dbg!("game_state_hash[0]: {}\n", _debug0);
-    // let _debug1 = game_state_hash[1];
-    // zkwasm_rust_sdk::dbg!("game_state_hash[1]: {}\n", _debug1);
-    // let _debug2 = game_state_hash[2];
-    // zkwasm_rust_sdk::dbg!("game_state_hash[2]: {}\n", _debug2);
-    // let _debug3 = game_state_hash[3];
-    // zkwasm_rust_sdk::dbg!("game_state_hash[3]: {}\n", _debug3);
+
+    zkwasm_rust_sdk::dbg!("final_game_state: {:?}\n", final_game_state);
 
     0
 }

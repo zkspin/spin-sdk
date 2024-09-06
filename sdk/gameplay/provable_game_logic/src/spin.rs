@@ -1,11 +1,8 @@
-use crate::definition::SpinGameStates;
-
 // DO NOT MODIFY THIS FILE
 pub trait SpinGameTrait {
-    fn initialize_game(args: SpinGameStates);
+    fn initialize_game(args: Vec<u64>);
     fn step(input: u64);
-    fn get_game_state() -> SpinGameStates;
-    fn get_game_state_hash() -> [u64; 4];
+    fn get_game_state() -> Vec<u64>;
 }
 
 pub struct SpinGame {}
