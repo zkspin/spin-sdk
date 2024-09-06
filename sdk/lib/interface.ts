@@ -5,7 +5,7 @@ export abstract class GameplayAbstract {
 
     abstract step(command: bigint): void;
 
-    abstract getGameState(): any;
+    abstract getGameState(): BigUint64Array;
 
     abstract resetGame(): Promise<void>;
 }

@@ -21,5 +21,10 @@ dry-run:
 ### simulate gamelogic inside Node.js
 ### Submit transactions and verify them on-chain
 
+test-node:
+	@ts-node test/nodejs/simulate_game.ts
+
+test-transaction-onchain:
+	@ts-node test/nodejs/transaction_onchain.ts
 
 ## 4. Browser based end-to-end test

@@ -12,7 +12,12 @@ function bytes32ToBigIntArray(
     ];
 }
 
-function computeHashBytes32(gameInputs: bigint[]) {
+function computeHashBytes32(gameInputs: bigint[] | BigUint64Array) {
+    // check type is BigUint64Array
+    if (gameInputs instanceof BigUint64Array) {
+        gameInputs = Array.from(gameInputs);
+    }
+
     const _rawBytes = ethers.AbiCoder.defaultAbiCoder().encode(
         gameInputs.map((x) => "uint256"),
         gameInputs
@@ -22,7 +27,7 @@ function computeHashBytes32(gameInputs: bigint[]) {
 }
 
 function computeHashUint64Array(
-    gameInputs: bigint[]
+    gameInputs: bigint[] | BigUint64Array
 ): [bigint, bigint, bigint, bigint] {
     const _hash = computeHashBytes32(gameInputs);
 

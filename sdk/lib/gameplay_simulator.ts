@@ -16,14 +16,13 @@ class GameplaySimulator {
 
         await spin.newGame({ initialStates: initial_states });
 
-        for (let i = 1; i < player_action_inputs.length; i++) {
+        for (let i = 0; i < player_action_inputs.length; i++) {
             spin.step(BigInt(player_action_inputs[i]));
         }
 
         const computedStates = await spin.getCurrentGameState();
 
         console.log(`Final state: ${computedStates}`);
-
         const computedFinalStateHash = computeHashUint64Array(computedStates);
 
         return {

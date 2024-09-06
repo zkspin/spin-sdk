@@ -240,7 +240,7 @@ function version() {
     return;
 }
 
-function dryRun(
+function dryRunImage(
     projectPath: string,
     zkwasmCLIPath: string,
     publicInputs: bigint[],
@@ -366,7 +366,7 @@ program
     .option("-p, --public <input>", "Public input", collectRepeatable, [])
     .option("-s, --private <input>", "Private input", collectRepeatable, [])
     .action((projectPath, wasmPath, options) => {
-        dryRun(projectPath, wasmPath, options.public, options.private);
+        dryRunImage(projectPath, wasmPath, options.public, options.private);
     });
 
 program
@@ -408,7 +408,7 @@ program
                 game_id: BigInt(options.game_id),
             });
 
-        dryRun(projectPath, wasmPath, publicInputs, privateInputs);
+        dryRunImage(projectPath, wasmPath, publicInputs, privateInputs);
     });
 
 program

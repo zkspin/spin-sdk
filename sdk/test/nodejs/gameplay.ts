@@ -6,8 +6,7 @@ import {
     initialize_game,
     step as _step,
     get_game_state,
-    SpinGameStates,
-} from "../../gameplay/export/js/commonjs";
+} from "../../gameplay/export/js/commonjs/gameplay";
 
 export interface GamePlayContructor {
     callback: () => void;
@@ -19,15 +18,14 @@ export class Gameplay extends GameplayAbstract {
     }
 
     async newGame(args: bigint[]): Promise<void> {
-        // TODO
-        initialize_game(new SpinGameStates(BigInt(args[0]), BigInt(args[1])));
+        initialize_game(new BigUint64Array(args));
     }
 
     step(command: bigint) {
         _step(command);
     }
 
-    getGameState(): any {
+    getGameState(): BigUint64Array {
         return get_game_state();
     }
 
