@@ -2,9 +2,15 @@
 pragma solidity ^0.8.24;
 
 contract GameStateStorage {
+    address creator;
     mapping(address => bytes) public states;
 
-    function updateStates(bytes calldata state, address player) public {
+    constructor() {
+        creator = msg.sender;
+    }
+
+    function updateStates(bytes calldata state, address player) external {
+        require(msg.sender == creator, "Only creator can call this function");
         states[player] = state;
     }
 
