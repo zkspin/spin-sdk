@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./SpinContract.sol";
+import "../shared/SpinContract.sol";
 
 contract GameContract is SpinContract {
     /* Trustless Application Settlement Template */
