@@ -1,16 +1,37 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-const GameModule = buildModule("GameModule", (m) => {
-    const constructorParameterVerifierAddress = m.getParameter(
-        "verifier_address",
-        process.env.SEPOLIA_VERIFIER_ADDRESS
-    );
+const zkGameModule = buildModule("ZKOnlyGameModule", (m) => {
+    const constructorParameterVerifierAddress =
+        m.getParameter("verifier_address");
 
-    const gameContract = m.contract("GameContract", [
+    const gameContract = m.contract("SpinZKGameContract", [
         constructorParameterVerifierAddress,
     ]);
 
     return { gameContract };
 });
 
-export default GameModule;
+const opzkGameModule = buildModule("OPZKGameModule", (m) => {
+    const constructorParameterVerifierAddress =
+        m.getParameter("verifier_address");
+
+    const gameSystem = m.contract("SpinOPZKGameContract", [
+        constructorParameterVerifierAddress,
+    ]);
+
+    const stakingAddress = m.staticCall(gameSystem, "getStakingContract");
+
+    const stakingContract = m.contractAt("StakingContract", stakingAddress);
+
+    const storageAddress = m.staticCall(gameSystem, "getStorageContract");
+
+    const storageContract = m.contractAt("GameStateStorage", storageAddress);
+
+    return {
+        gameSystem,
+        stakingContract,
+        storageContract,
+    };
+});
+
+export { zkGameModule, opzkGameModule };

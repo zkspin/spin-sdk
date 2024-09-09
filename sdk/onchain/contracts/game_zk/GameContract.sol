@@ -7,6 +7,10 @@ contract SpinZKGameContract is SpinContract {
     /* Trustless Application Settlement Template */
     constructor(address verifier_address) SpinContract(verifier_address) {}
 
+    event GameSubmission(
+        uint256 indexed gameId, address indexed playerAddress, uint64[4] metaTransactionHashFromOnChain
+    );
+
     function submitGame(
         uint256 gameId,
         bytes calldata finalState,
@@ -22,21 +26,8 @@ contract SpinZKGameContract is SpinContract {
 
         uint64[4] memory currentStateHash = hashBytes32ToUint64Array(sha256(storageContract.getStates(msg.sender)));
 
-        uint64[4] memory metaTransactionHashFromOnChain = hashBytes32ToUint64Array(
-            sha256(
-                abi.encode(
-                    gameId,
-                    currentStateHash[0],
-                    currentStateHash[1],
-                    currentStateHash[2],
-                    currentStateHash[3],
-                    playerInputStateHash[0],
-                    playerInputStateHash[1],
-                    playerInputStateHash[2],
-                    playerInputStateHash[3]
-                )
-            )
-        );
+        uint64[4] memory metaTransactionHashFromOnChain =
+            getMetaTransactionHash(gameId, currentStateHash, playerInputStateHash);
 
         require(
             equalUintArrays(metaTransactionHashFromOnChain, metaDataHashFromProof),
@@ -44,5 +35,7 @@ contract SpinZKGameContract is SpinContract {
         );
 
         storageContract.updateStates(finalState, msg.sender);
+
+        emit GameSubmission(gameId, msg.sender, metaTransactionHashFromOnChain);
     }
 }

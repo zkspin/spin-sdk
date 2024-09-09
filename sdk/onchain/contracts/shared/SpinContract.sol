@@ -23,6 +23,28 @@ abstract contract SpinContract {
         storageContract = new GameStateStorage();
     }
 
+    function getMetaTransactionHash(
+        uint256 gameId,
+        uint64[4] memory currentStateHash,
+        uint64[4] memory playerInputStateHash
+    ) internal pure returns (uint64[4] memory) {
+        return hashBytes32ToUint64Array(
+            sha256(
+                abi.encode(
+                    gameId,
+                    currentStateHash[0],
+                    currentStateHash[1],
+                    currentStateHash[2],
+                    currentStateHash[3],
+                    playerInputStateHash[0],
+                    playerInputStateHash[1],
+                    playerInputStateHash[2],
+                    playerInputStateHash[3]
+                )
+            )
+        );
+    }
+
     function verifyProof(
         uint256[] calldata proof,
         uint256[] calldata verify_instance,

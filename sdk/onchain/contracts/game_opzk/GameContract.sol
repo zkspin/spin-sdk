@@ -56,9 +56,9 @@ contract SpinOPZKGameContract is SpinContract {
 
     event SettleSubmissionDroppedEvent(uint256 indexed submissionIndex);
 
-    constructor(address _storage, address _verifier) SpinContract(_verifier) {
+    constructor(address _verifier) SpinContract(_verifier) {
         stakingContract = new StakingContract(address(this));
-        storageContract = GameStateStorage(_storage);
+        storageContract = new GameStateStorage();
 
         nextSubmissionIndex = 1;
         nextSettleIndex = 1;
@@ -242,21 +242,8 @@ contract SpinOPZKGameContract is SpinContract {
         uint64[4] memory playerInputStateHashFromOnChain =
             hashBytes32ToUint64Array(submission.segmentPlayerInputsHashes[segmentIndex]);
 
-        uint64[4] memory metaTransactionHashFromOnChain = hashBytes32ToUint64Array(
-            sha256(
-                abi.encode(
-                    submission.gameId,
-                    startGameStateHashFromOnChain[0],
-                    startGameStateHashFromOnChain[1],
-                    startGameStateHashFromOnChain[2],
-                    startGameStateHashFromOnChain[3],
-                    playerInputStateHashFromOnChain[0],
-                    playerInputStateHashFromOnChain[1],
-                    playerInputStateHashFromOnChain[2],
-                    playerInputStateHashFromOnChain[3]
-                )
-            )
-        );
+        uint64[4] memory metaTransactionHashFromOnChain =
+            getMetaTransactionHash(submission.gameId, startGameStateHashFromOnChain, playerInputStateHashFromOnChain);
 
         require(
             equalUintArrays(metaTransactionHashFromOnChain, metaDataHashFromProof),
