@@ -1,12 +1,11 @@
-// // /* THIS FILE WILL BE AUTO-GENERATED IN THE FUTURE*/
-
-import { GameplayAbstract } from "../../lib/interface";
+import { GameplayAbstract } from "../../../lib/interface";
 
 import {
+    default as init,
     initialize_game,
     step as _step,
     get_game_state,
-} from "../../gameplay/export/js/commonjs/gameplay";
+} from "../../../gameplay/export/js/esm/gameplay";
 
 export interface GamePlayContructor {
     callback: () => void;
@@ -18,6 +17,13 @@ export class Gameplay extends GameplayAbstract {
     }
 
     async newGame(args: bigint[]): Promise<void> {
+        await init()
+            .then(() => {
+                console.log("Game logic initialized");
+            })
+            .catch((e: any) =>
+                console.error("Error initializing game logic", e)
+            );
         initialize_game(new BigUint64Array(args));
     }
 

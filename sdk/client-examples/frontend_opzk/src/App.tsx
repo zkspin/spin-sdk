@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
-import { abi } from "../../onchain/artifacts/contracts/GameContract.sol/GameContract.json";
+import { abi } from "../SpinZKGameContract.json";
 import { config } from "./web3";
 import { readContract } from "wagmi/actions";
 import { TaskStatus } from "zkwasm-service-helper";
 import { SpinGame } from "../../lib/spin_game";
 import { SpinDummyProver } from "../../lib/spin_game_prover";
-import { Gameplay } from "./gameplay";
+import { Gameplay } from "./gameplay/gameplay";
 
 const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_GAME_CONTRACT_ADDRESS;
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_CLOUD_USER_ADDRESS;
