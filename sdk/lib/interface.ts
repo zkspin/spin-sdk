@@ -14,12 +14,12 @@ export abstract class GameplayAbstract {
 
 export abstract class ProofCacheAbstract {}
 
-export abstract class SpinGameProverAbstract {
+export abstract class SpinGameProverAbstract<T> {
     abstract generateSubmission(
         initialState: bigint[],
         playerActions: bigint[],
         metaData: SubmissionMetaData
-    ): Promise<string>;
+    ): Promise<T>;
 }
 interface SegmentData {
     initial_states: bigint[];

@@ -5,12 +5,14 @@ import { abi } from "./abi/SpinZKGameContract.json";
 import { abi as stateABI } from "./abi/GameStateStorage.json";
 import { config } from "./web3";
 import { readContract, getAccount } from "wagmi/actions";
-import { TaskStatus } from "zkwasm-service-helper";
 import { SpinGame } from "../../../lib/spin_game";
-import { SpinZKProver } from "../../../lib/spin_game_prover";
+import {
+    SpinZKProver,
+    SpinZKProverSubmissionData,
+} from "../../../lib/spin_game_prover";
 import { ZKProver } from "../../../lib/zkwasm";
 import { Gameplay } from "./gameplay/gameplay";
-import { decodeBytesToBigIntArray } from "../../../lib/dataHasher";
+import { decodeBytesToU64Array } from "../../../lib/dataHasher";
 
 const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_ZK_GAME_CONTRACT_ADDRESS;
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_CLOUD_USER_ADDRESS;
@@ -24,23 +26,20 @@ interface GameState {
 }
 
 /* This function is used to verify the proof on-chain */
-async function verify_onchain({
-    proof,
-    verify_instance,
-    aux,
-    instances,
-}: {
-    proof: BigInt[];
-    verify_instance: BigInt[];
-    aux: BigInt[];
-    instances: BigInt[];
-    status: TaskStatus;
-}) {
+async function verify_onchain(submission: SpinZKProverSubmissionData) {
     const result = await writeContract(config, {
         abi,
         address: GAME_CONTRACT_ADDRESS,
-        functionName: "settleProof",
-        args: [proof, verify_instance, aux, [instances]],
+        functionName: "submitGame",
+        args: [
+            submission.game_id,
+            submission.finalState,
+            submission.playerInputsHash,
+            submission.proof,
+            submission.verify_instance,
+            submission.aux,
+            [submission.instances],
+        ],
     });
     const transactionReceipt = waitForTransactionReceipt(config, {
         hash: result,
@@ -67,15 +66,16 @@ async function getOnchainGameStates() {
         args: [userAccount.address],
     })) as string;
 
-    console.log("result = ", result);
-
+    console.log("onchain result = ", result);
     // result is in bytes, abi decode it, state is 2 u64 bigint
-    const decoded = decodeBytesToBigIntArray(result, 2);
+    const decoded = decodeBytesToU64Array(result, 2);
+
+    console.log("onchain state = ", decoded);
 
     return decoded;
 }
 
-let spin: SpinGame;
+let spin: SpinGame<SpinZKProverSubmissionData>;
 
 function App() {
     useEffect(() => {
@@ -91,7 +91,7 @@ function App() {
                 current_position,
             });
 
-            spin = new SpinGame({
+            spin = new SpinGame<SpinZKProverSubmissionData>({
                 gameplay: new Gameplay(),
                 gameplayProver: new SpinZKProver(
                     new ZKProver({
@@ -146,7 +146,13 @@ function App() {
 
         console.log("generating proof");
 
-        const submission = spin.generateSubmission();
+        const submission = await spin.generateSubmission(
+            [onChainGameStates.total_steps, onChainGameStates.current_position],
+            moves,
+            {
+                game_id: BigInt(123),
+            }
+        );
 
         console.log("submission = ", submission);
 

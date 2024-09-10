@@ -16,7 +16,7 @@ export interface ProveCredentials {
 
 export async function getImageCommitmentBigInts(
     cloudCredentials: ProveCredentials
-): Promise<BigInt[]> {
+): Promise<bigint[]> {
     const imageHash = cloudCredentials.IMAGE_HASH;
     const helper = new ZkWasmServiceHelper(
         cloudCredentials.CLOUD_RPC_URL,
@@ -63,7 +63,7 @@ function commitmentUint8ArrayToVerifyInstanceBigInts(
 
     const verifyingBytes = ZkWasmUtil.hexStringsToBytes(verifyInstances, 32);
     const verifyingBigInts = ZkWasmUtil.bytesToBigIntArray(verifyingBytes);
-    return verifyingBigInts;
+    return verifyingBigInts.map((v) => BigInt(v.toString()));
 }
 
 export class ZKProver {
@@ -151,10 +151,10 @@ export class ZKProver {
     }
 
     private async _load_proving_taks(task_id: string): Promise<null | {
-        proof: BigInt[];
-        verify_instance: BigInt[];
-        aux: BigInt[];
-        instances: BigInt[];
+        proof: bigint[];
+        verify_instance: bigint[];
+        aux: bigint[];
+        instances: bigint[];
         status: string;
     }> {
         const query = {
@@ -175,13 +175,19 @@ export class ZKProver {
 
         // multiple tasks can be returned, but we only care about the first one
         const task = tasksInfo[0];
-        const proof = ZkWasmUtil.bytesToBigIntArray(task.proof);
+        const proof = ZkWasmUtil.bytesToBigIntArray(task.proof).map((v) =>
+            BigInt(v.toString())
+        );
         const verify_instance = ZkWasmUtil.bytesToBigIntArray(
             task.shadow_instances
-        );
+        ).map((v) => BigInt(v.toString()));
 
-        const aux = ZkWasmUtil.bytesToBigIntArray(task.aux);
-        const instances = ZkWasmUtil.bytesToBigIntArray(task.instances);
+        const aux = ZkWasmUtil.bytesToBigIntArray(task.aux).map((v) =>
+            BigInt(v.toString())
+        );
+        const instances = ZkWasmUtil.bytesToBigIntArray(task.instances).map(
+            (v) => BigInt(v.toString())
+        );
 
         return {
             proof,
@@ -193,10 +199,10 @@ export class ZKProver {
     }
 
     async load_proving_taks(task_id: string): Promise<null | {
-        proof: BigInt[];
-        verify_instance: BigInt[];
-        aux: BigInt[];
-        instances: BigInt[];
+        proof: bigint[];
+        verify_instance: bigint[];
+        aux: bigint[];
+        instances: bigint[];
         status: string;
     }> {
         return this.asyncErrorHandler(this._load_proving_taks.bind(this))(

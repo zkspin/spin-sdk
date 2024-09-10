@@ -1,6 +1,12 @@
 import { SpinGameProverAbstract } from "./interface";
 import { ZKProver } from "./zkwasm";
-import { computeSegmentMetaHash, computeHashUint64Array } from "./dataHasher";
+import {
+    computeSegmentMetaHash,
+    computeHashUint64Array,
+    encodeU64ArrayToBytes,
+    bytes32ToBigIntArray,
+    EMPTY_STATE_HASH,
+} from "./dataHasher";
 
 export interface SubmissionMetaData {
     game_id: bigint;
@@ -16,12 +22,14 @@ export function convertPlayerActionToPublicPrivateInputs(
 } {
     const onchain_meta_transaction_hash = computeSegmentMetaHash({
         gameID: metaData.game_id,
-        onChainGameStateHash: computeHashUint64Array(initialStates),
+        onChainGameStateHash: initialStates.every((x) => x === BigInt(0))
+            ? bytes32ToBigIntArray(EMPTY_STATE_HASH) // no state stored on-chain, use empty state
+            : computeHashUint64Array(initialStates),
         gameInputHash: computeHashUint64Array(playerActions),
     });
 
     const publicInputs = onchain_meta_transaction_hash;
-    // spin.witness = Array(30).fill(BigInt(0));
+
     const privateInputs = [
         metaData.game_id,
         ...initialStates,
@@ -32,7 +40,17 @@ export function convertPlayerActionToPublicPrivateInputs(
     return { publicInputs, privateInputs };
 }
 
-export class SpinZKProver extends SpinGameProverAbstract {
+export interface SpinZKProverSubmissionData {
+    game_id: bigint;
+    finalState: string;
+    playerInputsHash: bigint[];
+    proof: bigint[];
+    verify_instance: bigint[];
+    aux: bigint[];
+    instances: bigint[];
+}
+
+export class SpinZKProver extends SpinGameProverAbstract<SpinZKProverSubmissionData> {
     zkProver: ZKProver;
 
     constructor(zkProver: ZKProver) {
@@ -44,12 +62,26 @@ export class SpinZKProver extends SpinGameProverAbstract {
         initialState: bigint[],
         playerActions: bigint[],
         metaData: SubmissionMetaData
-    ): Promise<string> {
+    ): Promise<SpinZKProverSubmissionData> {
         const proof = await this.generateProof(
             initialState,
             playerActions,
             metaData
         );
+
+        if (!proof) {
+            throw new Error("Failed to generate proof");
+        }
+
+        return {
+            game_id: metaData.game_id,
+            finalState: encodeU64ArrayToBytes(initialState),
+            playerInputsHash: computeHashUint64Array(playerActions),
+            proof: proof.proof,
+            verify_instance: proof.verify_instance,
+            aux: proof.aux,
+            instances: proof.instances,
+        };
     }
 
     // ================================================================================================
@@ -65,6 +97,13 @@ export class SpinZKProver extends SpinGameProverAbstract {
                 playerActions,
                 metaData
             );
+
+        console.log("initialState = ", initialState);
+        console.log("playerActions = ", playerActions);
+        console.log("metaData = ", metaData);
+        console.log("publicInputs = ", publicInputs);
+        console.log("privateInputs = ", privateInputs);
+
         const proof = await this.zkProver.prove(
             publicInputs.map((i) => `${i}:i64`),
             [...privateInputs.map((m) => `${m}:i64`)]
@@ -91,13 +130,13 @@ export class SpinZKProver extends SpinGameProverAbstract {
     }
 }
 
-export class SpinOPZKProver extends SpinGameProverAbstract {
+export class SpinOPZKProver extends SpinGameProverAbstract<any> {
     async generateSubmission(): Promise<string> {
         throw new Error("Method not implemented.");
     }
 }
 
-export class SpinDummyProver extends SpinGameProverAbstract {
+export class SpinDummyProver extends SpinGameProverAbstract<any> {
     async generateSubmission(): Promise<string> {
         throw new Error("Method not implemented.");
     }

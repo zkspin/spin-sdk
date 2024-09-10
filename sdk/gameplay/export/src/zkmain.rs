@@ -34,7 +34,16 @@ pub fn zkmain() -> i64 {
         zkwasm_rust_sdk::dbg!("game_state: {}\n", _game_state);
     }
 
-    let computed_initial_game_state_hash = hash_vec(&initial_game_state_vec);
+    let computed_initial_game_state_hash;
+
+    // check if initial_game_state_vec is all 0
+    if initial_game_state_vec != [0; STATE_SIZE] {
+        computed_initial_game_state_hash = hash_vec(&initial_game_state_vec);
+    } else {
+        computed_initial_game_state_hash = [
+            16406829232824261652, 11167788843400149284, 2859295262623109964, 11859553537011923029,
+        ];
+    }
 
     // let _debug0 = computed_game_state_hash[0];
     // zkwasm_rust_sdk::dbg!("computed_game_state_hash[0]: {}\n", _debug0);

@@ -15,10 +15,6 @@ contract GameStateStorage {
     }
 
     function getStates(address player) public view returns (bytes memory) {
-        if (states[player].length == 0) {
-            return abi.encode(0, 0, 0, 0, 0);
-        }
-
         return states[player];
     }
 }

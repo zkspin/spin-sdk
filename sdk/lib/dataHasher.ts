@@ -26,10 +26,21 @@ function computeHashBytes32(gameInputs: bigint[] | BigUint64Array) {
     return ethers.sha256(_rawBytes);
 }
 
-function decodeBytesToBigIntArray(bytes: string, uintLength: number): bigint[] {
+function decodeBytesToU64Array(bytes: string, uintLength: number): bigint[] {
+    if (bytes === "0x") {
+        return new Array(uintLength).fill(BigInt(0));
+    }
+
     return ethers.AbiCoder.defaultAbiCoder().decode(
         new Array(uintLength).fill("uint64"),
         bytes
+    );
+}
+
+function encodeU64ArrayToBytes(uint64Array: bigint[]): string {
+    return ethers.AbiCoder.defaultAbiCoder().encode(
+        new Array(uint64Array.length).fill("uint64"),
+        uint64Array
     );
 }
 
@@ -40,6 +51,10 @@ function computeHashUint64Array(
 
     return bytes32ToBigIntArray(_hash);
 }
+
+// sha256("0x")
+export const EMPTY_STATE_HASH =
+    "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
 function computeSegmentMetaHash({
     gameID,
@@ -106,5 +121,6 @@ export {
     computeHashBytes32,
     computeSubmissionHash,
     bytes32ToBigIntArray,
-    decodeBytesToBigIntArray,
+    decodeBytesToU64Array,
+    encodeU64ArrayToBytes,
 };
