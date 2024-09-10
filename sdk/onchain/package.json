@@ -1,31 +1,28 @@
 {
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.7",
-    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.4",
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.5",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.11",
-    "@nomicfoundation/hardhat-verify": "^2.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.10",
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^9.1.0",
-    "@types/chai": "^4.3.16",
-    "@types/mocha": "^10.0.6",
-    "chai": "^4.4.1",
-    "hardhat": "^2.22.2",
-    "hardhat-gas-reporter": "^1.0.10",
-    "solidity-coverage": "^0.8.12",
+    "@types/chai": "^4.3.19",
+    "@types/mocha": "^10.0.7",
+    "hardhat": "^2.22.10",
+    "hardhat-gas-reporter": "^1.0.8",
+    "solidity-coverage": "^0.8.13",
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.6.2"
   },
   "scripts": {
     "test": "npx hardhat test",
-    "deploy": "npx hardhat ignition deploy ignition/modules/GameContract.ts --network sepolia --verify",
-    "deploy-verify": "npx hardhat ignition deploy ignition/modules/GameContract.ts --network sepolia --verify",
-    "deploy-reset": "npx hardhat ignition deploy ignition/modules/GameContract.ts --network sepolia --reset --verify"
+    "node": "npx hardhat node",
+    "deploy-local-opzk": "npx hardhat ignition deploy ignition/modules/GameContractOPZK.ts --network local"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "dotenv": "^16.4.5",
-    "ethers": "^6.13.2",
     "zkwasm-service-helper": "github:DelphinusLab/zkWasm-service-helper"
   }
 }

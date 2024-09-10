@@ -1,12 +1,10 @@
 import { expect } from "chai";
 import { ethers, ignition } from "hardhat";
-import { ZkWasmUtil } from "zkwasm-service-helper";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import ZkwasmVerifier from "../ignition/modules/ZKVerifier";
-import { zkGameModule } from "../ignition/modules/GameContract";
+import zkGameModule from "../ignition/modules/GameContractZK";
 import { readZKWasmProof } from "./readProof";
 import { computeHashUint64Array } from "../../lib/dataHasher";
-import { exec } from "child_process";
 function generateOutputBytes(output: bigint[]): string {
     // return abi.encodePacked(output);
 

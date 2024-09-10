@@ -20,7 +20,7 @@ import {
     computeHashUint64Array,
     bytes32ToBigIntArray,
 } from "../../lib/dataHasher";
-import { opzkGameModule } from "../ignition/modules/GameContract";
+import opzkGameModule from "../ignition/modules/GameContractOPZK";
 import ZkwasmVerifier from "../ignition/modules/ZKVerifier";
 
 // temporary only 1 game is supported
