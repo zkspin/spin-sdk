@@ -14,7 +14,10 @@ export default buildModule("OPZKGameModule", (m) => {
 
     const storageContract = m.contractAt("GameStateStorage", storageAddress);
 
+    const multiSender = m.contract("MultiSender");
+
     return {
+        multiSender,
         gameSystem,
         stakingContract,
         storageContract,

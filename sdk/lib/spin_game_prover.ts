@@ -146,12 +146,7 @@ export class SpinZKProver extends SpinGameProverAbstract<
 }
 
 export interface SpinOPZKProverOutput {
-    game_id: bigint;
-    submission_nonce: bigint;
-    player_address: string;
-    player_signature: string;
-    segmentInitialStateHashes: string[];
-    segmentInputHashes: string[];
+    data: SubmissionData;
 }
 
 export interface SpinOPZKCredential {
@@ -194,33 +189,23 @@ export class SpinOPZKProver extends SpinGameProverAbstract<
     ): Promise<SpinOPZKProverOutput> {
         const submissionNonce = await this.getSubmissionNonce();
 
-        const { player_address, player_signature } =
-            await this.getPlayerSignature(
-                computeOPZKSubmissionHash({
-                    game_id: submissionInput.game_id,
-                    submission_nonce: submissionNonce,
-                    segments: submissionInput.segments,
-                })
-            );
-
-        return {
+        const submissionHash = computeOPZKSubmissionHash({
             game_id: submissionInput.game_id,
             submission_nonce: submissionNonce,
-            player_address: player_address,
-            player_signature: player_signature,
-            segmentInitialStateHashes: [
-                ...submissionInput.segments.map((x) =>
-                    computeHashBytes32(x.initial_states)
-                ),
-                computeHashBytes32(
-                    submissionInput.segments[
-                        submissionInput.segments.length - 1
-                    ].final_state
-                ),
-            ],
-            segmentInputHashes: submissionInput.segments.map((x) =>
-                computeHashBytes32(x.player_action_inputs)
-            ),
+            segments: submissionInput.segments,
+        });
+        const { player_address, player_signature } =
+            await this.getPlayerSignature(submissionHash);
+
+        return {
+            data: {
+                game_id: submissionInput.game_id,
+                segments: submissionInput.segments,
+                submission_nonce: submissionNonce,
+                submission_hash: submissionHash,
+                player_address,
+                player_signature,
+            },
         };
     }
 }

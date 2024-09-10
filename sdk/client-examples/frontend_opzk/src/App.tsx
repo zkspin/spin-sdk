@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { ethers } from "ethers";
-import { abi } from "./abi/SpinZKGameContract.json";
+import { abi } from "./abi/SpinOPZKGameContract.json";
 import { abi as stateABI } from "./abi/GameStateStorage.json";
 import { config } from "./web3";
 import { readContract, getAccount, signMessage } from "wagmi/actions";
@@ -23,8 +23,42 @@ interface GameState {
 }
 
 /* This function is used to verify the proof on-chain */
-async function submit_to_operator(submission: SpinOPZKProverOutput) {
+async function submit_to_operator(
+    submission: SpinOPZKProverOutput
+): Promise<any> {
     console.log("submission = ", submission);
+
+    const response = await fetch(`${OPZK_OPERATOR_URL}/submitTransaction`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        // Convert BigInt to string # https://stackoverflow.com/questions/65152373/typescript-serialize-bigint-in-json
+        body: JSON.stringify(submission.data, (_, v) =>
+            typeof v === "bigint" ? v.toString() : v
+        ),
+    }).catch(async (err) => {
+        if (err.cause && err.cause.code == "ECONNRESET") {
+            console.error("Failed to get nonce: ECONNRESET");
+            // sleep for 1 second
+            return new Promise((resolve) => setTimeout(resolve, 1000)).then(
+                async () => await submit_to_operator(submission)
+            );
+        } else {
+            console.log("Error");
+            throw err;
+        }
+    });
+
+    if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(
+            `Failed to submit transaction: ${response.statusText} ${errorMessage}`
+        );
+    }
+    const data = await response.json();
+    console.log(data);
+    return data;
 }
 
 /* This function is used to get the on-chain game states */
