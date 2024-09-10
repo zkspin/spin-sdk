@@ -40,8 +40,16 @@ export class SpinZKProver extends SpinGameProverAbstract {
         this.zkProver = zkProver;
     }
 
-    async generateSubmission(): Promise<string> {
-        throw new Error("Method not implemented.");
+    async generateSubmission(
+        initialState: bigint[],
+        playerActions: bigint[],
+        metaData: SubmissionMetaData
+    ): Promise<string> {
+        const proof = await this.generateProof(
+            initialState,
+            playerActions,
+            metaData
+        );
     }
 
     // ================================================================================================
@@ -49,7 +57,6 @@ export class SpinZKProver extends SpinGameProverAbstract {
     async _generateProof(
         initialState: bigint[],
         playerActions: bigint[],
-
         metaData: SubmissionMetaData
     ) {
         const { publicInputs, privateInputs } =

@@ -1,3 +1,5 @@
+import { SubmissionMetaData } from "./spin_game_prover";
+
 export abstract class GameplayAbstract {
     protected constructor() {}
 
@@ -13,7 +15,11 @@ export abstract class GameplayAbstract {
 export abstract class ProofCacheAbstract {}
 
 export abstract class SpinGameProverAbstract {
-    abstract generateSubmission(): Promise<string>;
+    abstract generateSubmission(
+        initialState: bigint[],
+        playerActions: bigint[],
+        metaData: SubmissionMetaData
+    ): Promise<string>;
 }
 interface SegmentData {
     initial_states: bigint[];

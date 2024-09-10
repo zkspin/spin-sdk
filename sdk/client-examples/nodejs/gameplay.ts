@@ -1,12 +1,12 @@
 // // /* THIS FILE WILL BE AUTO-GENERATED IN THE FUTURE*/
 
-import { GameplayAbstract } from "../lib/interface";
+import { GameplayAbstract } from "../../lib/interface";
 
 import {
     initialize_game,
     step as _step,
     get_game_state,
-} from "../gameplay/export/js/commonjs/gameplay";
+} from "../../gameplay/export/js/commonjs/gameplay";
 
 export interface GamePlayContructor {
     callback: () => void;

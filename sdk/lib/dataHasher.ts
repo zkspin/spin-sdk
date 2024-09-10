@@ -26,6 +26,13 @@ function computeHashBytes32(gameInputs: bigint[] | BigUint64Array) {
     return ethers.sha256(_rawBytes);
 }
 
+function decodeBytesToBigIntArray(bytes: string, uintLength: number): bigint[] {
+    return ethers.AbiCoder.defaultAbiCoder().decode(
+        new Array(uintLength).fill("uint64"),
+        bytes
+    );
+}
+
 function computeHashUint64Array(
     gameInputs: bigint[] | BigUint64Array
 ): [bigint, bigint, bigint, bigint] {
@@ -99,4 +106,5 @@ export {
     computeHashBytes32,
     computeSubmissionHash,
     bytes32ToBigIntArray,
+    decodeBytesToBigIntArray,
 };

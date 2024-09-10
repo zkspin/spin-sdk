@@ -1,11 +1,11 @@
-import { GameplayAbstract } from "../../../lib/interface";
+import { GameplayAbstract } from "../../../../lib/interface";
 
 import {
     default as init,
     initialize_game,
     step as _step,
     get_game_state,
-} from "../../../gameplay/export/js/esm/gameplay";
+} from "../../../../gameplay/export/js/esm/gameplay";
 
 export interface GamePlayContructor {
     callback: () => void;

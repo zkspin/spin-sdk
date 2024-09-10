@@ -12,7 +12,7 @@ export default defineConfig({
             allow: [
                 ".",
                 // your custom rules
-                "../gameplay/",
+                "../../gameplay/",
             ],
         },
     },

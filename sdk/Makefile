@@ -22,9 +22,9 @@ dry-run:
 ### Submit transactions and verify them on-chain
 
 test-node:
-	@ts-node test/nodejs/simulate_game.ts
+	@ts-node client-examples/nodejs/simulate_game.ts
 
 test-transaction-onchain:
-	@ts-node test/nodejs/transaction_onchain.ts
+	@ts-node client-examples/nodejs/transaction_onchain.ts
 
 ## 4. Browser based end-to-end test
