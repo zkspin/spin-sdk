@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { SubmissionData } from "./interface";
+import { SegmentData, SubmissionData } from "./interface";
 
 function bytes32ToBigIntArray(
     bytes32: string
@@ -85,14 +85,17 @@ function computeSegmentMetaHash({
     return bytes32ToBigIntArray(_hash);
 }
 
-function computeSubmissionHash(submissionData: SubmissionData): string {
+function computeOPZKSubmissionHash(submissionData: {
+    game_id: bigint;
+    submission_nonce: bigint;
+    segments: SegmentData[];
+}): string {
     const _hash = ethers.sha256(
         ethers.AbiCoder.defaultAbiCoder().encode(
-            ["uint256", "uint256", "address", "bytes32[]", "bytes32[]"],
+            ["uint256", "uint256", "bytes32[]", "bytes32[]"],
             [
                 submissionData.game_id,
                 submissionData.submission_nonce,
-                submissionData.player_address,
                 [
                     ...submissionData.segments.map((x) =>
                         computeHashBytes32(x.initial_states)
@@ -119,7 +122,7 @@ export {
     computeSegmentMetaHash,
     computeHashUint64Array,
     computeHashBytes32,
-    computeSubmissionHash,
+    computeOPZKSubmissionHash,
     bytes32ToBigIntArray,
     decodeBytesToU64Array,
     encodeU64ArrayToBytes,

@@ -1,4 +1,8 @@
-import { SpinGameProverAbstract } from "./interface";
+import {
+    SegmentData,
+    SpinGameProverAbstract,
+    SubmissionData,
+} from "./interface";
 import { ZKProver } from "./zkwasm";
 import {
     computeSegmentMetaHash,
@@ -6,6 +10,8 @@ import {
     encodeU64ArrayToBytes,
     bytes32ToBigIntArray,
     EMPTY_STATE_HASH,
+    computeHashBytes32,
+    computeOPZKSubmissionHash,
 } from "./dataHasher";
 
 export interface SubmissionMetaData {
@@ -50,7 +56,16 @@ export interface SpinZKProverSubmissionData {
     instances: bigint[];
 }
 
-export class SpinZKProver extends SpinGameProverAbstract<SpinZKProverSubmissionData> {
+export interface SpinZKProverInput {
+    initialState: bigint[];
+    playerActions: bigint[];
+    metaData: SubmissionMetaData;
+}
+
+export class SpinZKProver extends SpinGameProverAbstract<
+    SpinZKProverInput,
+    SpinZKProverSubmissionData
+> {
     zkProver: ZKProver;
 
     constructor(zkProver: ZKProver) {
@@ -59,14 +74,12 @@ export class SpinZKProver extends SpinGameProverAbstract<SpinZKProverSubmissionD
     }
 
     async generateSubmission(
-        initialState: bigint[],
-        playerActions: bigint[],
-        metaData: SubmissionMetaData
+        submissionInput: SpinZKProverInput
     ): Promise<SpinZKProverSubmissionData> {
         const proof = await this.generateProof(
-            initialState,
-            playerActions,
-            metaData
+            submissionInput.initialState,
+            submissionInput.playerActions,
+            submissionInput.metaData
         );
 
         if (!proof) {
@@ -74,9 +87,11 @@ export class SpinZKProver extends SpinGameProverAbstract<SpinZKProverSubmissionD
         }
 
         return {
-            game_id: metaData.game_id,
-            finalState: encodeU64ArrayToBytes(initialState),
-            playerInputsHash: computeHashUint64Array(playerActions),
+            game_id: submissionInput.metaData.game_id,
+            finalState: encodeU64ArrayToBytes(submissionInput.initialState),
+            playerInputsHash: computeHashUint64Array(
+                submissionInput.playerActions
+            ),
             proof: proof.proof,
             verify_instance: proof.verify_instance,
             aux: proof.aux,
@@ -130,13 +145,87 @@ export class SpinZKProver extends SpinGameProverAbstract<SpinZKProverSubmissionD
     }
 }
 
-export class SpinOPZKProver extends SpinGameProverAbstract<any> {
-    async generateSubmission(): Promise<string> {
-        throw new Error("Method not implemented.");
+export interface SpinOPZKProverOutput {
+    game_id: bigint;
+    submission_nonce: bigint;
+    player_address: string;
+    player_signature: string;
+    segmentInitialStateHashes: string[];
+    segmentInputHashes: string[];
+}
+
+export interface SpinOPZKCredential {
+    operator_url: string;
+}
+
+export interface SpinOPZKProverInput {
+    game_id: bigint;
+    segments: SegmentData[];
+}
+
+export class SpinOPZKProver extends SpinGameProverAbstract<
+    SpinOPZKProverInput,
+    SpinOPZKProverOutput
+> {
+    credential: SpinOPZKCredential;
+
+    getSubmissionNonce: () => Promise<bigint>;
+    getPlayerSignature: (submissionHash: string) => Promise<{
+        player_address: string;
+        player_signature: string;
+    }>;
+
+    constructor(
+        credential: SpinOPZKCredential,
+        getSubmissionNonce: () => Promise<bigint>,
+        getPlayerSignature: (submissionHash: string) => Promise<{
+            player_address: string;
+            player_signature: string;
+        }>
+    ) {
+        super();
+        this.credential = credential;
+        this.getSubmissionNonce = getSubmissionNonce;
+        this.getPlayerSignature = getPlayerSignature;
+    }
+
+    async generateSubmission(
+        submissionInput: SpinOPZKProverInput
+    ): Promise<SpinOPZKProverOutput> {
+        const submissionNonce = await this.getSubmissionNonce();
+
+        const { player_address, player_signature } =
+            await this.getPlayerSignature(
+                computeOPZKSubmissionHash({
+                    game_id: submissionInput.game_id,
+                    submission_nonce: submissionNonce,
+                    segments: submissionInput.segments,
+                })
+            );
+
+        return {
+            game_id: submissionInput.game_id,
+            submission_nonce: submissionNonce,
+            player_address: player_address,
+            player_signature: player_signature,
+            segmentInitialStateHashes: [
+                ...submissionInput.segments.map((x) =>
+                    computeHashBytes32(x.initial_states)
+                ),
+                computeHashBytes32(
+                    submissionInput.segments[
+                        submissionInput.segments.length - 1
+                    ].final_state
+                ),
+            ],
+            segmentInputHashes: submissionInput.segments.map((x) =>
+                computeHashBytes32(x.player_action_inputs)
+            ),
+        };
     }
 }
 
-export class SpinDummyProver extends SpinGameProverAbstract<any> {
+export class SpinDummyProver extends SpinGameProverAbstract<any, any> {
     async generateSubmission(): Promise<string> {
         throw new Error("Method not implemented.");
     }

@@ -1,21 +1,23 @@
 import { GameplayAbstract, SpinGameProverAbstract } from "./interface";
-import { SubmissionMetaData } from "./spin_game_prover";
 
-interface SpinConstructor<T> {
+interface SpinConstructor<TInput, TOutput> {
     gameplay: GameplayAbstract;
-    gameplayProver: SpinGameProverAbstract<T>;
+    gameplayProver: SpinGameProverAbstract<TInput, TOutput>;
 }
 
 /* This Class is used to facilated core gameplay and zk proving*/
-export class SpinGame<T> {
+export class SpinGame<TInput, TOutput> {
     gamePlay: GameplayAbstract;
-    gameplayProver: SpinGameProverAbstract<T>;
+    gameplayProver: SpinGameProverAbstract<TInput, TOutput>;
     initialState: bigint[] = []; // public inputs
     playerInputs: bigint[] = []; // public inputs
     finalState: bigint[] = []; // private inputs
 
     /* Constructor */
-    constructor({ gameplay, gameplayProver }: SpinConstructor<T>) {
+    constructor({
+        gameplay,
+        gameplayProver,
+    }: SpinConstructor<TInput, TOutput>) {
         this.gamePlay = gameplay;
         this.gameplayProver = gameplayProver;
     }
@@ -37,16 +39,8 @@ export class SpinGame<T> {
         await this.gamePlay.newGame(initialStates);
     }
 
-    async generateSubmission(
-        initialState: bigint[],
-        playerActions: bigint[],
-        metaData: SubmissionMetaData
-    ) {
-        return await this.gameplayProver.generateSubmission(
-            initialState,
-            playerActions,
-            metaData
-        );
+    async generateSubmission(submissionInput: TInput) {
+        return await this.gameplayProver.generateSubmission(submissionInput);
     }
 
     /* Reset the game

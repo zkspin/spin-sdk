@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
-import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
-import { abi } from "../SpinZKGameContract.json";
+import { ethers } from "ethers";
+import { abi } from "./abi/SpinZKGameContract.json";
+import { abi as stateABI } from "./abi/GameStateStorage.json";
 import { config } from "./web3";
-import { readContract } from "wagmi/actions";
-import { TaskStatus } from "zkwasm-service-helper";
-import { SpinGame } from "../../lib/spin_game";
-import { SpinDummyProver } from "../../lib/spin_game_prover";
+import { readContract, getAccount, signMessage } from "wagmi/actions";
+import { SpinGame } from "../../../lib/spin_game";
+import {
+    SpinOPZKProver,
+    SpinOPZKProverInput,
+    SpinOPZKProverOutput,
+} from "../../../lib/spin_game_prover";
 import { Gameplay } from "./gameplay/gameplay";
+import { decodeBytesToU64Array } from "../../../lib/dataHasher";
 
-const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_GAME_CONTRACT_ADDRESS;
-const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_CLOUD_USER_ADDRESS;
-const ZK_USER_PRIVATE_KEY = import.meta.env.VITE_ZK_CLOUD_USER_PRIVATE_KEY;
-const ZK_IMAGE_MD5 = import.meta.env.VITE_ZK_CLOUD_IMAGE_MD5;
-const ZK_CLOUD_RPC_URL = import.meta.env.VITE_ZK_CLOUD_URL;
+const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_OPZK_GAME_CONTRACT_ADDRESS;
+const OPZK_OPERATOR_URL = import.meta.env.VITE_OPZK_OPERATOR_URL;
 
 interface GameState {
     total_steps: bigint;
@@ -21,43 +23,39 @@ interface GameState {
 }
 
 /* This function is used to verify the proof on-chain */
-async function verify_onchain({
-    proof,
-    verify_instance,
-    aux,
-    instances,
-}: {
-    proof: BigInt[];
-    verify_instance: BigInt[];
-    aux: BigInt[];
-    instances: BigInt[];
-    status: TaskStatus;
-}) {
-    const result = await writeContract(config, {
-        abi,
-        address: GAME_CONTRACT_ADDRESS,
-        functionName: "settleProof",
-        args: [proof, verify_instance, aux, [instances]],
-    });
-    const transactionReceipt = waitForTransactionReceipt(config, {
-        hash: result,
-    });
-    return transactionReceipt;
+async function submit_to_operator(submission: SpinOPZKProverOutput) {
+    console.log("submission = ", submission);
 }
 
 /* This function is used to get the on-chain game states */
 async function getOnchainGameStates() {
-    return [BigInt(0), BigInt(0)];
-    const result = (await readContract(config, {
+    // return [BigInt(0), BigInt(0)];
+    const storageContractAddress = (await readContract(config, {
         abi,
         address: GAME_CONTRACT_ADDRESS,
-        functionName: "getStates",
+        functionName: "getStorageContract",
         args: [],
-    })) as [bigint, bigint];
-    return result;
+    })) as `0x${string}`;
+
+    const userAccount = getAccount(config);
+
+    const result = (await readContract(config, {
+        abi: stateABI,
+        address: storageContractAddress,
+        functionName: "getStates",
+        args: [userAccount.address],
+    })) as string;
+
+    console.log("onchain result = ", result);
+    // result is in bytes, abi decode it, state is 2 u64 bigint
+    const decoded = decodeBytesToU64Array(result, 2);
+
+    console.log("onchain state = ", decoded);
+
+    return decoded;
 }
 
-let spin: SpinGame;
+let spin: SpinGame<SpinOPZKProverInput, SpinOPZKProverOutput>;
 
 function App() {
     useEffect(() => {
@@ -75,7 +73,13 @@ function App() {
 
             spin = new SpinGame({
                 gameplay: new Gameplay(),
-                gameplayProver: new SpinDummyProver(),
+                gameplayProver: new SpinOPZKProver(
+                    {
+                        operator_url: OPZK_OPERATOR_URL,
+                    },
+                    getPlayerNonce,
+                    getPlayerSignature
+                ),
             });
 
             await spin.newGame({
@@ -85,6 +89,31 @@ function App() {
             updateDisplay();
         });
     }, []);
+
+    const getPlayerNonce = async () => {
+        return BigInt(0);
+    };
+
+    const getPlayerSignature = async (submissionHash: string) => {
+        // get player address
+
+        const player_address = getAccount(config).address;
+
+        if (!player_address) {
+            console.error("player address not found");
+            throw new Error("player address not found");
+        }
+
+        const player_signature = await signMessage(config, {
+            message: {
+                raw: ethers.getBytes(submissionHash),
+            },
+        });
+
+        console.log("signature = ", player_signature);
+
+        return { player_address, player_signature };
+    };
 
     const [gameState, setGameState] = useState<GameState>({
         total_steps: BigInt(0),
@@ -113,32 +142,49 @@ function App() {
     };
 
     // Submit the proof to the cloud
-    // const submitProof = async () => {
-    //     const proof = await spin.generateProof();
+    const submitProof = async () => {
+        if (!spin) {
+            console.error("spin not initialized");
+            return;
+        }
 
-    //     if (!proof) {
-    //         console.error("Proof generation failed");
-    //         return;
-    //     }
-    //     // onchain verification operations
-    //     console.log("submitting proof");
-    //     const verificationResult = await verify_onchain(proof);
+        console.log("generating proof");
 
-    //     console.log("verificationResult = ", verificationResult);
+        const submission = await spin.generateSubmission({
+            game_id: BigInt(123),
+            segments: [
+                {
+                    initial_states: [
+                        onChainGameStates.total_steps,
+                        onChainGameStates.current_position,
+                    ],
+                    player_action_inputs: moves,
+                    final_state: [
+                        gameState.total_steps,
+                        gameState.current_position,
+                    ],
+                },
+            ],
+        });
 
-    //     // wait for the transaction to be broadcasted, better way is to use event listener
-    //     await new Promise((r) => setTimeout(r, 1000));
+        console.log("submission = ", submission);
 
-    //     const gameStates = await getOnchainGameStates();
+        const submissionResult = await submit_to_operator(submission);
 
-    //     setOnChainGameStates({
-    //         total_steps: gameStates[0],
-    //         current_position: gameStates[1],
-    //     });
+        console.log("submissionResult = ", submissionResult);
 
-    //     await spin.reset();
-    //     // awonGameInitReady(gameStates[0], gameStates[1]);
-    // };
+        // wait for the transaction to be broadcasted, better way is to use event listener
+        await new Promise((r) => setTimeout(r, 1000));
+
+        const gameStates = await getOnchainGameStates();
+
+        setOnChainGameStates({
+            total_steps: gameStates[0],
+            current_position: gameStates[1],
+        });
+
+        // await spin.resetGame();
+    };
 
     return (
         <div className="App">
@@ -168,7 +214,7 @@ function App() {
                 <button onClick={onClick(BigInt(0))}>Decrement</button>
                 <button onClick={onClick(BigInt(1))}>Increment</button>
             </header>
-            {/* <button onClick={submitProof}>Submit</button> */}
+            <button onClick={submitProof}>Submit</button>
         </div>
     );
 }

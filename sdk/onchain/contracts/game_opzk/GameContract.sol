@@ -48,7 +48,9 @@ contract SpinOPZKGameContract is SpinContract {
     uint256 public nextSubmissionIndex; // the enxt submission index
     uint256 public nextSettleIndex; // the next settled submission index
 
-    event SubmissionEvent(uint256 indexed submissionIndex, uint256 indexed submissionNonce);
+    event SubmissionEvent(
+        uint256 indexed submissionIndex, uint256 indexed submissionNonce, address indexed playerAddress
+    );
 
     event ChallengeEvent(uint256 indexed submissionIndex, address indexed challenger);
 
@@ -81,22 +83,19 @@ contract SpinOPZKGameContract is SpinContract {
     function submit_submission(
         uint256 game_id,
         uint256 submission_nonce,
-        address player_address,
         SignatureCompact calldata player_signature,
         bytes32[] calldata segmentInitialStateHashes,
         bytes32[] calldata segmentPlayerInputsHashes
     ) public {
         // TODO: compute a submission hash - to prevent replay attacks
-        bytes32 computedSubmissionHash = sha256(
-            abi.encode(game_id, submission_nonce, player_address, segmentInitialStateHashes, segmentPlayerInputsHashes)
-        );
+        bytes32 computedSubmissionHash =
+            sha256(abi.encode(game_id, submission_nonce, segmentInitialStateHashes, segmentPlayerInputsHashes));
 
         address signer = recoverHashFromCompact(computedSubmissionHash, player_signature);
 
-        require(signer == player_address, "Invalid player signature");
-        require(playerSubmissionNonce[player_address] == submission_nonce, "Invalid submission nonce");
+        require(playerSubmissionNonce[signer] == submission_nonce, "Invalid submission nonce");
 
-        playerSubmissionNonce[player_address] = submission_nonce + 1;
+        playerSubmissionNonce[signer] = submission_nonce + 1;
 
         uint256 currentSubmissionIndex = nextSubmissionIndex;
 
@@ -109,7 +108,7 @@ contract SpinOPZKGameContract is SpinContract {
             blockNumber: block.number,
             segmentInitialStateHashes: segmentInitialStateHashes,
             segmentPlayerInputsHashes: segmentPlayerInputsHashes,
-            playerAddress: player_address,
+            playerAddress: signer,
             operatorAddress: operator_address,
             status: SubmissionStatus.PENDING
         });
@@ -117,7 +116,7 @@ contract SpinOPZKGameContract is SpinContract {
 
         stakingContract.operator_submit_submission(1, operator_address);
 
-        emit SubmissionEvent(currentSubmissionIndex, submission_nonce);
+        emit SubmissionEvent(currentSubmissionIndex, submission_nonce, signer);
     }
 
     function batch_submit_submission() public {
