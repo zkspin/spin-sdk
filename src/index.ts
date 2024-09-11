@@ -26,6 +26,7 @@ import {
 import { Command, Option } from "commander";
 import { convertPlayerActionToPublicPrivateInputs } from "@zkspin/lib";
 import { convertToBigInts } from "@zkspin/lib";
+import { version } from "../package.json";
 /**
  * Copy the contents of one folder to another.
  * Ignore file in the .gitignore file.
@@ -247,11 +248,6 @@ async function publishImage(projectPath: string) {
     return imageCommitment;
 }
 
-function version() {
-    logger.info(`Version: ${VERSION}`);
-    return;
-}
-
 function dryRunImage(
     projectPath: string,
     zkwasmCLIPath: string,
@@ -317,8 +313,6 @@ function dryRunImage(
     logger.info(`Dry-run output: ${runDryRun.stdout.toString()}`);
 }
 
-const VERSION = "1.0.0";
-
 const program = new Command();
 
 function collectRepeatable(value: any, previous: any) {
@@ -337,7 +331,7 @@ function commaSeparatedList(value: string, dummyPrevious: any) {
 program
     .name("zkspin-cli")
     .description("CLI for developing on-chain ZK proved application.")
-    .version(VERSION)
+    .version(version)
     .showHelpAfterError()
     .showSuggestionAfterError();
 
@@ -432,7 +426,7 @@ program
     .command("version")
     .description("Print version")
     .action(() => {
-        version();
+        logger.info(`Version: ${version}`);
     });
 
 program.parse();
