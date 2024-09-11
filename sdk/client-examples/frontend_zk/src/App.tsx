@@ -12,7 +12,7 @@ import {
 } from "../../../lib_back/spin_game_prover";
 import { ZKProver } from "../../../lib_back/zkwasm";
 import { Gameplay } from "./gameplay/gameplay";
-import { decodeBytesToU64Array } from "../../../lib_back/dataHasher";
+import { decodeBytesToU64Array } from "@zkspin/lib";
 
 const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_ZK_GAME_CONTRACT_ADDRESS;
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_CLOUD_USER_ADDRESS;

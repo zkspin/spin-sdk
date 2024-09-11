@@ -1,4 +1,4 @@
-import { GameplayAbstract } from "../../../../lib_back/interface";
+import { GameplayAbstract } from "@zkspin/lib";
 
 import {
     default as init,

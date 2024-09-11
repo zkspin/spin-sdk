@@ -12,7 +12,7 @@ import {
     SpinOPZKProverOutput,
 } from "../../../lib_back/spin_game_prover";
 import { Gameplay } from "./gameplay/gameplay";
-import { decodeBytesToU64Array } from "../../../lib_back/dataHasher";
+import { decodeBytesToU64Array } from "@zkspin/lib";
 
 const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_OPZK_GAME_CONTRACT_ADDRESS;
 const OPZK_OPERATOR_URL = import.meta.env.VITE_OPZK_OPERATOR_URL;
