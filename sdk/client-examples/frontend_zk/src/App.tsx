@@ -80,36 +80,45 @@ let spin: SpinGame<SpinZKProverInput, SpinZKProverSubmissionData>;
 
 function App() {
     useEffect(() => {
-        getOnchainGameStates().then(async (result): Promise<any> => {
-            const total_steps = result[0];
-            const current_position = result[1];
+        let total_steps = BigInt(0);
+        let current_position = BigInt(0);
 
-            console.log("total_steps = ", total_steps);
-            console.log("current_position = ", current_position);
+        getOnchainGameStates()
+            .then(async (result): Promise<any> => {
+                total_steps = result[0];
+                current_position = result[1];
+            })
+            .catch((e) => {
+                alert("Unable to connect to the chain, using default values.");
+            })
+            .finally(async () => {
+                console.log("total_steps = ", total_steps);
+                console.log("current_position = ", current_position);
 
-            setOnChainGameStates({
-                total_steps,
-                current_position,
+                setOnChainGameStates({
+                    total_steps,
+                    current_position,
+                });
+
+                const zkprover = new ZKProver({
+                    USER_ADDRESS: ZK_USER_ADDRESS,
+                    USER_PRIVATE_KEY: ZK_USER_PRIVATE_KEY,
+                    IMAGE_HASH: ZK_IMAGE_MD5,
+                    CLOUD_RPC_URL: ZK_CLOUD_RPC_URL,
+                });
+
+                const spinZKProver = new SpinZKProver(zkprover);
+
+                spin = new SpinGame({
+                    gameplay: new Gameplay(),
+                    gameplayProver: spinZKProver,
+                });
+
+                await spin.newGame({
+                    initialStates: [total_steps, current_position],
+                });
+                updateDisplay();
             });
-
-            spin = new SpinGame({
-                gameplay: new Gameplay(),
-                gameplayProver: new SpinZKProver(
-                    new ZKProver({
-                        USER_ADDRESS: ZK_USER_ADDRESS,
-                        USER_PRIVATE_KEY: ZK_USER_PRIVATE_KEY,
-                        IMAGE_HASH: ZK_IMAGE_MD5,
-                        CLOUD_RPC_URL: ZK_CLOUD_RPC_URL,
-                    })
-                ),
-            });
-
-            await spin.newGame({
-                initialStates: [total_steps, current_position],
-            });
-
-            updateDisplay();
-        });
     }, []);
 
     const [gameState, setGameState] = useState<GameState>({

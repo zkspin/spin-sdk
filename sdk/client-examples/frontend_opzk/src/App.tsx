@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import { ethers } from "ethers";
-import { abi } from "./abi/SpinOPZKGameContract.json";
-import { abi as stateABI } from "./abi/GameStateStorage.json";
-import { config } from "./web3";
-import { readContract, getAccount, signMessage } from "wagmi/actions";
-import { SpinGame } from "../../../lib_back/spin_game";
 import {
+    SpinGame,
     SpinOPZKProver,
     SpinOPZKProverInput,
     SpinOPZKProverOutput,
-} from "../../../lib_back/spin_game_prover";
+    decodeBytesToU64Array,
+} from "@zkspin/lib";
+import { ethers } from "ethers";
+import { useEffect, useState } from "react";
+import { getAccount, readContract, signMessage } from "wagmi/actions";
+import "./App.css";
+import { abi as stateABI } from "./abi/GameStateStorage.json";
+import { abi } from "./abi/SpinOPZKGameContract.json";
 import { Gameplay } from "./gameplay/gameplay";
-import { decodeBytesToU64Array } from "@zkspin/lib";
+import { config } from "./web3";
 
 const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_OPZK_GAME_CONTRACT_ADDRESS;
 const OPZK_OPERATOR_URL = import.meta.env.VITE_OPZK_OPERATOR_URL;
@@ -93,35 +93,42 @@ let spin: SpinGame<SpinOPZKProverInput, SpinOPZKProverOutput>;
 
 function App() {
     useEffect(() => {
-        getOnchainGameStates().then(async (result): Promise<any> => {
-            const total_steps = result[0];
-            const current_position = result[1];
+        let total_steps = BigInt(0);
+        let current_position = BigInt(0);
 
-            console.log("total_steps = ", total_steps);
-            console.log("current_position = ", current_position);
+        getOnchainGameStates()
+            .then(async (result): Promise<any> => {
+                total_steps = result[0];
+                current_position = result[1];
+            })
+            .catch((e) => {
+                alert("Unable to connect to the chain, using default values.");
+            })
+            .finally(async () => {
+                console.log("total_steps = ", total_steps);
+                console.log("current_position = ", current_position);
 
-            setOnChainGameStates({
-                total_steps,
-                current_position,
+                setOnChainGameStates({
+                    total_steps,
+                    current_position,
+                });
+
+                spin = new SpinGame({
+                    gameplay: new Gameplay(),
+                    gameplayProver: new SpinOPZKProver(
+                        {
+                            operator_url: OPZK_OPERATOR_URL,
+                        },
+                        getPlayerNonce,
+                        getPlayerSignature
+                    ),
+                });
+
+                await spin.newGame({
+                    initialStates: [total_steps, current_position],
+                });
+                updateDisplay();
             });
-
-            spin = new SpinGame({
-                gameplay: new Gameplay(),
-                gameplayProver: new SpinOPZKProver(
-                    {
-                        operator_url: OPZK_OPERATOR_URL,
-                    },
-                    getPlayerNonce,
-                    getPlayerSignature
-                ),
-            });
-
-            await spin.newGame({
-                initialStates: [total_steps, current_position],
-            });
-
-            updateDisplay();
-        });
     }, []);
 
     const getPlayerNonce = async () => {
