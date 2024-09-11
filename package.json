@@ -1,12 +1,12 @@
 {
-  "name": "zkspin",
-  "version": "0.5.0",
+  "name": "@zkspin/sdk",
+  "version": "0.0.1",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && node script/add-shebang.js",
     "start": "ts-node src/index.ts",
-    "publish": "npm publish",
+    "publish": "npm publish --access public",
     "test": "mocha tests/*.ts"
   },
   "bin": {
