@@ -5,14 +5,14 @@ import { abi } from "./abi/SpinOPZKGameContract.json";
 import { abi as stateABI } from "./abi/GameStateStorage.json";
 import { config } from "./web3";
 import { readContract, getAccount, signMessage } from "wagmi/actions";
-import { SpinGame } from "../../../lib/spin_game";
+import { SpinGame } from "../../../lib_back/spin_game";
 import {
     SpinOPZKProver,
     SpinOPZKProverInput,
     SpinOPZKProverOutput,
-} from "../../../lib/spin_game_prover";
+} from "../../../lib_back/spin_game_prover";
 import { Gameplay } from "./gameplay/gameplay";
-import { decodeBytesToU64Array } from "../../../lib/dataHasher";
+import { decodeBytesToU64Array } from "../../../lib_back/dataHasher";
 
 const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_OPZK_GAME_CONTRACT_ADDRESS;
 const OPZK_OPERATOR_URL = import.meta.env.VITE_OPZK_OPERATOR_URL;

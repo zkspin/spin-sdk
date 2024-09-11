@@ -1,4 +1,4 @@
-import { GameplayAbstract } from "../../../../lib/interface";
+import { GameplayAbstract } from "../../../../lib_back/interface";
 
 import {
     default as init,

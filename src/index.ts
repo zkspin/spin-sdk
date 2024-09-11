@@ -24,8 +24,8 @@ import {
     ZK_CLOUD_USER_PRIVATE_KEY,
 } from "./config";
 import { Command, Option } from "commander";
-import { convertPlayerActionToPublicPrivateInputs } from "../sdk/lib/spin_game_prover";
-import { converToBigInts } from "../sdk/lib/util";
+import { convertPlayerActionToPublicPrivateInputs } from "@zkspin/lib";
+import { convertToBigInts } from "@zkspin/lib";
 /**
  * Copy the contents of one folder to another.
  * Ignore file in the .gitignore file.
@@ -62,12 +62,24 @@ function copyFolderSync(src: string, dest: string): void {
     }
 }
 
-function init(folderName: string, provingType: "ZK" | "OPZK") {
+function init(
+    folderName: string,
+    provingType: "ZK" | "OPZK",
+    envType: "node" | "browser"
+) {
     const sourcePath = path.join(__dirname, "..", "sdk");
     const destinationPath = path.join(process.cwd(), folderName);
 
+    if (envType === "node") {
+        throw new Error("Not implemented");
+    }
+
     // Copy Frontend Example
-    const sourceDirFrontend = path.join(sourcePath, "frontend");
+    const sourceDirFrontend = path.join(
+        sourcePath,
+        "client-examples",
+        provingType == "ZK" ? "frontend_zk" : "frontend_opzk"
+    );
     const destinationDirFrontend = path.join(destinationPath, "frontend");
     copyFolderSync(sourceDirFrontend, destinationDirFrontend);
 
@@ -305,7 +317,7 @@ function dryRunImage(
     logger.info(`Dry-run output: ${runDryRun.stdout.toString()}`);
 }
 
-const VERSION = "0.5.0";
+const VERSION = "1.0.0";
 
 const program = new Command();
 
@@ -338,8 +350,13 @@ program
             .choices(["ZK", "OPZK"])
             .makeOptionMandatory()
     )
-    .action((folderName, type) => {
-        init(folderName, type);
+    .addOption(
+        new Option("-e, --env <node|browser>", "Example environment")
+            .choices(["node", "browser"])
+            .makeOptionMandatory()
+    )
+    .action((folderName, type, envType) => {
+        init(folderName, type, envType);
     });
 
 program
@@ -400,8 +417,8 @@ program
 
         // check if options.initial and options.action can be converted to bigint
 
-        const _initialStates = converToBigInts(options.initial);
-        const _action = converToBigInts(options.action);
+        const _initialStates = convertToBigInts(options.initial);
+        const _action = convertToBigInts(options.action);
 
         const { publicInputs, privateInputs } =
             convertPlayerActionToPublicPrivateInputs(_initialStates, _action, {

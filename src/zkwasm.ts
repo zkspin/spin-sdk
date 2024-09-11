@@ -13,7 +13,7 @@ import {
     PUBLISH_IMAGE_RETRY_COUNT,
     PUBLISH_IMAGE_RETRY_DELAY_IN_SECONDS,
 } from "./config";
-import { ProveCredentials, getImageCommitmentBigInts } from "../sdk/lib/zkwasm";
+import { ProveCredentials, getImageCommitmentBigInts } from "@zkspin/lib";
 
 export async function addImage(
     cloudCredential: ProveCredentials,

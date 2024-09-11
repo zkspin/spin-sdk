@@ -16,20 +16,19 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^20.14.2",
+    "@zkspin/lib": "^1.0.1",
     "commander": "^12.1.0",
     "pino": "^9.4.0",
-    "shared-lib": "file:./sdk/lib",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
     "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper"
   },
   "devDependencies": {
     "@types/chai": "^4.3.19",
     "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.2",
     "chai": "^4.2.0",
     "mocha": "^10.7.3",
     "pino-pretty": "^11.2.2",
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.5"
   }
 }
