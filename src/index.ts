@@ -63,21 +63,23 @@ function copyFolderSync(src: string, dest: string): void {
     }
 }
 
+const SDK_SOURCE_FOLDER_PATH = path.join(__dirname, "..", "..", "sdk");
+const MISC_SCRIPT_FOLDER_PATH = path.join(__dirname, "..", "..", "misc");
+
 function init(
     folderName: string,
     provingType: "ZK" | "OPZK",
     envType: "node" | "browser"
 ) {
-    const sourcePath = path.join(__dirname, "..", "sdk");
     const destinationPath = path.join(process.cwd(), folderName);
 
     if (envType === "node") {
-        throw new Error("Not implemented");
+        throw new Error("Node.js client not implemented");
     }
 
     // Copy Frontend Example
     const sourceDirFrontend = path.join(
-        sourcePath,
+        SDK_SOURCE_FOLDER_PATH,
         "client-examples",
         provingType == "ZK" ? "frontend_zk" : "frontend_opzk"
     );
@@ -85,12 +87,12 @@ function init(
     copyFolderSync(sourceDirFrontend, destinationDirFrontend);
 
     // Copy OnChain Contract Example
-    const sourceDirOnChain = path.join(sourcePath, "onchain");
+    const sourceDirOnChain = path.join(SDK_SOURCE_FOLDER_PATH, "onchain");
     const destinationDirOnChain = path.join(destinationPath, "onchain");
     copyFolderSync(sourceDirOnChain, destinationDirOnChain);
 
     // Copy Rust Gameplay Contract Example
-    const sourceDirGameplay = path.join(sourcePath, "gameplay");
+    const sourceDirGameplay = path.join(SDK_SOURCE_FOLDER_PATH, "gameplay");
     const destinationDirGameplay = path.join(destinationPath, "gameplay");
     copyFolderSync(sourceDirGameplay, destinationDirGameplay);
 
@@ -98,8 +100,8 @@ function init(
 }
 
 async function buildImage(projectPath: string) {
-    const miscPath = path.join(__dirname, "..", "..", "misc");
-    const makeFilePath = path.join(miscPath, "Makefile");
+    const makeFilePath = path.join(MISC_SCRIPT_FOLDER_PATH, "Makefile");
+
     const exportPath = path.join(projectPath, "..", "export");
 
     const outDir = ".";
@@ -119,7 +121,7 @@ async function buildImage(projectPath: string) {
             makeFilePath,
             "build-spin",
             `OUTPUT_PATH=${outDir}`,
-            `MISC_PATH=${miscPath}`,
+            `MISC_PATH=${MISC_SCRIPT_FOLDER_PATH}`,
         ],
         {
             cwd: exportPath,
@@ -164,7 +166,7 @@ async function buildImage(projectPath: string) {
                 makeFilePath,
                 "build-wasm-zk",
                 `OUTPUT_PATH=${outDir}`,
-                `MISC_PATH=${miscPath}`,
+                `MISC_PATH=${MISC_SCRIPT_FOLDER_PATH}`,
             ],
             {
                 cwd: exportPath,
@@ -347,10 +349,10 @@ program
     .addOption(
         new Option("-e, --env <node|browser>", "Example environment")
             .choices(["node", "browser"])
-            .makeOptionMandatory()
+            .default("browser")
     )
-    .action((folderName, type, envType) => {
-        init(folderName, type, envType);
+    .action((folderName, options) => {
+        init(folderName, options.type, options.env);
     });
 
 program
@@ -377,6 +379,7 @@ program
     .option("-p, --public <input>", "Public input", collectRepeatable, [])
     .option("-s, --private <input>", "Private input", collectRepeatable, [])
     .action((projectPath, wasmPath, options) => {
+        logger.info("wasmPath:", wasmPath);
         dryRunImage(projectPath, wasmPath, options.public, options.private);
     });
 

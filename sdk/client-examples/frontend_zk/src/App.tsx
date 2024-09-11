@@ -5,14 +5,15 @@ import { abi } from "./abi/SpinZKGameContract.json";
 import { abi as stateABI } from "./abi/GameStateStorage.json";
 import { config } from "./web3";
 import { readContract, getAccount } from "wagmi/actions";
-import { SpinGame } from "../../../lib_back/spin_game";
 import {
+    SpinGame,
     SpinZKProver,
+    SpinZKProverInput,
     SpinZKProverSubmissionData,
-} from "../../../lib_back/spin_game_prover";
-import { ZKProver } from "../../../lib_back/zkwasm";
+    ZKProver,
+    decodeBytesToU64Array,
+} from "@zkspin/lib";
 import { Gameplay } from "./gameplay/gameplay";
-import { decodeBytesToU64Array } from "@zkspin/lib";
 
 const GAME_CONTRACT_ADDRESS = import.meta.env.VITE_ZK_GAME_CONTRACT_ADDRESS;
 const ZK_USER_ADDRESS = import.meta.env.VITE_ZK_CLOUD_USER_ADDRESS;
@@ -75,7 +76,7 @@ async function getOnchainGameStates() {
     return decoded;
 }
 
-let spin: SpinGame<SpinZKProverSubmissionData>;
+let spin: SpinGame<SpinZKProverInput, SpinZKProverSubmissionData>;
 
 function App() {
     useEffect(() => {
@@ -91,7 +92,7 @@ function App() {
                 current_position,
             });
 
-            spin = new SpinGame<SpinZKProverSubmissionData>({
+            spin = new SpinGame({
                 gameplay: new Gameplay(),
                 gameplayProver: new SpinZKProver(
                     new ZKProver({
@@ -146,13 +147,16 @@ function App() {
 
         console.log("generating proof");
 
-        const submission = await spin.generateSubmission(
-            [onChainGameStates.total_steps, onChainGameStates.current_position],
-            moves,
-            {
+        const submission = await spin.generateSubmission({
+            initialState: [
+                onChainGameStates.total_steps,
+                onChainGameStates.current_position,
+            ],
+            playerActions: moves,
+            metaData: {
                 game_id: BigInt(123),
-            }
-        );
+            },
+        });
 
         console.log("submission = ", submission);
 
