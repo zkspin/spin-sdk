@@ -1,6 +1,6 @@
 {
   "name": "@zkspin/sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
   "scripts": {
