@@ -4,19 +4,13 @@ SDK for developing on-chain ZK proved application.
 
 ## Installation
 
-[Install Rust](https://www.rust-lang.org/tools/install)
-
-[Install NodeJs V18 or above](https://nodejs.org/en/download/package-manager/current)
-
-[Install `wasm-pack`](github.com/rustwasm/wasm-pack)
-
 ```shell
-npm install -g spin-m4
+npm install -g zkspin
 ```
 
 ## Docs
 
-How to use SDK: [guide/GUIDE.md](./guide/GUIDE.md)
+https://zkspin.gitbook.io/zkspin
 
 #### For Windows:
 
