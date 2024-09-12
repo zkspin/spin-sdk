@@ -86,11 +86,6 @@ function init(
     const destinationDirFrontend = path.join(destinationPath, "frontend");
     copyFolderSync(sourceDirFrontend, destinationDirFrontend);
 
-    // Copy OnChain Contract Example
-    const sourceDirOnChain = path.join(SDK_SOURCE_FOLDER_PATH, "onchain");
-    const destinationDirOnChain = path.join(destinationPath, "onchain");
-    copyFolderSync(sourceDirOnChain, destinationDirOnChain);
-
     // Copy Rust Gameplay Contract Example
     const sourceDirGameplay = path.join(SDK_SOURCE_FOLDER_PATH, "gameplay");
     const destinationDirGameplay = path.join(destinationPath, "gameplay");
