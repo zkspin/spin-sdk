@@ -20,7 +20,8 @@
     "test": "npx hardhat test",
     "node": "npx hardhat node",
     "deploy-local-opzk": "npx hardhat ignition deploy ignition/modules/GameContractOPZK.ts --network local",
-    "deploy-local-zk": "npx hardhat ignition deploy ignition/modules/GameContractZK.ts --network local"
+    "deploy-local-zk": "npx hardhat ignition deploy ignition/modules/GameContractZK.ts --network local",
+    "deploy-contracts": "npx hardhat ignition deploy ignition/modules/GameContractOPZK.ts --network custom"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

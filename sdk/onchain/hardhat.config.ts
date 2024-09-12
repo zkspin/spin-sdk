@@ -2,6 +2,10 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "dotenv/config";
 
+const DUMMY_ACCOUNT =
+    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+const DUMMY_URL = "http://127.0.0.1:8545";
+
 const config: HardhatUserConfig = {
     solidity: {
         version: "0.8.24",
@@ -34,7 +38,14 @@ const config: HardhatUserConfig = {
         },
         spin_glass: {
             url: "https://spin-glass-sepolia.rpc.caldera.xyz/http",
-            accounts: [process.env.SPIN_GLASS_DEPLOYMENT_WALLET_PRIVATE_KEY!],
+            accounts: [
+                process.env.SPIN_GLASS_DEPLOYMENT_WALLET_PRIVATE_KEY ||
+                    DUMMY_ACCOUNT,
+            ],
+        },
+        custom: {
+            url: process.env.RPC_NODE_URL || DUMMY_URL,
+            accounts: [process.env.DEPLOYER_PRIVATE_KEY || DUMMY_ACCOUNT],
         },
     },
     etherscan: {
