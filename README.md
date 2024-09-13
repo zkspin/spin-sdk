@@ -1,22 +1,18 @@
 # spin-sdk
 
-SDK for developing on-chain ZK proved application.
+SDK for developing Fully On-Chain Games by zkSpin.
 
 ## Installation
 
-[Install Rust](https://www.rust-lang.org/tools/install)
-
-[Install NodeJs V18 or above](https://nodejs.org/en/download/package-manager/current)
-
-[Install `wasm-pack`](github.com/rustwasm/wasm-pack)
-
 ```shell
-npm install -g spin-m4
+npm install --global @zkspin/sdk
 ```
 
 ## Docs
 
-How to use SDK: [guide/GUIDE.md](./guide/GUIDE.md)
+https://zkspin.gitbook.io/zkspin
+
+### Trouble Shooting
 
 #### For Windows:
 

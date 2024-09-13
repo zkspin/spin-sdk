@@ -1,27 +1,28 @@
-use crate::definition::SpinGameInitArgs;
-use crate::definition::SpinGameIntermediateStates;
-use crate::spin::SpinGame;
-use crate::spin::SpinGameTrait;
+use crate::definition::SpinGameStates;
+use crate::spin::{ SpinGame, SpinGameTrait };
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
-use wasm_bindgen::prelude::*;
 
 pub const MAX_POSITION: u64 = 10;
 
-pub static GAME_STATE: Lazy<Mutex<SpinGameIntermediateStates>> =
-    Lazy::new(|| Mutex::new(SpinGameIntermediateStates::new()));
+/**
+ * Mutex: For global state thread safe
+ * Lazy: For global state initialization
+ */
+pub static GAME_STATE: Lazy<Mutex<SpinGameStates>> = Lazy::new(||
+    Mutex::new(SpinGameStates::default())
+);
 
 impl SpinGameTrait for SpinGame {
     /* STATEFUL FUNCTIONS This defines the initialization of the game*/
-    fn initialize_game(args: SpinGameInitArgs) {
+    fn initialize_game(args: Vec<u64>) {
         let mut game_state = GAME_STATE.lock().unwrap();
 
-        game_state.total_steps = args.total_steps;
-        game_state.current_position = args.current_position;
+        game_state.total_steps = args[0];
+        game_state.current_position = args[1];
     }
 
     /* STATEFUL FUNCTIONS This is defines the logic when player moves one step/entering one command*/
-
     fn step(input: u64) {
         let mut game_state = GAME_STATE.lock().unwrap();
 
@@ -43,12 +44,12 @@ impl SpinGameTrait for SpinGame {
             _ => {
                 panic!("Invalid command");
             }
-        };
+        }
     }
 
-    /* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
-    fn get_game_state() -> SpinGameIntermediateStates {
+    /* VIEW FUNCTION This function returns the game state, to be used in Rust and Zkmain */
+    fn get_game_state() -> Vec<u64> {
         let game = GAME_STATE.lock().unwrap().clone();
-        return game;
+        return vec![game.total_steps, game.current_position];
     }
 }

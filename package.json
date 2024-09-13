@@ -1,23 +1,33 @@
 {
-  "name": "spin-m4",
-  "version": "0.5.0",
+  "name": "@zkspin/sdk",
+  "version": "0.0.6",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && node script/add-shebang.js",
     "start": "ts-node src/index.ts",
-    "publish": "npm publish"
+    "test": "mocha tests/*.ts"
   },
   "bin": {
-    "spin-m4": "dist/index.js"
+    "zkspin": "dist/src/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^20.14.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
+    "@zkspin/lib": "^1.0.3",
+    "commander": "^12.1.0",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2",
     "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.19",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.2",
+    "chai": "^4.2.0",
+    "mocha": "^10.7.3",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.5"
   }
 }

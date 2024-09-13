@@ -55,4 +55,5 @@ const __wbg_star0 = {
 }
 let imports = {};
 imports['env'] = __wbg_star0;
+imports['__wbindgen_placeholder__'] = module.exports;
 /* AUTO GENERATED BELOW */
