@@ -6,7 +6,6 @@
   "scripts": {
     "build": "tsc && node script/add-shebang.js",
     "start": "ts-node src/index.ts",
-    "publish": "npm publish --access public",
     "test": "mocha tests/*.ts"
   },
   "bin": {
