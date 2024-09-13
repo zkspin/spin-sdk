@@ -15,7 +15,6 @@ pub static GAME_STATE: Lazy<Mutex<SpinGameStates>> = Lazy::new(||
 
 impl SpinGameTrait for SpinGame {
     /* STATEFUL FUNCTIONS This defines the initialization of the game*/
-    // TODO clean this up
     fn initialize_game(args: Vec<u64>) {
         let mut game_state = GAME_STATE.lock().unwrap();
 
@@ -48,7 +47,7 @@ impl SpinGameTrait for SpinGame {
         }
     }
 
-    /* PURE FUNCTION This function returns the game state, to be used in Rust and Zkmain */
+    /* VIEW FUNCTION This function returns the game state, to be used in Rust and Zkmain */
     fn get_game_state() -> Vec<u64> {
         let game = GAME_STATE.lock().unwrap().clone();
         return vec![game.total_steps, game.current_position];
