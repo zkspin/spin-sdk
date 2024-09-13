@@ -1,6 +1,6 @@
 {
   "name": "@zkspin/sdk",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "@zkspin/lib": "^1.0.1",
     "commander": "^12.1.0",
     "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2",
     "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper"
   },
   "devDependencies": {
@@ -27,7 +28,6 @@
     "@types/node": "^20.14.2",
     "chai": "^4.2.0",
     "mocha": "^10.7.3",
-    "pino-pretty": "^11.2.2",
     "tsx": "^4.19.0",
     "typescript": "^5.4.5"
   }
