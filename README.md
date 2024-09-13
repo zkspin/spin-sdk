@@ -5,7 +5,7 @@ SDK for developing on-chain ZK proved application.
 ## Installation
 
 ```shell
-npm install -g zkspin
+npm install --global @zkspin/sdk
 ```
 
 ## Docs
