@@ -1,6 +1,6 @@
 # spin-sdk
 
-SDK for developing on-chain ZK proved application.
+SDK for developing Fully On-Chain Games by zkSpin.
 
 ## Installation
 
@@ -11,6 +11,8 @@ npm install --global @zkspin/sdk
 ## Docs
 
 https://zkspin.gitbook.io/zkspin
+
+### Trouble Shooting
 
 #### For Windows:
 
