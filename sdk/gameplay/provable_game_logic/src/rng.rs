@@ -1,17 +1,14 @@
 use serde::Serialize;
-use wasm_bindgen::prelude::*;
 
 const LCG_M: u64 = 4294967296;
 const LCG_A: u64 = 22695477;
 const LCG_C: u64 = 1;
 
 #[derive(Debug, Serialize, Clone, Copy)]
-#[wasm_bindgen]
 pub struct LCGRandGen {
     pub seed: u64,
 }
 
-#[wasm_bindgen]
 impl LCGRandGen {
     pub fn new(seed: u64) -> Self {
         Self { seed }

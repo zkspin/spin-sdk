@@ -1,13 +1,16 @@
 use crate::definition::SpinGameStates;
-use crate::spin::SpinGame;
-use crate::spin::SpinGameTrait;
+use crate::spin::{ SpinGame, SpinGameTrait };
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
 
 pub const MAX_POSITION: u64 = 10;
 
+/**
+ * Mutex: For global state thread safe
+ * Lazy: For global state initialization
+ */
 pub static GAME_STATE: Lazy<Mutex<SpinGameStates>> = Lazy::new(||
-    Mutex::new(SpinGameStates::new(0, 0))
+    Mutex::new(SpinGameStates::default())
 );
 
 impl SpinGameTrait for SpinGame {
