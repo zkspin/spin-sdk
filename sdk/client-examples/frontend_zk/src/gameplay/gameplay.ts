@@ -5,7 +5,7 @@ import {
     initialize_game,
     step as _step,
     get_game_state,
-} from "../../../../gameplay/export/js/esm";
+} from "../../../gameplay/export/js/esm";
 
 export interface GamePlayContructor {
     callback: () => void;
