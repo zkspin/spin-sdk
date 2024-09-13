@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
-import { abi } from "./abi/SpinZKGameContract.json";
-import { abi as stateABI } from "./abi/GameStateStorage.json";
 import { config } from "./web3";
 import { readContract, getAccount } from "wagmi/actions";
 import {
@@ -12,6 +10,8 @@ import {
     SpinZKProverSubmissionData,
     ZKProver,
     decodeBytesToU64Array,
+    GameStateStorageABI,
+    SpinZKGameContractABI,
 } from "@zkspin/lib";
 import { Gameplay } from "./gameplay/gameplay";
 
@@ -29,7 +29,7 @@ interface GameState {
 /* This function is used to verify the proof on-chain */
 async function verify_onchain(submission: SpinZKProverSubmissionData) {
     const result = await writeContract(config, {
-        abi,
+        abi: SpinZKGameContractABI.abi,
         address: GAME_CONTRACT_ADDRESS,
         functionName: "submitGame",
         args: [
@@ -49,10 +49,10 @@ async function verify_onchain(submission: SpinZKProverSubmissionData) {
 }
 
 /* This function is used to get the on-chain game states */
-async function getOnchainGameStates() {
+async function getOnchainGameStates(): Promise<bigint[]> {
     // return [BigInt(0), BigInt(0)];
     const storageContractAddress = (await readContract(config, {
-        abi,
+        abi: SpinZKGameContractABI.abi,
         address: GAME_CONTRACT_ADDRESS,
         functionName: "getStorageContract",
         args: [],
@@ -61,7 +61,7 @@ async function getOnchainGameStates() {
     const userAccount = getAccount(config);
 
     const result = (await readContract(config, {
-        abi: stateABI,
+        abi: GameStateStorageABI.abi,
         address: storageContractAddress,
         functionName: "getStates",
         args: [userAccount.address],

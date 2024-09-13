@@ -4,13 +4,13 @@ import {
     SpinOPZKProverInput,
     SpinOPZKProverOutput,
     decodeBytesToU64Array,
+    SpinOPZKGameContractABI,
+    GameStateStorageABI,
 } from "@zkspin/lib";
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { getAccount, readContract, signMessage } from "wagmi/actions";
 import "./App.css";
-import { abi as stateABI } from "./abi/GameStateStorage.json";
-import { abi } from "./abi/SpinOPZKGameContract.json";
 import { Gameplay } from "./gameplay/gameplay";
 import { config } from "./web3";
 
@@ -65,7 +65,7 @@ async function submit_to_operator(
 async function getOnchainGameStates() {
     // return [BigInt(0), BigInt(0)];
     const storageContractAddress = (await readContract(config, {
-        abi,
+        abi: SpinOPZKGameContractABI.abi,
         address: GAME_CONTRACT_ADDRESS,
         functionName: "getStorageContract",
         args: [],
@@ -74,7 +74,7 @@ async function getOnchainGameStates() {
     const userAccount = getAccount(config);
 
     const result = (await readContract(config, {
-        abi: stateABI,
+        abi: GameStateStorageABI.abi,
         address: storageContractAddress,
         functionName: "getStates",
         args: [userAccount.address],
@@ -132,7 +132,23 @@ function App() {
     }, []);
 
     const getPlayerNonce = async () => {
-        return BigInt(0);
+        const player_address = getAccount(config).address;
+
+        if (!player_address) {
+            console.error("player address not found");
+            throw new Error("player address not found");
+        }
+
+        const player_nonce = await readContract(config, {
+            abi: SpinOPZKGameContractABI.abi,
+            address: GAME_CONTRACT_ADDRESS,
+            functionName: "getSubmissionNonce",
+            args: [player_address],
+        });
+
+        console.log("nonce = ", player_nonce);
+
+        return player_nonce;
     };
 
     const getPlayerSignature = async (submissionHash: string) => {
