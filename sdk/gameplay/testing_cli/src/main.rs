@@ -1,6 +1,4 @@
-use std::io::{ stdin, stdout, Write };
-use termion::event::Key;
-use termion::input::TermRead;
+use std::io::{ stdout, Write };
 use std::io;
 fn read_number() -> Option<u64> {
     loop {
@@ -32,18 +30,18 @@ fn print_game_state(stdout: &mut std::io::Stdout) {
     writeln!(stdout, "Game State: {:?}\r", final_game_state).unwrap();
 }
 
-const GAME_INSTRUCTIONS: &str = "Enter commands sent to step, q to quit.\r";
+const GAME_INSTRUCTIONS: &str = "Enter u64 sent to step function, q to quit.\r";
 
 fn main() {
     let mut stdout = stdout();
 
     writeln!(stdout, "{}\r", "Welcome to Spin Game").unwrap();
-    writeln!(stdout, "Expecting {} states. Enter states:\r", STATE_SIZE).unwrap();
+    writeln!(stdout, "Expecting {} initial states. Enter states in u64:\r", STATE_SIZE).unwrap();
 
     // Read STATE_SIZE inputs from stdin
     let mut initial_state = Vec::new();
 
-    for _ in 0..STATE_SIZE {
+    for i in 0..STATE_SIZE {
         // check if -1
         let _input = read_number();
 
@@ -53,14 +51,16 @@ fn main() {
         }
         // push to initial_state
         initial_state.push(_input.unwrap());
+
+        writeln!(stdout, "Entered States {:?}, {}/{}\r", initial_state, i + 1, STATE_SIZE).unwrap();
     }
 
+    writeln!(stdout, "=============================").unwrap();
     writeln!(stdout, "Game started with states: {:?}\r", initial_state).unwrap();
 
     SpinGame::initialize_game(initial_state);
 
     writeln!(stdout, "{}", GAME_INSTRUCTIONS).unwrap();
-    print_game_state(&mut stdout);
 
     loop {
         let _input = read_number();
