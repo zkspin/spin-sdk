@@ -10,6 +10,8 @@ import fs from "fs";
 import path, { basename } from "path";
 import { logger } from "./logger";
 import { addImage } from "./zkwasm";
+import simpleGit from 'simple-git';
+
 import {
     commentAllFiles,
     unCommentAllFiles,
@@ -65,8 +67,9 @@ function copyFolderSync(src: string, dest: string): void {
 
 const SDK_SOURCE_FOLDER_PATH = path.join(__dirname, "..", "..", "sdk");
 const MISC_SCRIPT_FOLDER_PATH = path.join(__dirname, "..", "..", "misc");
+const git = simpleGit();
 
-function init(
+async function init(
     folderName: string,
     provingType: "ZK" | "OPZK",
     envType: "node" | "browser"
@@ -77,21 +80,52 @@ function init(
         throw new Error("Node.js client not implemented");
     }
 
-    // Copy Frontend Example
-    const sourceDirFrontend = path.join(
-        SDK_SOURCE_FOLDER_PATH,
-        "client-examples",
-        provingType == "ZK" ? "frontend_zk" : "frontend_opzk"
-    );
-    const destinationDirFrontend = path.join(destinationPath, "frontend");
-    copyFolderSync(sourceDirFrontend, destinationDirFrontend);
+    // Define the repository URL
+    const repoUrl = "https://github.com/zkspin/SDK-Examples.git";
 
-    // Copy Rust Gameplay Contract Example
-    const sourceDirGameplay = path.join(SDK_SOURCE_FOLDER_PATH, "gameplay");
-    const destinationDirGameplay = path.join(destinationPath, "gameplay");
-    copyFolderSync(sourceDirGameplay, destinationDirGameplay);
+    // Ensure the destination directory is empty or does not exist
+    if (fs.existsSync(destinationPath)) {
+        fs.rmSync(destinationPath, { recursive: true, force: true });
+    }
 
-    logger.info(`Successfully initialized under folder: ${destinationPath}`);
+    try {
+        // Clone the repository into a temporary directory
+        const tempPath = path.join(process.cwd(), 'temp-repo');
+        await git.clone(repoUrl, tempPath);
+
+        // Determine which frontend directory to use based on provingType
+        let sourceDirFrontend;
+        if (provingType === "ZK") {
+            sourceDirFrontend = path.join(tempPath, 'client-examples', 'frontend_zk');
+        } else {
+            sourceDirFrontend = path.join(tempPath, 'client-examples', 'frontend_opzk');
+        }
+        const destinationDirFrontend = path.join(destinationPath, 'frontend');
+
+        // Ensure the frontend directory in the destination path is empty or does not exist
+        if (fs.existsSync(destinationDirFrontend)) {
+            fs.rmSync(destinationDirFrontend, { recursive: true, force: true });
+        }
+        fs.renameSync(sourceDirFrontend, destinationDirFrontend);
+
+        // Copy Rust Gameplay Contract Example
+        const sourceDirGameplay = path.join(tempPath, 'gameplay');
+        const destinationDirGameplay = path.join(destinationPath, 'gameplay');
+        
+        // Ensure the gameplay directory in the destination path is empty or does not exist
+        if (fs.existsSync(destinationDirGameplay)) {
+            fs.rmSync(destinationDirGameplay, { recursive: true, force: true });
+        }
+        fs.renameSync(sourceDirGameplay, destinationDirGameplay);
+
+        // Remove the temporary directory
+        fs.rmSync(tempPath, { recursive: true, force: true });
+
+        logger.info(`Successfully initialized under folder: ${destinationPath}`);
+
+    } catch (error) {
+        throw error;
+    }
 }
 
 async function buildImage(projectPath: string) {
