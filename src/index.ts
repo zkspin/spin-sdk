@@ -11,6 +11,7 @@ import path, { basename } from "path";
 import { logger } from "./logger";
 import { addImage } from "./zkwasm";
 import simpleGit from 'simple-git';
+import { repoConfig } from '../config/repo';
 
 import {
     commentAllFiles,
@@ -29,41 +30,6 @@ import { Command, Option } from "commander";
 import { convertPlayerActionToPublicPrivateInputs } from "@zkspin/lib";
 import { convertToBigInts } from "@zkspin/lib";
 import { version } from "../package.json";
-/**
- * Copy the contents of one folder to another.
- * Ignore file in the .gitignore file.
- * @param src The source folder path.
- * @param dest The destination folder path.
- */
-function copyFolderSync(src: string, dest: string): void {
-    if (!fs.existsSync(src)) {
-        logger.error(`Source folder does not exist: ${src}`);
-        return;
-    }
-
-    // Create destination folder if it doesn't exist
-    if (fs.existsSync(dest)) {
-        logger.error(`Destination folder already exists: ${dest}`);
-    }
-    fs.mkdirSync(dest, { recursive: true });
-
-    // Read the contents of the source folder
-    const entries = fs.readdirSync(src, { withFileTypes: true });
-
-    // Iterate through each entry in the source folder
-    for (const entry of entries) {
-        const srcPath = path.join(src, entry.name);
-        const destPath = path.join(dest, entry.name);
-
-        if (entry.isDirectory() && !FOLDER_IGNORE_LIST.includes(entry.name)) {
-            // Recursively copy directories
-            copyFolderSync(srcPath, destPath);
-        } else if (entry.isFile() && !FILE_IGNORE_LIST.includes(entry.name)) {
-            // Copy files
-            fs.copyFileSync(srcPath, destPath);
-        }
-    }
-}
 
 const SDK_SOURCE_FOLDER_PATH = path.join(__dirname, "..", "..", "sdk");
 const MISC_SCRIPT_FOLDER_PATH = path.join(__dirname, "..", "..", "misc");
@@ -80,55 +46,64 @@ async function init(
         throw new Error("Node.js client not implemented");
     }
 
-    // Define the repository URL
-    const repoUrl = "https://github.com/zkspin/SDK-Examples.git";
+        // Check if destination directory exists
+        if (fs.existsSync(destinationPath)) {
+            logger.warn(`Directory ${destinationPath} already exists. Aborting initialization.`);
+            return; // Exit gracefully
+        }
+    
+    
 
-    // Ensure the destination directory is empty or does not exist
-    if (fs.existsSync(destinationPath)) {
-        fs.rmSync(destinationPath, { recursive: true, force: true });
+ // Clone the repository into a temporary directory
+ const tempPath = path.join(process.cwd(), 'temp-repo');
+
+
+  
+
+     
+ try {
+    await git.clone(repoConfig[provingType], tempPath);
+
+    // Determine which frontend directory to use based on provingType
+    const sourceDirFrontend = path.join(tempPath, `client-examples/frontend_${provingType.toLowerCase()}`);
+    const destinationDirFrontend = path.join(destinationPath, 'frontend');
+
+    // Ensure the frontend directory does not exist
+    if (fs.existsSync(destinationDirFrontend)) {
+        logger.warn(`Frontend directory ${destinationDirFrontend} already exists. Aborting.`);
+        return; // Exit gracefully
     }
+    fs.renameSync(sourceDirFrontend, destinationDirFrontend);
 
-    try {
-        // Clone the repository into a temporary directory
-        const tempPath = path.join(process.cwd(), 'temp-repo');
-        await git.clone(repoUrl, tempPath);
+    // Copy Rust Gameplay Contract Example
+    const sourceDirGameplay = path.join(tempPath, 'gameplay');
+    const destinationDirGameplay = path.join(destinationPath, 'gameplay');
 
-        // Determine which frontend directory to use based on provingType
-        let sourceDirFrontend;
-        if (provingType === "ZK") {
-            sourceDirFrontend = path.join(tempPath, 'client-examples', 'frontend_zk');
-        } else {
-            sourceDirFrontend = path.join(tempPath, 'client-examples', 'frontend_opzk');
-        }
-        const destinationDirFrontend = path.join(destinationPath, 'frontend');
+    // Ensure the gameplay directory does not exist
+    if (fs.existsSync(destinationDirGameplay)) {
+        logger.warn(`Gameplay directory ${destinationDirGameplay} already exists. Aborting.`);
+        return; // Exit gracefully
+    }
+    fs.renameSync(sourceDirGameplay, destinationDirGameplay);
 
-        // Ensure the frontend directory in the destination path is empty or does not exist
-        if (fs.existsSync(destinationDirFrontend)) {
-            fs.rmSync(destinationDirFrontend, { recursive: true, force: true });
-        }
-        fs.renameSync(sourceDirFrontend, destinationDirFrontend);
+    logger.info(`Successfully initialized under folder: ${destinationPath}`);
 
-        // Copy Rust Gameplay Contract Example
-        const sourceDirGameplay = path.join(tempPath, 'gameplay');
-        const destinationDirGameplay = path.join(destinationPath, 'gameplay');
-        
-        // Ensure the gameplay directory in the destination path is empty or does not exist
-        if (fs.existsSync(destinationDirGameplay)) {
-            fs.rmSync(destinationDirGameplay, { recursive: true, force: true });
-        }
-        fs.renameSync(sourceDirGameplay, destinationDirGameplay);
-
-        // Remove the temporary directory
+}  catch (error: unknown) {
+    if (error instanceof Error) {
+        logger.error(`Error during initialization: ${error.message}`);
+    } else {
+        logger.error(`An unknown error occurred: ${error}`);
+    }}
+    finally {
+    // Cleanup the temporary directory if it exists
+    if (fs.existsSync(tempPath)) {
         fs.rmSync(tempPath, { recursive: true, force: true });
-
-        logger.info(`Successfully initialized under folder: ${destinationPath}`);
-
-    } catch (error) {
-        throw error;
     }
 }
 
-async function buildImage(projectPath: string) {
+}
+
+async function buildImage(projectPath: string) {    
     const makeFilePath = path.join(MISC_SCRIPT_FOLDER_PATH, "Makefile");
 
     const exportPath = path.join(projectPath, "..", "export");
