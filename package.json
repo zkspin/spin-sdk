@@ -19,6 +19,7 @@
     "commander": "^12.1.0",
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2",
+    "simple-git": "^3.27.0",
     "zkwasm-service-helper": "github:tohacking/zkWasm-service-helper"
   },
   "devDependencies": {
