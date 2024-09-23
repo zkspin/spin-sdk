@@ -1,3 +1,0 @@
-[workspace]
-members = [ "export","provable_game_logic", "testing_cli"]
-resolver = "2"
