@@ -27,6 +27,8 @@ import { Command, Option } from "commander";
 import { convertPlayerActionToPublicPrivateInputs } from "@zkspin/lib";
 import { convertToBigInts } from "@zkspin/lib";
 import { version } from "../package.json";
+import { publishGameOnchain } from "./blockchain";
+import { log } from "console";
 /**
  * Copy the contents of one folder to another.
  * Ignore file in the .gitignore file.
@@ -199,7 +201,15 @@ async function buildImage(projectPath: string) {
     }
 }
 
-async function publishImage(projectPath: string) {
+async function publishImage(
+    projectPath: string,
+    privateKey: string,
+    jsonRPCURL: string,
+    registryAddress: string,
+    gameName: string,
+    gameDescription: string,
+    gameAuthorName: string
+) {
     logger.info("Publishing project...");
 
     const filePath = path.join(
@@ -242,7 +252,24 @@ async function publishImage(projectPath: string) {
     );
     logger.info("--------------------");
 
-    return imageCommitment;
+    const onchainData = await publishGameOnchain(
+        privateKey,
+        jsonRPCURL,
+        registryAddress,
+        [imageCommitment[0], imageCommitment[1], imageCommitment[2]],
+        gameAuthorName,
+        gameName,
+        gameDescription
+    );
+
+    logger.info("Successfully published game onchain.");
+    logger.info("--------------------");
+    logger.info(`Game ID: ${onchainData.gameId}`);
+    logger.info(
+        `Game State Storage Contract : ${onchainData.gameStorageAddress}`
+    );
+    logger.info(`Tx Hash: ${onchainData.txnHash}`);
+    logger.info("--------------------");
 }
 
 function dryRunImage(
@@ -362,8 +389,34 @@ program
     .command("publish-image")
     .description("Publish an image to ZKWASM")
     .argument("<path>", "Path to the provable_game_logic folder")
-    .action((projectPath) => {
-        publishImage(projectPath);
+    .option(
+        "-p, --private <private jkey>",
+        "Deployer private key",
+        "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" // hardhat default
+    )
+    .option(
+        "-u, --url <RPC url>",
+        "URL for Json-RPC endpoint",
+        "http://127.0.0.1:8545" // local hardhat default
+    )
+    .option(
+        "-r, --registry <registry address>",
+        "Game Registry Contract Address",
+        "0x61c36a8d610163660E21a8b7359e1Cac0C9133e1"
+    )
+    .option("-n, --name <game name>", "Game name", "My Game Name")
+    .option("-d, --description <description>", "Game description", "My Game")
+    .option("-a, --author <author name>", "Game author", "My Name")
+    .action((projectPath, options) => {
+        publishImage(
+            projectPath,
+            options.private,
+            options.url,
+            options.registry,
+            options.name,
+            options.description,
+            options.author
+        );
     });
 
 program
