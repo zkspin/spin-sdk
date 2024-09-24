@@ -10,6 +10,9 @@ import fs from "fs";
 import path, { basename } from "path";
 import { logger } from "./logger";
 import { addImage } from "./zkwasm";
+import simpleGit from "simple-git";
+import { repoConfig } from "../config/repo";
+
 import {
     commentAllFiles,
     unCommentAllFiles,
@@ -27,48 +30,12 @@ import { Command, Option } from "commander";
 import { convertPlayerActionToPublicPrivateInputs } from "@zkspin/lib";
 import { convertToBigInts } from "@zkspin/lib";
 import { version } from "../package.json";
-import { publishGameOnchain } from "./blockchain";
-import { log } from "console";
-/**
- * Copy the contents of one folder to another.
- * Ignore file in the .gitignore file.
- * @param src The source folder path.
- * @param dest The destination folder path.
- */
-function copyFolderSync(src: string, dest: string): void {
-    if (!fs.existsSync(src)) {
-        logger.error(`Source folder does not exist: ${src}`);
-        return;
-    }
-
-    // Create destination folder if it doesn't exist
-    if (fs.existsSync(dest)) {
-        logger.error(`Destination folder already exists: ${dest}`);
-    }
-    fs.mkdirSync(dest, { recursive: true });
-
-    // Read the contents of the source folder
-    const entries = fs.readdirSync(src, { withFileTypes: true });
-
-    // Iterate through each entry in the source folder
-    for (const entry of entries) {
-        const srcPath = path.join(src, entry.name);
-        const destPath = path.join(dest, entry.name);
-
-        if (entry.isDirectory() && !FOLDER_IGNORE_LIST.includes(entry.name)) {
-            // Recursively copy directories
-            copyFolderSync(srcPath, destPath);
-        } else if (entry.isFile() && !FILE_IGNORE_LIST.includes(entry.name)) {
-            // Copy files
-            fs.copyFileSync(srcPath, destPath);
-        }
-    }
-}
 
 const SDK_SOURCE_FOLDER_PATH = path.join(__dirname, "..", "..", "sdk");
 const MISC_SCRIPT_FOLDER_PATH = path.join(__dirname, "..", "..", "misc");
+const git = simpleGit();
 
-function init(
+async function init(
     folderName: string,
     provingType: "ZK" | "OPZK",
     envType: "node" | "browser"
@@ -78,20 +45,16 @@ function init(
     if (envType === "node") {
         throw new Error("Node.js client not implemented");
     }
+    if (fs.existsSync(destinationPath)) {
+        throw new Error(
+            `Folder with name "${folderName}" already exists at the path: ${destinationPath}`
+        );
+    }
 
-    // Copy Frontend Example
-    const sourceDirFrontend = path.join(
-        SDK_SOURCE_FOLDER_PATH,
-        "client-examples",
-        provingType == "ZK" ? "frontend_zk" : "frontend_opzk"
-    );
-    const destinationDirFrontend = path.join(destinationPath, "frontend");
-    copyFolderSync(sourceDirFrontend, destinationDirFrontend);
+    const repoUrl = repoConfig[provingType];
 
-    // Copy Rust Gameplay Contract Example
-    const sourceDirGameplay = path.join(SDK_SOURCE_FOLDER_PATH, "gameplay");
-    const destinationDirGameplay = path.join(destinationPath, "gameplay");
-    copyFolderSync(sourceDirGameplay, destinationDirGameplay);
+    const git = simpleGit();
+    await git.clone(repoUrl, destinationPath);
 
     logger.info(`Successfully initialized under folder: ${destinationPath}`);
 }
@@ -270,6 +233,7 @@ async function publishImage(
     );
     logger.info(`Tx Hash: ${onchainData.txnHash}`);
     logger.info("--------------------");
+    return imageCommitment;
 }
 
 function dryRunImage(
