@@ -1,6 +1,6 @@
 {
   "name": "@zkspin/sdk",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "SDK for developing on-chain ZK proved application.",
   "main": "dist/index.js",
   "scripts": {
@@ -15,8 +15,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@zkspin/lib": "^1.0.3",
+    "@zkspin/lib": "^1.0.14",
     "commander": "^12.1.0",
+    "ethers": "^6.13.2",
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2",
     "simple-git": "^3.26.0",
