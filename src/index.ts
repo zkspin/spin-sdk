@@ -62,7 +62,42 @@ async function init(
 async function buildImage(projectPath: string) {
     const makeFilePath = path.join(MISC_SCRIPT_FOLDER_PATH, "Makefile");
 
+    const currentDir = process.cwd();
+
+    // Check if the current directory is inside the gameplay folder or its parent
+    const insideGameplayDir = currentDir.endsWith("gameplay");
+
+    // If the user is inside the gameplay directory, the path should be './provable_game_logic'
+    if (
+        insideGameplayDir &&
+        projectPath === path.join(".", "gameplay", "provable_game_logic")
+    ) {
+        throw new Error(
+            `Invalid project path: '${projectPath}'. Since you're inside the 'gameplay' directory, the correct path should be './provable_game_logic'.`
+        );
+    }
+
+    // If the user is outside the gameplay directory, the path should be './gameplay/provable_game_logic'
+    if (
+        !insideGameplayDir &&
+        projectPath === path.join(".", "provable_game_logic")
+    ) {
+        throw new Error(
+            `Invalid project path: '${projectPath}'. Since you're outside the 'gameplay' directory, the correct path should be './gameplay/provable_game_logic'.`
+        );
+    }
+
+    // Check if the provided path actually exists
+    if (!fs.existsSync(projectPath)) {
+        throw new Error(
+            `The provided project path does not exist: ${projectPath}`
+        );
+    }
+
+    logger.info(`provable_game_logic directory found at ${projectPath}`);
+
     const exportPath = path.join(projectPath, "..", "export");
+    logger.info(`export path. , ${exportPath}`);
 
     const outDir = ".";
 
