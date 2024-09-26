@@ -30,15 +30,15 @@ import { Command, Option } from "commander";
 import { convertPlayerActionToPublicPrivateInputs } from "@zkspin/lib";
 import { convertToBigInts } from "@zkspin/lib";
 import { version } from "../package.json";
+import { publishGameOnchain } from "./blockchain";
 
-const SDK_SOURCE_FOLDER_PATH = path.join(__dirname, "..", "..", "sdk");
 const MISC_SCRIPT_FOLDER_PATH = path.join(__dirname, "..", "..", "misc");
-const git = simpleGit();
 
 async function init(
     folderName: string,
     provingType: "ZK" | "OPZK",
-    envType: "node" | "browser"
+    envType: "node" | "browser",
+    clientWallet: "web3modal" | "dynamic"
 ) {
     const destinationPath = path.join(process.cwd(), folderName);
 
@@ -51,7 +51,13 @@ async function init(
         );
     }
 
-    const repoUrl = repoConfig[provingType];
+    const repoUrl = repoConfig[provingType][clientWallet];
+
+    if (!repoUrl) {
+        throw new Error(
+            `Not implemented for proving type: ${provingType} and client wallet: ${clientWallet}`
+        );
+    }
 
     const git = simpleGit();
     await git.clone(repoUrl, destinationPath);
@@ -372,8 +378,13 @@ program
             .choices(["node", "browser"])
             .default("browser")
     )
+    .addOption(
+        new Option("-w, --wallet <web3modal|dynamic>", "Client wallet")
+            .choices(["web3modal", "dynamic"])
+            .default("web3modal")
+    )
     .action((folderName, options) => {
-        init(folderName, options.type, options.env);
+        init(folderName, options.type, options.env, options.wallet);
     });
 
 program
