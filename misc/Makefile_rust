@@ -9,13 +9,12 @@ wasm-build-web:
 	# Append the JS import helper to the front of the generated JS file
 	cat $(MISC_PATH)/wasm_import_template_esm.js > temp.js && tail -n +2  $(JS_OUT_DIR)/esm/$(OUT_NAME).js >> temp.js && mv temp.js $(JS_OUT_DIR)/esm/$(OUT_NAME).js
 
-
 wasm-build-node:
 	@cargo build && wasm-pack build --release --out-name $(OUT_NAME) --target nodejs --out-dir  $(JS_OUT_DIR)/commonjs
 	# Append the JS import helper to the front of the generated JS file
 	cat $(MISC_PATH)/wasm_import_template_commonjs.js > temp.js && tail -n +4 $(JS_OUT_DIR)/commonjs/$(OUT_NAME).js >> temp.js && mv temp.js $(JS_OUT_DIR)/commonjs/$(OUT_NAME).js
 
-build-spin: wasm-build-web wasm-build-node
+build-wasm-js: wasm-build-web wasm-build-node
 	@echo "BUILD_SPIN_SUCCESS"
 
 clean:

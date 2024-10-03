@@ -13,7 +13,26 @@ import {
     PUBLISH_IMAGE_RETRY_COUNT,
     PUBLISH_IMAGE_RETRY_DELAY_IN_SECONDS,
 } from "./config";
-import { ProveCredentials, getImageCommitmentBigInts } from "@zkspin/lib";
+import {
+    ProveCredentials,
+    ZKProver,
+    getImageCommitmentBigInts,
+} from "@zkspin/lib";
+
+export async function proveImage(
+    cloudCredential: ProveCredentials,
+    privateInputs: bigint[],
+    publicInputs: bigint[]
+) {
+    const zkProver = new ZKProver(cloudCredential);
+    console.log("zkProver = ", publicInputs.map(String));
+    const proof = await zkProver.prove(
+        publicInputs.map((x) => `${x}:i64`),
+        privateInputs.map((x) => `${x}:i64`)
+    );
+
+    return proof;
+}
 
 export async function addImage(
     cloudCredential: ProveCredentials,

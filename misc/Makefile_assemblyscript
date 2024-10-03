@@ -1,0 +1,26 @@
+OUT_NAME=gameplay
+JS_OUT_DIR=$(OUTPUT_PATH)/js
+
+build-wasm-zk:
+	@asc export/src/zkmain.ts --noAssert -o $(OUTPUT_PATH)/gameplay_bg.wasm \
+		--disable bulk-memory --disable nontrapping-f2i \
+		--runtime stub --use abort=export/src/util/abort \
+		&& echo "BUILD_WASM_ZK_SUCCESS"
+
+wasm-build-web:
+	@asc export/src/zkmain.ts --noAssert -o $(JS_OUT_DIR)/esm/gameplay_bg.wasm \
+		--disable bulk-memory --disable nontrapping-f2i \
+		--runtime stub --use abort=export/src/util/abort \
+		--bindings esm
+
+wasm-build-node:
+	@asc export/src/zkmain.ts --noAssert -o $(JS_OUT_DIR)/commonjs/gameplay_bg.wasm \
+		--disable bulk-memory --disable nontrapping-f2i \
+		--runtime stub --use abort=export/src/util/abort \
+		--bindings esm
+
+build-wasm-js: wasm-build-web wasm-build-node
+	@echo "BUILD_SPIN_SUCCESS"
+
+clean:
+	rm -rf $(OUT_DIR)

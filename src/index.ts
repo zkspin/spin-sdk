@@ -9,7 +9,7 @@ console.log = (message?: any, ...optionalParams: any[]) => {
 import fs from "fs";
 import path, { basename } from "path";
 import { logger } from "./logger";
-import { addImage } from "./zkwasm";
+import { addImage, proveImage } from "./zkwasm";
 import simpleGit from "simple-git";
 import { repoConfig } from "../config/repo";
 
@@ -22,8 +22,6 @@ import {
 import {
     ZK_CLOUD_URL,
     ZK_CLOUD_USER_ADDRESS,
-    FOLDER_IGNORE_LIST,
-    FILE_IGNORE_LIST,
     ZK_CLOUD_USER_PRIVATE_KEY,
 } from "./config";
 import { Command, Option } from "commander";
@@ -33,6 +31,39 @@ import { version } from "../package.json";
 import { publishGameOnchain } from "./blockchain";
 
 const MISC_SCRIPT_FOLDER_PATH = path.join(__dirname, "..", "..", "misc");
+
+enum ZkSpinLanguage {
+    RUST = "rust",
+    ASSEMBLY_SCRIPT = "assemblyscript",
+}
+
+function checkProjectLanguageFromConfigFile(projectPath: string) {
+    const zkspinConfig = path.join(projectPath, "..", "zkspin.config.json");
+
+    if (!fs.existsSync(zkspinConfig)) {
+        throw new Error(
+            `zkspin.config.json not found at the path: ${zkspinConfig}`
+        );
+    }
+
+    const config = JSON.parse(fs.readFileSync(zkspinConfig, "utf8"));
+
+    if (!config.language) {
+        throw new Error(
+            `"language" not found in zkspin.config.json at the path: ${zkspinConfig}`
+        );
+    }
+
+    const languages = Object.values(ZkSpinLanguage);
+
+    if (!languages.includes(config.language)) {
+        throw new Error(
+            `Invalid language: ${config.language} in zkspin.config.json at the path: ${zkspinConfig}`
+        );
+    }
+
+    return config.language as ZkSpinLanguage;
+}
 
 async function init(
     folderName: string,
@@ -66,8 +97,6 @@ async function init(
 }
 
 async function buildImage(projectPath: string) {
-    const makeFilePath = path.join(MISC_SCRIPT_FOLDER_PATH, "Makefile");
-
     const currentDir = process.cwd();
 
     // Check if the current directory is inside the gameplay folder or its parent
@@ -100,6 +129,13 @@ async function buildImage(projectPath: string) {
         );
     }
 
+    const language = checkProjectLanguageFromConfigFile(projectPath);
+
+    const makeFilePath = path.join(
+        MISC_SCRIPT_FOLDER_PATH,
+        `Makefile_${language}`
+    );
+
     logger.info(`provable_game_logic directory found at ${projectPath}`);
 
     const exportPath = path.join(projectPath, "..", "export");
@@ -120,7 +156,7 @@ async function buildImage(projectPath: string) {
         [
             "--makefile",
             makeFilePath,
-            "build-spin",
+            "build-wasm-js",
             `OUTPUT_PATH=${outDir}`,
             `MISC_PATH=${MISC_SCRIPT_FOLDER_PATH}`,
         ],
@@ -138,26 +174,6 @@ async function buildImage(projectPath: string) {
     }
 
     logger.info("Start building wasm packages for proving...");
-    // !!! Caveat for build WASM for proving:
-    // zkWASM doesn't support #[wasm_bindgen] for Struct types.
-    // As a workaround, we need to comment out the #[wasm_bindgen]
-    // and then commonet it back after building the wasm.
-
-    const bindGenComment = "#[wasm_bindgen";
-    await commentAllFiles(projectPath, bindGenComment);
-    await commentLinesInFile(
-        path.join(exportPath, "src", "export.rs"),
-        bindGenComment,
-        "//SPIN_INTERMEDITE_COMMENT@"
-    );
-    const importBindGenComment = "use wasm_bindgen::prelude::*;";
-
-    await commentAllFiles(projectPath, importBindGenComment);
-    await commentLinesInFile(
-        path.join(exportPath, "src", "export.rs"),
-        importBindGenComment,
-        "//SPIN_INTERMEDITE_COMMENT@"
-    );
 
     try {
         const build_zk_wasm_out = spawnSync(
@@ -189,19 +205,6 @@ async function buildImage(projectPath: string) {
         }
     } catch (err) {
         logger.error(`Failed to build wasm for proving. \n${err}`);
-    } finally {
-        await unCommentAllFiles(projectPath, bindGenComment);
-        await uncommentLinesInFile(
-            path.join(exportPath, "src", "export.rs"),
-            bindGenComment,
-            "//SPIN_INTERMEDITE_COMMENT@"
-        );
-        await unCommentAllFiles(projectPath, importBindGenComment);
-        await uncommentLinesInFile(
-            path.join(exportPath, "src", "export.rs"),
-            importBindGenComment,
-            "//SPIN_INTERMEDITE_COMMENT@"
-        );
     }
 }
 
@@ -256,25 +259,32 @@ async function publishImage(
     );
     logger.info("--------------------");
 
-    const onchainData = await publishGameOnchain(
-        privateKey,
-        jsonRPCURL,
-        registryAddress,
-        [imageCommitment[0], imageCommitment[1], imageCommitment[2]],
-        gameAuthorName,
-        gameName,
-        gameDescription
-    );
+    try {
+        const onchainData = await publishGameOnchain(
+            privateKey,
+            jsonRPCURL,
+            registryAddress,
+            [imageCommitment[0], imageCommitment[1], imageCommitment[2]],
+            gameAuthorName,
+            gameName,
+            gameDescription
+        );
 
-    logger.info("Successfully published game onchain.");
-    logger.info("--------------------");
-    logger.info(`Game ID: ${onchainData.gameId}`);
-    logger.info(
-        `Game State Storage Contract : ${onchainData.gameStorageAddress}`
-    );
-    logger.info(`Tx Hash: ${onchainData.txnHash}`);
-    logger.info("--------------------");
-    return imageCommitment;
+        logger.info("Successfully published game onchain.");
+        logger.info("--------------------");
+        logger.info(`Game ID: ${onchainData.gameId}`);
+        logger.info(
+            `Game State Storage Contract : ${onchainData.gameStorageAddress}`
+        );
+        logger.info(`Tx Hash: ${onchainData.txnHash}`);
+        logger.info("--------------------");
+    } catch (err) {
+        logger.error(`Failed to publish game onchain. \n${err}`);
+        logger.error(
+            "Make sure chain is running, contract is deployed, and you have enough funds."
+        );
+        process.exit(1);
+    }
 }
 
 function dryRunImage(
@@ -288,12 +298,12 @@ function dryRunImage(
     const wasmPath = zkwasmCLIPath;
 
     if (!fs.existsSync(filePath)) {
-        logger.error("Path does not exist: ", filePath);
+        logger.error(`Path does not exist: ${filePath}`);
         process.exit(1);
     }
 
     if (!fs.existsSync(wasmPath) || basename(wasmPath) !== "zkwasm-cli") {
-        logger.error("Zkwasm Path does not exist: ", wasmPath);
+        logger.error(`Zkwasm Path does not exist: ${wasmPath}`);
         process.exit(1);
     }
 
@@ -305,20 +315,25 @@ function dryRunImage(
         `Running setup with args --wasm ${filePath}/wasm/gameplay_bg.wasm`
     );
 
-    const runSetup = spawnSync(
-        `${wasmPath}`,
-        [
-            "--params",
-            `${filePath}/params`,
-            "wasm_output",
-            "setup",
-            "--wasm",
-            `${filePath}/wasm/gameplay_bg.wasm`,
-        ],
-        { stdio: "pipe" }
-    );
+    const runSetupCommand = [
+        "--params",
+        `${filePath}/params`,
+        "wasm_output",
+        "setup",
+        "--wasm",
+        `${filePath}/wasm/gameplay_bg.wasm`,
+    ];
+    const runSetup = spawnSync(`${wasmPath}`, runSetupCommand, {
+        stdio: "pipe",
+    });
 
-    logger.debug(`Setup output: ${runSetup.stdout.toString()}`);
+    logger.info(`Running: cd ${wasmPath} && ${runSetupCommand.join(" ")}`);
+    logger.info(`Setup output: ${runSetup.stdout.toString()}`);
+
+    if (runSetup.status !== 0) {
+        logger.error(`Setup error: ${runSetup.stderr.toString()}`);
+        process.exit(1);
+    }
 
     const wasmArgs = [
         "--params",
@@ -340,6 +355,41 @@ function dryRunImage(
     });
 
     logger.info(`Dry-run output: ${runDryRun.stdout.toString()}`);
+
+    if (runDryRun.status !== 0) {
+        logger.error(`Dry-run error: ${runDryRun.stderr.toString()}`);
+        process.exit(1);
+    }
+}
+
+async function generateProve(
+    md5: string,
+    publicInputs: bigint[],
+    privateInputs: bigint[]
+) {
+    logger.info(`Generating proof for md5: ${md5}`);
+
+    const proof = await proveImage(
+        {
+            USER_ADDRESS: ZK_CLOUD_USER_ADDRESS,
+            USER_PRIVATE_KEY: ZK_CLOUD_USER_PRIVATE_KEY,
+            IMAGE_HASH: md5,
+            CLOUD_RPC_URL: ZK_CLOUD_URL,
+        },
+        privateInputs,
+        publicInputs
+    );
+
+    logger.info(`Successfully generated proof for md5: ${md5}`);
+
+    logger.info("--------------------");
+    logger.info("Record The Following Information:");
+    logger.info("--------------------");
+    logger.info(`MD5: ${md5}`);
+    logger.info(`Proof: ${proof?.proof}`);
+    logger.info(`Instance: ${proof?.instances}`);
+    logger.info(`VerifingInstance: ${proof?.verify_instance}`);
+    logger.info("--------------------");
 }
 
 const program = new Command();
@@ -471,7 +521,6 @@ program
         }
 
         // check if options.initial and options.action can be converted to bigint
-
         const _initialStates = convertToBigInts(options.initial);
         const _action = convertToBigInts(options.action);
 
@@ -481,6 +530,47 @@ program
             });
 
         dryRunImage(projectPath, wasmPath, publicInputs, privateInputs);
+    });
+
+program
+    .command("prove-raw")
+    .description("Run an image with raw inputs, outputs for debugging")
+    .argument("<image md5>", "Image MD5")
+    .option("-p, --public <input>", "Public input", collectRepeatable, [])
+    .option("-s, --private <input>", "Private input", collectRepeatable, [])
+    .action((md5, options) => {
+        generateProve(md5, options.public, options.private);
+    });
+
+program
+    .command("prove")
+    .description("Run an image")
+    .argument("<image md5>", "Image MD5")
+    .option(
+        "-i, --initial <list of initial states, comma separated>",
+        "Initial game states",
+        commaSeparatedList
+    )
+    .option(
+        "-a, --action <list of actions, comma separated>",
+        "player actions",
+        commaSeparatedList
+    )
+    .option("--game_id <game id>", "Meta:  Game ID", "123")
+    .action((md5, options) => {
+        if (!options.initial || !options.action) {
+            throw new Error("Missing initial or action");
+        }
+        // check if options.initial and options.action can be converted to bigint
+        const _initialStates = convertToBigInts(options.initial);
+        const _action = convertToBigInts(options.action);
+
+        const { publicInputs, privateInputs } =
+            convertPlayerActionToPublicPrivateInputs(_initialStates, _action, {
+                game_id: BigInt(options.game_id),
+            });
+
+        generateProve(md5, publicInputs, privateInputs);
     });
 
 program
